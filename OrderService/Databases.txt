@@ -1,0 +1,513 @@
+https://en.wikipedia.org/wiki/CAP_theorem
+
+Database systems designed with traditional ACID guarantees in mind such as: 
+	RDBMS choose consistency over availability, whereas
+	NoSQL choose availability over consistency.
+
+
+In UKG:
+-------
+RDBMS: Postgrey
+NoSQL(Column-Family): Cassandra
+NoSQL(Key Value Pair): Redis
+
+
+We have to design this database layer for both read and write loads simultaneously. 
+The other challenge is the storage is done on disk, so if we have  to read and write data, we have to do disk operations, and that can have high latency because we are accessing data on the disk.
+although the load on database layer is not much as on frontend/backend layer. But for databases that load is itself big enough because there is high latency involved in accessing disk storage.
+
+We going to look some of the datastore which help us in making our database layer more scalable.
+
+-Datastore Solutions:
+--------------------
+
+-Distributed Databases:
+Key-Value
+Column Family
+Document Oriented
+Graph bases
+
+
+Each database has been design for certain usecases. 
+
+=====================================================================================================================
+=====================================================================================================================
+=====================================================================================================================
+
+-RDBMS:		(no of connections < 10k And DataSize < 1TB)
+--------
+*** NoSQL databases came into existance because there are shortcomings in RDBMS, specially related to scalibility. 
+
+If you do not have specific functional requirement from a database in that case RDBMS is just the right choice. But you need to know that RDBMS is work well with the data less than 1TB, we can scale them upto 5TB also, but generally you can expect that at 1TB, you'll start getting problems with the scalibility of RDBMS. 
+
+We also see scalibility issue once the no of connections reached about 10K.
+
+These limits are becuase the no of nodes which we can use for an RDBMS are limited. 
+
+-ACID Transaction: 
+	it ensures that the "data remain consistant for all readers". 
+	**RDBMS is able to ensure it becuase there is only single node in RDBMS, if you bring in multiple nodes in RDBMS, then the consistant may suffer. In general, RDBMS is with one node.
+
+	We can create indexes on column, we can create indexes on the fly whenever we required them, and **that can speed our searches. We're able to create indexes on columns becuase RDBMS recognize those columns, the values inside RDBMS, they are not black box like key value pair databases, RDBMS knows what column and what table each value has.
+
+
+-When we design RDBMS, we have no idea what queries we need to support later, so we decides schema first, and then queries can evolve later. IF we look at NoSQL databases, what happens there is that we know access pattern, how we access our data so queries are kind of known, and once we have that knowledge, we design schema applying that knowledge. So schema in NoSQL databases comes after we have already thought about what are queries are going to be. 
+
+-Deletion/removal of columns in RDBMS are not easy, specially when our application is in production, **our application is tightly coupled with databases.
+So if we changing object definition in application, we also need to make schema changes to RDBMS, so that sense they are tightly coupled. that impedes application evolution.
+
+Joins are great thing but everytime relying on joins only is not a great thing becuase joins also **slow down our queries. So joins has an advantage that we can take 2 3 tables and we can join them and we can get the any kind of result that we are interested, but it's a slow process. 
+
+IN NoSQL databases,  where we already know what kind of queries we are going to do, so cann't we change the structure of our schema in such a way that it is optimized for our query, we don't have to do a join. and that's done in NoSQL databases by having aggregate objects, so objects whatever they exist in the business layer or application layer, as it is put into NoSQL databases. 
+
+
+-Normalized Data: 	(data is not duplicated)
+----------------
+It's good because data is not duplicated which means they store efficiently, we do not consume that much of disk space. and when we load it into memory then the amount of memory that is required to load it is also reduced or utilized efficiently. 
+
+But if we compare it with large scale systems, disk space is not at all an issue, even the memory is not an such a big issue in a horizontal scalable system becuase we are dealing with multiple nodes, and on multiple nodes we can have much more larger memories. So sometimes normalized data become overhead because we have to do too many joins to accese normalized data. 
+but if we denormalized the data then we can avoid the panelty of joins. That is something  we see that NoSQL database try to get rid of normalized schema and they try to move denormalized schema. 
+
+-Normalization: 
+---------------
+It involves constructing tables and setting up relationships between those tables according to some certain rules. The redundancy and inconsistent dependency can be removed using these rules in order to make it more flexible. By using normalization the number of tables is increased instead of decreased.
+There are 6 defined normal forms: 1NF, 2NF, 3NF, BCNF, 4NF and 5NF. Normalization should eliminate the redundancy but not at the cost of integrity.
+
+-Denormalization :is the inverse process of normalization, where the normalized schema is converted into a schema which has redundant information. The performance is improved by using redundancy and keeping the redundant data consistent. By using denormalization the number of tables is decreased which oppose to the normalization.
+
+-Whenever we do updates in RDBMS, we overwrite the values written on disk, NoSQL database create entirely new rows as these days disk is not so costly. It alows to store older version of our data. so that way we can do "versioning of data." 
+
+
+-RDBMS Scalability Architecture:
+-------------------------------
+-Vertical Partitioning for Scalability
+-Replication for Reliability/Availability
+
+Althogh RDBMS is only vertical scalable, but still we can do few things to scale RDBMS a bit and to make it more reliable, and we want to see this in the context of NoSQL databases that what it is that we can do in RDBMS and what are the limitations and why do we need NoSQL databases. 
+
+So firs thing that we can do in RDBMS is we try to scale it vertically, we try to get superior hardware but there are limits to that, so the next thing we can do is we can partition RDBMS vertically so let's say there is one RDBMS for 3 services(Catalog, Order, Inventory) they were all using one database, that catalog service access one database node which is exclusively hosting catalog database, one datbase node of order service and one database node for Inventory service. That gives us some scalibility.
+
+Now, instead of accessing one database node, now we are accessing 3 separate database nodes, so the load on database node get reduced to one third.
+
+We'll have to make sure that our code is written  in such a way that it can work in an isolated fashion, similar thing we seen in microservices. Here we can not assume that we can do catalog service can access order service tables, so we cannot do transactions that combine catalog table and order table, that's no longer a possibility. we will have to do diff kind of transactions like two phase commit....
+
+Let's say still there is lot of load on one perticular database, so what can be do, next option is read replicas, so 	whatever changes we're doing to our database node, we can have replica nodes for that here we have 2 replica nodes, so any change done to master is replicated to secondary databases, and we can use these secondary databases for sharing read load with master, so we can have 4 5 as many we want read replicas, the only drawback here is these read queries no longer in consistant with master, because it will take some time for this replication to happen, master is the only one where we do writes, so reads are scalable but write are not scalable. 
+
+For reliability, we stablish replication, here we have to do synchronous replication, becuase if master goes down, our replica should exactly in the same state as master was, we also have synchronous replication on read node also but if we do that all write operations will become slow, they will get slowed down beucase of secondary replica because we are doing synchronous replication, no writes will commit till they are written on both instances. 
+
+
+
+===================================================================================================
+===================================================================================================
+
+NoSQL:	(***We know that we coming here(NoSql DBS) for high scalability and schema less tables. )
+------
+
+-Scalability:
+------------
+The biggest design objective for NoSQL database is scalibility.  We know that RDBMS can not horizontally scalled. 
+NoSQL is horizontal scalable. Here we partition data across multiple nodes on commodity hardware. If we look at RDBMS, they required hardware which is not commodity hardware because it has to be extremely reliable. So the cost of hardware is extremely high for RDBMS databases becuase they are vertically scale and the hardware is not commodity hardware, it's a very reliable hardware on which we have to run BUT becuase we can run NoSQL databases on multiple nodes and we build reliability into software of NoSQL databases so we can run them on commodity hardware so the cost of scalability also comes down. So we can horizontally scale in a very cost effective manner.
+
+BUT there is something that we lose becuase of the fact that now we are not running on a single node, we are running our databases on multiple nodes, so we can not do acid transactions, we can do 2 phase commit but they are not exact replacement of ACID transactions.  We can not do joins, we can
+ still do it in within the application.  
+
+-Availability:
+--------------
+Availability is a big gain that we have in NoSQL but that comes at the cost of Data Consistency. Transactions here are no longer ACID, they become eventually consistant.  Although we can tune the consistency but if we do that we lose the performance. 
+
+-Flexible Schema:
+----------------
+We achive that using Key-Value databases, Column Family databases, Document Oriented databases. You can add columns on the fly. And in Key-Value databases, it doesn't care what is inside the value. When you are changing the object schema in your application, you don't need to worry about databases. Databses will automatically adjust to this change. 
+But we lose because of this is we lose SQL, sometimes these databases are not aware of what columns are present, it's not that there is no query language but it is not as flexible as sql. 
+We lose secondary indexes, we can get objects through it's keys but we don't have secondary indexes which is not true for every database, there are document-oriented database that have secondary indexes. 
+Integrity Constraints: When you lose integrity consistant, then you'll gain performance becuaes databaess don't need to check for integrity constraints.
+
+-Performance:
+--------------
+They have aggreate schema that is highly denormalized, they can get denormalized structure without doing any join.
+Non-Key Queries:Now because we have aggreate schema so we cann't do key based query in a very flexible manner, In RDBMS we can choose columns, we can apply filter on columns, In NoSQL we do not have much idea about schema, we may not have indexes, in some cases don't allow secondary indexes, so we can do different type of query but they not perform well. So when we create schema in NoSQL database, we alreay know what kind of query pattern we have and keep in that query pattern in mind, we create schema in NoSQL databaes, so any queries that are after thought, there is a risk of that those queries will not perform well. In certain cases, may not even possible to do those queries. 
+
+So when you designing NoSQL databaes, we need to know what kind of queries that we are going to met and accordingly we design the schema which allow higher performance. 
+
+
+Commodity hardware:
+------------------
+Is a computer device  that is relatively inexpensive. low-cost desktop computers can run operating systems like Microsoft Windows, Linux and DOS without additional software or adaptations. 
+A commodity computer, for example, is a standard-issue PC that has no outstanding features and is widely available for purchase. Commodity hard disks can be configured as a redundant array of independent disks (RAID) for fault tolerance and failover. 
+ 
+ 
+============================================================================================================
+============================================================================================================
+============================================================================================================
+============================================================================================================ 
+
+-Google Bigtable:
+-----------------
+Apache Hbase is open source implementation of Google Bigtable. 
+It's a Column-Family kind of storage where data is grouped into column families. 
+
+When we have multiple columns in column family, we have to specify column name alogn with column family, 
+In case of single column in column family, we don't need to specify column name along with column family name.
+
+-tables in Bigtable stored as Tree-Map, definitely our rows are in sorted order. 
+
+-How data stored in Bigtable:
+------------------------------
+It will be table columns structure only that we have in RDBMS, so we'll have Row Key as the 1st column, then we have column-family, then we have column name: in case there is no column name like for Document then it will be empty, then timestamp and then the value.
+
+Index Key: Row Key/Col Family:Col Name/timestamp, we can also call it primary key. Concept wise primary key in RDBMS and Index Key in Bigtable are same. Likewise it become key-value pair. 
+
+timestamp: It's also a part of key, so next time if we have to modify some value, we don't have to go and update that particular column value, we can just add this new index key with a new timestamp and a new value so old value is not deleted immediately. the new value is stored as new version and old value become old version.
+
+All the rows in bigtable are in sorted order of their index key. Although table will be split on multiple nodes but logically it is in sorted order.And Bigtable maintains tree kind of index to reach to each row. 
+
+If we look  at this data, if we expand this millions of rows and millions of columns, we will see that there will be millions of columns which will be empty and that's the reason we say that this data is stored is very Sparse. 
+
+
+Limited CF (<100):
+------------------
+We need to decide them when we are deciding what table we are going to store and the no of column families should be less than 100. It's not a huge limitation given that for each column-family we can have millions of columns in fact there is no limit. 
+
+CFs are compressed:
+-------------------
+CF structure gives a kind of grouping to the any table that help bigtable to save storage  and make searches faster. 
+
+
+-Bigtable architecture:
+-----------------------
+ Our goal is to understand what is the strength of Bigtable, where can we use Bigtable, What kind of data we use in bigtable, what kind of scalability/reliability  we can expect from bigtable.
+ 
+ We can use it for storing structured data, the data which can be stored in table column format, it just here column table format we do not mean RDBMS kind of table, we mean column family kind of table. 
+ 
+ Index for every column: every column has an index key, so if we want to go to a particular column, bigtable indexes directly lead us to that column. 
+ 
+ -GFS for reliable persistant storage:
+ -------------------------------------
+  It has an underline storage called GFS(Google File System) which is used for reliable persistant storage. This GFS is exactly like Hadoop, in fact Hadoop is open source implementation of GFS. Hadoop stores large file and it stores them reliably meaning it can  replicate that file on mulitple nodes even if some nodes goes down the data is still be available. So the storage is persistant/reliable and we can store large file in this storage.
+
+We know that Bigtable stores data on GFS for persistant storage but we cann't serve data from GFS because GFS stores large files and these files are stored on disk. So Bigtable has an intermediate layer is Tablet Servers, Tablet servers stores these SSTable(String sorted table) which is file of data in it's memory, stores means loads it into memory, so any read operation comes, that data is alreay available in memory and served from tablet servers. It basically act like a cache, so these read operation become very fast. 
+
+If a request is come for write operation,  first thing that happen is taht anything that has to be written is first written on a log file, that log file is reliablely kept on GFS and it's handle is always open with tablet servers so the write on log file is pretty quick/very fast it's a squential write operation, and it's done in no time then the write operation whatever content is there they are written in memory, so the latency of write operation is mostly equal to the latency of bigtable writing data to log.(write ahead lock). Becuase it's a sequential write, file is already open with tablet server and they can write on it very quickly without doing any other processing. So that way read/write fast in bigtable. specially write operations are particularly fast. read may slow down sometimes when the data is not available in memory but write operation is always happen in memory.
+
+***So Bigtable can we use for very high throughput write, if you have some streaming data that is coming to bigtable, you can actually write directly on bigtable,
+
+-single copy of data for read/write:
+-------------------------------------
+only one tablet server is responsible for handling a particular data that is there, so data is stored in a replicated fashion in persistant layer, there are multiple copies of that data but there is only one copy of that data  in memory.
+Since there is only one copy in memory where writes are happening so there is no possibility of write conflicts. We saw in decentralized architecture like casandra which were peer to peer or master - master system, that there can be write conflicts because there are mutlitple places where we can write. That's the reason that data remain strongly consistant in bigtable. 
+
+
+
+-Clent load is distributed on table servers and tablet servers load is distributed on GFS nodes.That's how bigtable is completely distributed and horizontally scalable.
+
+
+-How does client know which particular tablet servers need to connect for read/write:
+---------------------------------------------------------------------------------------
+Client never connect to master server or lock server for any read/write operation, Client only connects once  to master server or lock server to gets tablet server metadata which logically B-Tree kind of index which client loads it into memory. that will guide a client which tablet stored on which server. 
+
+
+Master server: what each tablet server will serve is decided by master server. 
+
+-All this data is sitting adjustant to each other so the amount of io that bigtable wil have to do to get the data will be minimal. if data is scattared alaround which will happen in hash partition  which is there in dynamo db, then to get data from diff machines/nodes that will increas the io. So here if you have to do range query, they are extremely efficient.
+
+============================================================================================================
+============================================================================================================
+============================================================================================================
+============================================================================================================  
+
+
+-HBase:
+-------
+It is almost similar with Bigtable, the only thing which is diff in Hbase is APIs, APIs of Hbase are slightly different. But other than that in terms of capability and functionality of these two databases, there is hardly anything diff. 
+
+In Bigtable, we use GFS as underlying storage, in Hbase the underlying storage is Hadoop(HDFS). Hadoop Distributed File System. 
+
+Hadoop is open source implementation of GFS. 
+
+In lock server, in bigtable is Chubby but in HBase it is Zookeeper.
+
+HBase is strongly consistant very much like Bigtable. It comprimises little over high availability if you compare it with databases like DynmoDB which even if there is network partitioned doesn't matter how big is the partitioned, the smaller partitioned can still continue to function, if it is accessible to client, But in Hbase or bigtable, a cluster which is partitioned and if it doesn't have coram, it will stop working. In that sanse, it is not highly available.  But other than that if certain no of nodes goes down and that no is below the threshold then it is highly available.
+
+
+
+
+============================================================================================================
+============================================================================================================
+============================================================================================================
+============================================================================================================  
+
+
+-Cassandra:
+----------
+Query Language: API Calls.
+Cassandra is a NoSQL distributed database with a completely decentralized communication model.
+ ***It's most suited for OLTP (Online Transaction Processing) queries, where response speed is crucial, with simple queries that rarely change.
+It's an open source database. It came after DynmoDB and Bigtable, so it is taken features from both of them, so cassandra is really a mix of both Bigtable and DynmoDB. 
+Cassandra data model is Column-Family data model but it's not exactly same as in bigtable column-family data model. There are some similarity to bigtable and also some similarity to DynmoDB as well.
+In Cassandra, a table is called column-family. Logically, it looks like a RDBMS. It has primary key but primary key is split into two part: Partition Key part and Sort key part. 
+
+Partition Key: It decides in which particular partition a row is going to reside. 
+Sort key: It decide what will be the order of that particular row for in that particular partition. 
+
+Cassandra can also have any no of columns, "it can have millions of column", because these columns are really rows in cassandra. So in cassandra, you can store structured data very much like bigtable and it get exploded into multiple rows very much like bigtable. 
+
+Each product Id goes to a diff partition. Let's say this particular product Id will go on partition X may go to some node and this partition Y may to go some other node. So it totally depends on Hash value of this partition just like DynmoDB.
+
+In Bigtable, all the rows were in sorted order, In Cassandra the sorting is just limited within partition key and in that partition the sort order is decided by sort key. 
+But outside that partition, like here 2 partition, they'll not be in a sorted state, they'll not sit adjacent to each other like bigtable, but like DynmoDB they can go to any random partition depending upon on their hash value of Partition Key. 
+
+It is horizontanlly scalable db, it is clustered, the data can be partitioned onto diff nodes but here clustering functionality has been borrowed from the DynmoDB, it has peer to peer kind of topology where there is no master, the architecture is completely decentralized just like DynmoDB.
+
+**Cassandra DB has decentralized clustered structure, which helps it in achieving high availability even in the presense of network partition. But becuase of multiple masters, there could be conflicting writes on replica node of the same key, it handles all the write conflicts like DynmoDB does. 
+
+
+-In order to understand performance feature in Cassandra, let's look at how read/write doen in Cassandra:
+This is the functionality that cassandra has borrowed from bigtable, 
+
+If write operation comes to cassandra, the first thing that happens is that the write operation whatever writes needs to be done, the operation is logged on a write ahead log file just like bigtable, because this is a sequential IO, it's extremely fast. File is open for writes and the writes are quickly appended at the end of the log file so that's an extremely fast operation, now the next operation that happens is the write is actually done in memtable, this is same as tablet in bigtable. The write is first appended to the log file and then in memtable which is in memory, and immediately after that the write operation acknowledgement is done to it's client that the write is done. So you can see that the write operation is pretty fast becauae we never wrote to a disk, we did touch this on a log file but in log file we are just appended data to this log file, it's not a random access to this log file, it's a sequential io which is extremely fast and the other fast operation that we did is that we put data only in memory, and acknowledged that, so for clients of Cassandra the write operation is extremely fast. 
+Once these memtables are full when multiple writes are happened and there is sortage of memory, then these memtables are flushed into onto disk as SSTables, this is also very much like bigtable.
+This means that if in the middle this node goes down during write operation and it came back after a few seconds, then it can recreate this memtable by reading data from SSTable which is there on the disk and applying the operation that are there in the log file. If this node goes completely down and the data cannot be recovered, node cannot be restarted then we have other replica nodes, so everytime an operation is done on one particular node, it is also replicated on other node,  so that's how Cassandra database maintain reliability. Reliability of writes operations.
+
+Read operations also work like bigtable, becuase if the keys that need to be read if they are already available in memtable, they'll straight came out of memory but if they are not there on memtable then SSTable will be loaded into memory  and then the read operation will be completed. 
+
+REad operation is also fast but sometimes it gets slowed depending upto whether the data is cached in memtable or not. But write operations are always from memory.
+
+***So that mean Cassandra can be used for very high write throughput.
+
+
+Storage: data is kep in memory but because not everything can kept in memory and the data has to be persistant also so there are SSTable which are kept on a disk.
+
+Structured Data: as in table with columns.
+
+Distributed: Data is distributed here by hash partitioning. Because we partitioned the data so we can have any no of nodes, it's horizontally scalable, so if we have lots of lots of data, Cassandra is the right choice. Particularly if we want very high write throughput. 
+
+Cluster can be design in such a way that some nodes in one data centre and some other nodes are in far located data centre, so the spread of data range is huge, it can span across continent also becuase changes are replicated asynchronously, and consistency model is eventually consistant. 
+
+Because it's a peer to peer system, there can be write conflicts, but they can be resolved using timestamps and others possible ways,... 
+
+
+============================================================================================================
+============================================================================================================
+============================================================================================================
+============================================================================================================  
+
+-MongoDB:
+---------
+
+Like anyothe NoSQL DB, MongoDB can be partitioned so it is horizontally scalable.  and it's eventually consistent. 
+
+What is special about MongoDB: that is schema. So far we have seen we can store structured data in Bigtable/Hbase/Cassandra and we have seen we can store key-value pair data in DynmoDB, In MongoDB, the data we can store is Key-Document, these are json document in binary format in which MongoDB stores data. 
+MongoDB knowns each field in json document that we are inserting in mongodb. Columns can be nested, we haven't seen this kind of nesting in other DBs.
+MongoDB is actually designed for storing nested json documents. You can choose which field in the document you want to update, you don't need to update entire document, that is possibe because document is visible to MongoDB. It knows what the document structure that it is storing. It can create indexes for these columns, they can be top level column, they can be nested column.
+
+Search is fast in MongoDB because you have indexes on each column, 
+
+We can add column dynamically,
+Any operation on a single document is Atomic. 
+
+You can do 2 phase commit on mutlitple documents, But when we coming to NoSQL db, we cannot rely on this 2 phase commit feature. 
+
+***We know that we coming here(NoSql DBS) for high scalability and schema less tables. 
+
+
+-architecture:
+-------------
+In MongoDB reads are fast but writes are slow because we have to maintain the indexes, in RDBMS there also similar issue, write overhead. 	Here we also face similar kind of latency,
+Where it differs from RDBMS is that it is horizontally scalable. 
+
+-Sharding for Scalable:
+------------------------
+We can do sharding for scalability, which is as good as saying that we can partition the data that we have seen in other databases, so instead of keeping data on one node, we can keep data on several nodes, and we can have good no of nodes that makes it horizontally scalable, and it can fit much more data than RDBMS becauae there we have limited by one node. Sharding feature in MongoDB can be switched Off/On, 
+
+RAnge sharding: is useful if we are going to do range query let's say id is "greater than 10 and less than 200" so that's a range. 
+
+Hash Sharding: And if we want even distribution of data  and our query are "equality query like id equals 201" in that case Hash Sharding is suitable.
+Hash  
+
+By Defalut in MongoDB, Range Sharding is enable. 
+
+
+-Replication:
+-------------
+There is master slave replication in mongodb.
+If read request came, it can be diverted to either primary or secondary node any one of them, so there is a load distribution. Now if the query is only for write, then it can only go to primary node so that we do not have any write conflicts, any changes that goes to primary they are asynchronously replicated to secondary nodes,  we can make it synchronous but in that case we will get strong consistant but then in this case the latency of write operation will go high,
+
+MongoDB useful: High scalability with storage of documents and search of those documents based on indexes.
+
+
+-Works very well with Node.js:
+------------------------------
+If we ahve single page application, which will use javascript and objects represents in json and it communicates with Node.js where objects are in json format then it saves/retrives objects from MongoDB then we do not need any transformation, becuase of json format everywhere. 
+
+
+================================================
+
+DBAAS:	(https://www.mongodb.com/database-as-a-service)	(https://redis.com/blog/what-is-dbaas/) (https://www.ibm.com/in-en/topics/dbaas)
+------
+
+DBaaS providers host all your database infrastructure and data while enabling access through API endpoints. 
+They follow best practices and operate all the databases, which means they take care of rapid provisioning, scalability, resiliency, failover, backup, and restoration.
+
+In addition, DBaaS providers normally offer various features such as monitoring, alerts and notifications, round-the-clock support, and geo-replication for availability and backups. All maintenance and administrative tasks are handled by the service provider, freeing up users to benefit from using the database without the overhead of managing it.
+
+Database sizes continue to grow exponentially, as modern applications now index, search, and process a wide range of file types including video, audio, and other unstructured formats. This requires regular investment in additional storage and processing capacity to accommodate expansion.
+
+DBaaS is a good fit for any application that needs scalability and flexibility for their databases.
+
+-What is “database-as-a-service” in cloud computing?
+Like any other “as a service” offering, DBaaS is a platform for hosting your data using your database engine of choice. With a hosted database service, everything you need — infrastructure, storage, database software, licenses (where required), replication, fail-over, and backup automation — are included as part of the subscription fee.
+
+
+-How does cloud computing enable the database-as-a-service model?
+Cloud computing makes it possible to build truly scalable databases. Pooled resources allow your database to grow, or to access additional processing power, as and when required. 
+
+
+-How does MongoDB Atlas provide a database-as-a-service?
+MongoDB Atlas is a non-relational database hosted on your cloud platform of choice. The database can be deployed on Amazon Web Services (AWS), Microsoft Azure, or Google Cloud Platform (GCP) to match your corporate cloud specifications and strategy.
+
+
+
+-MapReduce:
+----------
+MapReduce is a programming model and an associated implementation for processing and generating big data sets with a parallel, distributed algorithm on a cluster. 
+
+
+-Triggers:
+---------
+A trigger is a special type of stored procedure that automatically runs when an event occurs in the database server. 
+DML triggers run when a user tries to modify data through a data manipulation language (DML) event. DML events are INSERT, UPDATE, or DELETE statements on a table or view.
+
+A trigger is called a special procedure because it cannot be called directly like a stored procedure. The key distinction between the trigger and procedure is that a trigger is called automatically when a data modification event occurs against a table. A stored procedure, on the other hand, must be invoked directly.
+
+-Types of Triggers in SQL Server, There are two types of triggers:
+DDL Trigger
+DML Trigger
+
+
+-Trigger Points of a SQL Trigger:
+When any DDL operation is done. E.g., CREATE, ALTER, DROP
+For a DML operation. e.g., INSERT, UPDATE, DELETE.
+For a database operation like LOGON, LOGOFF, STARTUP, SHUTDOWN or SERVERERROR
+
+
+- triggers are commonly used to:
+-------------------------------
+automatically generate derived column values
+prevent invalid transactions
+enforce complex security authorizations
+enforce referential integrity across nodes in a distributed database
+enforce complex business rules
+provide transparent event logging
+provide sophisticated auditing
+maintain synchronous table replicates
+gather statistics on table access
+
+
+
+-Index:	(https://www.javatpoint.com/indexing-in-dbms)
+--------
+indexing is a data structure technique which allows you to quickly retrieve records from a database file. An Index is a small table having only two columns. The first column comprises a copy of the primary or candidate key of a table. Its second column contains a set of pointers for holding the address of the disk block where that specific key value stored.
+
+An index –
+Takes a search key as input
+Efficiently returns a collection of matching records.
+
+-Primary Key:
+The primary key is the most important data modeling choice that uniquely identifies a data record. 
+
+-Secondary Key: contains a subset of attributes from a table, A table can have multiple secondary indexes, which give your applications access to many different query patterns.
+A secondary index, put simply, is a way to efficiently access records in a database (the primary) by means of some piece of information other than the usual (primary) key. 
+
+-It’s not mandatory to create a primary key yourself. If you have not defined any primary key, **DB implicitly creates one for you.
+
+
+
+
+
+-Thrift:	(https://www.quora.com/In-simple-terms-what-is-Thrift-software-framework-and-what-does-it-do)
+---------
+RPC (Remote Procedure Call) is like calling a function, only that it is present remotely on a different server as a service. 
+
+A service exposes many such functions/procedure to its client. And client requires some way to know what are the functions/procedures exposed by this service and what are their parameters.
+This is where Apache Thrift comes in. It has its own "Interface Definition Language" (IDL). In this language you define what are the functions and what are their parameters. And then use Thrift compiler to generate corresponding code for any language of your choice. What this means, is that you can implement a function in java, host it on a server and then remotely call it from python.
+
+Thrift is similar to SOAP.
+
+SOAP generally also has a service discovery broker as a middleware for exposing functions/methods to client. For thrift, we normally use Zookeeper for service discovery.
+
+REST is different, because it does not have IDL, And uses HTTP Methods like GET, PUT and url patterns to call a remote function and pass parameters. Using HTTP methods and url semantics makes it also language agnostic.
+
+Messaging queue is entirely different. Because it is mostly used in Publish/Subscribe model. Whereas RPC is Client/Server model.
+
+
+
+
+===============
+
+SQL databases use structured query language (SQL) and have a well-defined schema, making them good for structured data and applications that require complex transactions and joins.
+
+NoSQL databases, on the other hand, are designed for unstructured or semi-structured data, and often provide more flexible and scalable solutions for applications that require high performance and data modeling flexibility.
+
+Have you ever explored Structured, Semi-Structured and Unstructured Databases ⁉️
+
+𝐒𝐭𝐫𝐮𝐜𝐭𝐮𝐫𝐞𝐝 𝐃𝐚𝐭𝐚𝐛𝐚𝐬𝐞 - Organized data formatted in structured form that's easy to analyse and stored in the form of rows and columns with definite relationships. 
+➡ This gets subdivided into OLTP(Relational) and OLAP(Analytics) based on the kind of transactions we prefer PostgreSQL, SQL, BigQuery and more.
+
+𝐒𝐞𝐦𝐢-𝐒𝐭𝐫𝐮𝐜𝐭𝐮𝐫𝐞 𝐃𝐚𝐭𝐚𝐛𝐚𝐬𝐞 - It includes some variability and inconsistency within data that makes it difficult to store until you don't process and organize it. 
+➡ Having sources such as XML, JSON, dictionary, Entity Relationship Graph data and more which can be segregated and categorized as Document, Graph, Wide Columnar, Key-Value and others.
+
+𝐔𝐧𝐬𝐭𝐫𝐮𝐜𝐭𝐮𝐫𝐞𝐝 𝐃𝐚𝐭𝐚𝐛𝐚𝐬𝐞 - Unorganized, un-structured data that can be in any raw format from social media's post, chats to images, videos, unstructured log files, PDF's and more. 
+➡ To handle these we can access HDFS, S3, Blob Storage or Cloud Storage.
+
+
+
+==========================
+https://www.linkedin.com/posts/arslanahmad_%3F%3F%3F%3F%3F%3F-%3F%3F%3F%3F%3F%3F-%3F%3F%3F%3F%3F%3F-%3F%3F%3F%3F%3F%3F%3F%3F-activity-7036299636583632896-F_GH/?utm_source=share&utm_medium=member_android
+
+𝗦𝘆𝘀𝘁𝗲𝗺 𝗗𝗲𝘀𝗶𝗴𝗻 𝗕𝗮𝘀𝗶𝗰𝘀: 𝗗𝗮𝘁𝗮𝗯𝗮𝘀𝗲 𝗥𝗲𝗽𝗹𝗶𝗰𝗮𝘁𝗶𝗼𝗻 𝗦𝘁𝗿𝗮𝘁𝗲𝗴𝗶𝗲𝘀
+
+Database replication is the process of copying and synchronizing data from one database to one or more additional databases. This is commonly used in distributed systems where multiple copies of the same data are required to ensure data availability, fault tolerance, and scalability.
+
+Here are the top three typical database replication strategies:
+
+𝗦𝘆𝗻𝗰𝗵𝗿𝗼𝗻𝗼𝘂𝘀 𝗿𝗲𝗽𝗹𝗶𝗰𝗮𝘁𝗶𝗼𝗻 is a type of database replication where changes made to the primary database are immediately replicated to the replica databases before the write operation is considered complete. In other words, the primary database waits for the replica databases to confirm that they have received and processed the changes before the write operation is acknowledged.
+
+In synchronous replication, there is a strong consistency between the primary and replica databases, as all changes made to the primary database are immediately reflected in the replica databases. This ensures that the data is consistent across all databases and reduces the risk of data loss or inconsistency.
+
+𝗔𝘀𝘆𝗻𝗰𝗵𝗿𝗼𝗻𝗼𝘂𝘀 𝗿𝗲𝗽𝗹𝗶𝗰𝗮𝘁𝗶𝗼𝗻 is a type of database replication where changes made to the primary database are not immediately replicated to the replica databases. Instead, the changes are queued and replicated to the replicas at a later time.
+
+In asynchronous replication, there is a delay between the write operation on the primary database and the update on the replica databases. This delay can result in temporary inconsistencies between the primary and replica databases, as the data on the replica databases may not immediately reflect the changes made to the primary database.
+
+However, asynchronous replication can also have performance benefits, as write operations can be completed quickly without waiting for confirmation from the replica databases. In addition, if one or more replica databases are unavailable, the write operation can still be completed on the primary database, ensuring that the system remains available.
+
+𝗦𝗲𝗺𝗶-𝘀𝘆𝗻𝗰𝗵𝗿𝗼𝗻𝗼𝘂𝘀 𝗿𝗲𝗽𝗹𝗶𝗰𝗮𝘁𝗶𝗼𝗻 is a type of database replication that combines elements of both synchronous and asynchronous replication. In semi-synchronous replication, changes made to the primary database are immediately replicated to at least one replica database, while other replicas may be updated asynchronously.
+
+In semi-synchronous replication, the write operation on the primary is not considered complete until at least one replica database has confirmed that it has received and processed the changes. This ensures that there is some level of strong consistency between the primary and replica databases, while also providing improved performance compared to fully synchronous replication.
+
+
+
+=======================
+
+How to display the nth highest salary from a table in a MySQL query?
+Let us take a table named the employee.
+
+To find Nth highest salary is:
+
+select distinct(salary)from employee order by salary desc limit n-1,1
+
+if you want to find 3rd largest salary:
+
+select distinct(salary)from employee order by salary desc limit 2,1
+
+
+->43) How to find the second highest salary in MySQL?
+SELECT salary FROM (SELECT salary FROM employees ORDER BY salary DESC LIMIT 2) AS Emp ORDER BY salary LIMIT 1;  
+SELECT salary FROM (SELECT salary FROM employees ORDER BY salary DESC LIMIT 2) AS Emp ORDER BY salary LIMIT 1; 
+SELECT MAX(salary) FROM employees WHERE salary NOT IN ( SELECT Max(salary) FROM employees);
+
+
+->Write a query to retrieve a hundred books starting from 20th.
+SELECT book_title FROM books LIMIT 20, 100;
+
+
+

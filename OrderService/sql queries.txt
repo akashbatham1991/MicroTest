@@ -1,0 +1,357 @@
+https://www.edureka.co/blog/interview-questions/sql-query-interview-questions
+https://zerotomastery.io/cheatsheets/sql-cheat-sheet/
+https://www.w3schools.com/SQl/sql_datatypes.asp
+
+WHERE, ORDER BY, GROUP BY, HAVING, WHERE EXISTS, SUB QUERIES, MOD(rowno, 2)=0, COUNT, DATEDIFF, DATEADD, GETDATE, NOW, IN, 
+NOT IN, NULL, IS NULL, SUBSTRING, REPLACE, MAX, MIN, AVG, SUM, MINUS, INTERSECT, UNION, JOIN, INNER JOIN, FIRST, LAST,
+DATEADD(month, -3, GETDATE()),
+DATEADD(year, 18, BirthDate),
+DATEDIFF(YEAR, JoiningDate, GETDATE())
+YEAR(HireDate),
+year(JOINING_DATE) = 2021 and month(JOINING_DATE) = 2;
+ORDER BY Salary DESC LIMIT n-1,1;		//nth highest salary
+
+
+->What is Pattern Matching in SQL?
+	LIKE '%Q%'		//anywhere
+	LIKE 'Q%'		//first name beginning with the letter Q
+	NOT LIKE 'Q%'	//first name does not begin with Q.
+	 
+	LIKE '__K%'		// letter K at the third position in their first name.
+	LIKE '___%'		//Matches first names with three or more letters
+	LIKE '____'		//Matches first names with exactly four characters
+
+
+->Write a query find number of employees whose DOB is between 02/05/1970 to 31/12/1975 and are grouped according to gender.	
+->Write a query to fetch all the records from the EmployeeInfo table ordered by EmpLname in descending order and Department in the ascending order.
+->Write a query to fetch the department-wise count of employees sorted by department’s count in ascending order.
+->Write a query to calculate the even and odd records from a table.
+->Write a query to retrieve duplicate records from a table.*
+->Write a query to display the first and the last record from the EmployeeInfo table.	
+->Write a query to retrieve Departments who have less than 2 employees working in it.
+->Write a query to retrieve EmpPostion along with total salaries paid for each of them.
+->Write a query to fetch 50% records from the EmployeeInfo table.
+->Write a SQL query to find the name of employee who earn the highest salary.*
+->Write a SQL query to determine the nth (say n=5) highest salary from a table.*
+->Write a SQL query to find the second-highest salary of employees.*
+->Write a SQL query to find the names of employees who have the highest salary in their respective departments.*
+->Write a SQL query to find the names of employees who have the lowest salary in their respective departments.
+->Write a SQL query to find the names of employees who have the same last name.**
+->Write a query to fetch the top three departments with the highest average salaries from the EmployeeInfo table.
+->Write a query to fetch the details of employees who earn the highest salary in the company.*
+->Write a query to fetch the number of employees in each department.
+->Write a query to fetch the details of employees who have joined the company in the last 3 months.*
+->Add 18 years to the date in the BirthDate column, then return the date:
+->Write a query to fetch the names of employees who have worked for the company for more than 5 years.*
+->Write a query to display the name and hire date of all the employees who were hired in the year 2020.
+->Write an SQL query to print details of the Workers who joined in Feb 2021.*
+->Write a query to find the second highest salary from the EmployeeSalary table.
+->Write a query to display the name and salary of all the employees whose salary is in the top 5% of the company.
+->Write an SQL query to print the FIRST_NAME from the Worker table after replacing ‘a’ with ‘A’.*
+->Write an SQL query to show records from one table that another table does not have.*
+->MySQL query returns the current date and time:
+->MySQL query returns the current date:
+->Write an SQL query to fetch the first row of a table.
+->How to create empty tables with the same structure as another table?
+
+
+
+
+
+
+	
+	
+->Write a query to find number of employees whose DOB is between 02/05/1970 to 31/12/1975 and are grouped according to gender.
+
+	SELECT COUNT(*), Gender FROM EmployeeInfo WHERE DOB BETWEEN '02/05/1970' AND '31/12/1975' GROUP BY Gender;
+
+->Write a query to fetch all the records from the EmployeeInfo table ordered by EmpLname in descending order and Department in the ascending order.
+
+	SELECT * FROM EmployeeInfo ORDER BY EmpLname desc, Department asc;
+
+->Write a query to fetch the department-wise count of employees sorted by department’s count in ascending order.
+
+	SELECT Department, count(EmpID) AS EmpDeptCount FROM EmployeeInfo GROUP BY Department ORDER BY EmpDeptCount ASC;
+
+->Write a query to calculate the even and odd records from a table.
+
+	SELECT EmpID FROM (SELECT rowno, EmpID from EmployeeInfo) WHERE MOD(rowno,2)=0;
+	SELECT EmpID FROM (SELECT rowno, EmpID from EmployeeInfo) WHERE MOD(rowno,2)=1;
+
+->Write a query to retrieve duplicate records from a table.
+	
+	SELECT EmpID, EmpFname, Department COUNT(*) FROM EmployeeInfo GROUP BY EmpID, EmpFname, Department HAVING COUNT(*) > 1;
+
+->Write a query to display the first and the last record from the EmployeeInfo table.
+
+	SELECT * FROM EmployeeInfo WHERE EmpID = (SELECT MIN(EmpID) FROM EmployeeInfo);
+	SELECT * FROM EmployeeInfo WHERE EmpID = (SELECT MAX(EmpID) FROM EmployeeInfo);
+
+->Write a query to retrieve Departments who have less than 2 employees working in it.
+	SELECT DEPARTMENT, COUNT(EmpID) as 'EmpNo' FROM EmployeeInfo GROUP BY DEPARTMENT HAVING COUNT(EmpID) < 2;
+
+->Write a query to retrieve EmpPostion along with total salaries paid for each of them.
+	SELECT EmpPosition, SUM(Salary) from EmployeePosition GROUP BY EmpPosition;
+
+->Write a query to fetch 50% records from the EmployeeInfo table.
+	SELECT * FROM EmployeeInfo WHERE EmpID <= (SELECT COUNT(EmpID)/2 from EmployeeInfo);
+
+
+->Write a SQL query to find the name of employee who earn the highest salary.
+	SELECT EmpName FROM EmployeeInfo WHERE Salary = (SELECT MAX(Salary) FROM EmployeeInfo);
+
+->Write a SQL query to find the second-highest salary of employees.
+	SELECT MAX(Salary) FROM EmployeeInfo WHERE Salary < (SELECT MAX(Salary) FROM EmployeeInfo));
+
+->Write a SQL query to find the names of employees who have the highest salary in their respective departments.
+	SELECT EmpName, Department FROM EmployeeInfo WHERE (Department, Salary) IN  (SELECT Department, MAX(Salary) FROM EmployeeInfo GROUP BY Department));
+
+->Write a SQL query to find the names of employees who have the lowest salary in their respective departments.
+	SELECT EmpName, Department FROM EmployeeInfo WHERE (Department, Salary) IN  (SELECT Department, MIN(Salary) FROM EmployeeInfo GROUP BY Department));
+
+
+->Write a SQL query to find the names of employees who have the same last name.
+	SELECT EmpName, EmpLname FROM EmployeeInfo WHERE EmpLname IN  (SELECT EmpLname FROM EmployeeInfo GROUP BY EmpLname HAVING COUNT(*) > 1));
+
+
+->Write a query to fetch the top three departments with the highest average salaries from the EmployeeInfo table.
+	SELECT EmpDept, AVG(Salary) AS AvgSalary FROM EmployeeInfo GROUP BY EmpDept ORDER BY AvgSalary DESC LIMIT 3;
+
+->Write a query to fetch the details of employees who earn the highest salary in the company.
+	SELECT * FROM EmployeeInfo WHERE Salary = (SELECT MAX(Salary) FROM EmployeeInfo);
+
+->Write a query to fetch the number of employees in each department.
+	SELECT Department, COUNT(*) as NumOfEmployees FROM EmployeeInfo GROUP BY Department;
+
+
+->Write a query to fetch the details of employees who have joined the company in the last 3 months.
+	SELECT * FROM EmployeeInfo WHERE JoiningDate > DATEADD(month, -3, GETDATE());
+
+->Add 18 years to the date in the BirthDate column, then return the date:
+	SELECT LastName, BirthDate, DATEADD(year, 18, BirthDate) AS DateAdd FROM Employees;
+
+->Write a query to fetch the names of employees who have worked for the company for more than 5 years.
+	SELECT EmpName FROM EmployeeInfo WHERE DATEDIFF(YEAR, JoiningDate, GETDATE()) > 5;
+	SELECT EmpName FROM EmployeeInfo WHERE JoiningDate > DATEADD(year, -5, GETDATE());
+
+->Write a query to display the name and hire date of all the employees who were hired in the year 2020.
+	SELECT EmpFname, EmpLname, HireDate FROM EmployeeInfo WHERE YEAR(HireDate) = 2020;
+
+->Write a SQL query to print details of the Workers who joined in Feb 2021.
+	Select * from Worker where year(JOINING_DATE) = 2021 and month(JOINING_DATE) = 2;
+
+
+->Write a query to find the second highest salary from the EmployeeSalary table.
+	SELECT MAX(Salary) FROM EmployeeSalary WHERE Salary < ( SELECT MAX(Salary) FROM EmployeeSalary );
+
+->Write a query to display the name and salary of all the employees whose salary is in the top 5% of the company.
+	SELECT EmpFname, EmpLname, Salary FROM EmployeeInfo WHERE Salary >= ( SELECT PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY Salary)  FROM EmployeeInfo );
+
+->Write an SQL query to print the FIRST_NAME from the Worker table after replacing ‘a’ with ‘A’.
+	Select REPLACE(FIRST_NAME,'a','A') from Worker;
+
+
+->Write a SQL query to show records from one table that another table does not have.
+	SELECT * FROM Worker
+	MINUS
+	SELECT * FROM Title;
+
+->MySQL query returns the current date and time:
+	SELECT NOW();
+
+->MySQL query returns the current date:
+	SELECT CURDATE();
+
+
+->Write a SQL query to determine the nth (say n=5) highest salary from a table.
+	SELECT Salary FROM Worker ORDER BY Salary DESC LIMIT n-1,1;						
+	(OR)
+	SELECT DISTINCT salary FROM employees ORDER BY salary DESC LIMIT 1 OFFSET 4; 
+	(OR)
+	SELECT MAX(salary) AS fifth_highest_salary 
+	FROM employees 
+	WHERE salary < ( 
+		SELECT MAX(salary) 
+		FROM employees 
+		WHERE salary < ( 
+			SELECT MAX(salary) 
+			FROM employees 
+			WHERE salary < ( 
+				SELECT MAX(salary) 
+				FROM employees 
+				WHERE salary < ( 
+					SELECT MAX(salary) 
+					FROM employees 
+				) 
+			) 
+		) 
+	); 
+
+->Write a SQL query to fetch the first row of a table.
+	Select * from Worker where WORKER_ID = (SELECT min(WORKER_ID) from Worker);
+	
+->How to create empty tables with the same structure as another table?
+	------------------------------------------------------------------
+	SELECT * INTO Students_copy	FROM Students WHERE 1 = 2;		//USING 'SELECT' COMMAND	(only schema copy without data)
+	CREATE TABLE NewTable AS SELECT * FROM EmployeeInfo;		//USING 'CREATE' COMMAND	(schema copy with data)
+	
+	
+->	findByEmployeeNameIgnoreCase:
+---------------------------------
+	SELECT * FROM EMPLOYEE WHERE UPPER(first_name) = UPPER("RAHUL");
+
+	
+	
+===================================================================	
+==============INDEX VIEW STORED PROCEDURE==========================
+===================================================================
+
+->INDEX:
+--------
+CREATE INDEX index_name ON table_name (column_1, column_2);
+DROP INDEX index_name; 
+CREATE UNIQUE INDEX myIndex	ON students (enroll_no);	//no two rows of data in a table have identical key values in index table. 
+
+
+->VIEW:
+-------
+CREATE VIEW view_name AS SELECT column1, column2, ... FROM table_name WHERE condition;
+DROP VIEW view_name;
+
+
+->Stored Procedure:
+-------------------
+		CREATE PROCEDURE SelectAllCustomers
+		AS
+		SELECT * FROM Customers
+		GO;
+		
+Execute a Stored Procedure:
+		EXEC SelectAllCustomers;
+		
+		
+->Sequence:
+-----------
+	Used to generate a sequence of integers. 
+	This is most commonly used to generate values to identity columns in a table. 
+
+	We can create a sequence by using the CREATE SEQUENCE statement as shown below:
+		CREATE SEQUENCE serial_num START 100;
+	
+	To get the next number 101 from the sequence, we use the nextval() method as shown below:
+		SELECT nextval('serial_num');
+	
+	We can also use this sequence while inserting new records using the INSERT command:
+		INSERT INTO ib_table_name VALUES (nextval('serial_num'), 'interviewbit');
+
+
+	
+	
+=================================================================================	
+===================PRIMARY KEY AND FOREIGN KEY===================================
+=================================================================================
+
+CREATE TABLE Students (   /* Create table with a single field as primary key */
+		ID INT NOT NULL
+		Name VARCHAR(255)
+		PRIMARY KEY (ID)
+	);
+
+	CREATE TABLE Students (   /* Create table with multiple fields as primary key */
+		ID INT NOT NULL
+		LastName VARCHAR(255)
+		FirstName VARCHAR(255) NOT NULL,
+		CONSTRAINT PK_Student
+		PRIMARY KEY (ID, FirstName)
+	);
+
+	ALTER TABLE Students ADD PRIMARY KEY (ID);  /* Set a column as primary key */
+	
+	ALTER TABLE Students ADD CONSTRAINT PK_Student PRIMARY KEY (ID, FirstName); /* Set multiple columns as primary key/ *Naming a Primary Key*/
+	
+====================
+
+	CREATE TABLE Students (   				/* Create table with foreign key - Way 1 */
+		ID INT NOT NULL
+		Name VARCHAR(255)
+		LibraryID INT
+		PRIMARY KEY (ID)
+		FOREIGN KEY (Library_ID) REFERENCES Library(LibraryID)
+	);
+	
+	
+	CREATE TABLE Students (   				/* Create table with foreign key - Way 2 */
+		ID INT NOT NULL PRIMARY KEY
+		Name VARCHAR(255)
+		LibraryID INT FOREIGN KEY (Library_ID) REFERENCES Library(LibraryID)
+	);
+	
+	ALTER TABLE Students ADD FOREIGN KEY (Library_ID) REFERENCES Library (LibraryID);   /* Add a new foreign key */
+
+===================
+JOINS:
+===================
+
+1)	select * from PersonT p INNER JOIN EmailT e ON p.personid = e.personid;	
+2)	select * from PersonT p LEFT JOIN EmailT e ON p.personid = e.personid;
+3)	select * from PersonT p RIGHT JOIN EmailT e ON p.personid = e.personid;
+4)	select * from PersonT p FULL OUTER JOIN EmailT e ON p.personid = e.personid; 	//(can also use FULL JOIN, same result)
+
+5)	select * from PersonT p LEFT JOIN EmailT e ON sp.personid = e.personid WHERE e.personid IS NULL;
+6)	select * from PersonT p RIGHT JOIN EmailT e ON p.personid = e.personid WHERE p.personid IS NULL;
+7)	select * from PersonT p FULL OUTER JOIN EmailT e ON p.personid = e.personid WHERE p.personid IS NULL OR e.personid IS NULL;
+
+
+===============Extra stuff=============
+
+Single Line Comments:
+--------------------
+	-- This is a single line comment.
+	
+Multi Line Comments:
+--------------------
+	/*This is a comment
+	This is a comment
+	This is a comment
+	*/
+	
+->IFNULL:	The IFNULL() function returns a replacement value if the original value is NULL.
+---------
+	SELECT IFNULL(column_name, 'value') FROM table_name;
+	
+	
+->Conditional Statements:
+-------------------------
+	IF condition THEN
+		-- code to be executed if condition is true
+	ELSE
+		-- code to be executed if condition is false
+	END IF;
+	
+->
+CREATE DATABASE database_name;
+DROP DATABASE database_name;
+USE database_name;
+
+DELETE FROM table_name WHERE condition;
+
+UPDATE table_name SET column1 = value1, column2 = value2, ... WHERE condition;
+
+DROP TABLE table_name;
+
+ALTER TABLE table_name "ADD" column_name datatype;
+ALTER TABLE table_name "DROP COLUMN" column_name;
+ALTER TABLE table_name "ALTER COLUMN" column_name datatype;
+ALTER TABLE table_name "MODIFY COLUMN" column_name datatype;
+ALTER TABLE table_name "RENAME COLUMN" old_name "to" new_name;
+
+SELECT column1, column2, ... FROM table_name WHERE column LIKE pattern;
+
+CREATE TABLE table_name (
+    column1 datatype,
+    column2 datatype,
+    column3 datatype,
+   ....
+);
+
+INSERT INTO table_name (column1, column2, column3, ...) VALUES (value1, value2, value3, ...);

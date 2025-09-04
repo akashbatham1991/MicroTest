@@ -1,0 +1,591 @@
+https://www.interviewbit.com/sql-interview-questions/#define-sequence-in-postgresql
+https://www.edureka.co/blog/interview-questions/sql-query-interview-questions
+
+Database systems designed with traditional ACID guarantees in mind such as: 
+	
+	RDBMS choose 'consistency over availability', 
+		WHEREAS
+	NoSQL choose 'availability over consistency'.
+	
+	RDBMS : Schema first, query later , single node, Data Overridden, Vertical Scalable
+	NoSQL : Query First, Schema less ,  multi node,  Data Versioning, Horizontal Scalable
+
+	
+-RDBMS:		(no of connections < 10k And DataSize < 1TB)
+--------
+	NoSQL databases came into existance because there are shortcomings in RDBMS, specially related to scalibility. 
+	These limits are becuase the no of nodes which we can use for an RDBMS are limited. 
+
+
+-ACID Transaction: 	"data remain consistant for all readers"
+------------------	
+	A:	Atomicity, 
+	C:	consistency, 
+	I:	isolation, 
+	D:	durability  
+	
+	are database properties that ensure a database remains in a valid state even after unexpected errors. 
+	
+	For example, 
+		if you update a large number of rows but the system fails midway, no row should be modified.
+		it ensures that the "data remain consistant for all readers". 
+		RDBMS is able to ensure it becuase there is only single node in RDBMS, if you bring in multiple nodes in RDBMS, then the consistant may suffer. In general, RDBMS is with one node.
+		
+
+	We can create indexes on column, we can create indexes on the fly whenever we required them, and **that can speed our searches.
+	
+	When we design RDBMS, 
+		we have no idea what queries we need to support later, so we decides schema first, and then queries can evolve later. 
+		
+	IF we look at NoSQL databases, 
+		we know how we access our data so queries are kind of known, and once we have that knowledge, we design schema applying that knowledge. 
+		So schema in NoSQL databases comes after we have already thought about what are queries are going to be. 
+
+
+->Normalized Data: 		
+	There are 6 defined normal forms: 1NF, 2NF, 3NF, BCNF, 4NF and 5NF. 
+	Normalization should eliminate the redundancy but not at the cost of integrity.
+	Speed of update/delete/write is fast.
+	more tables
+	more memory consumption
+	
+->Denormalization:	
+	has redundant information
+	Speed of update/delete/write is slow but read is fast.
+	less tables
+	less memory consumption
+
+->versioning of data:
+	Whenever we do updates: 
+		In RDBMS, we overwrite the values written on disk, 
+		
+		In NoSQL database, we  create entirely new rows as these days disk is not so costly. It alows to store older version of our data. so that way we can do "versioning of data." 
+	
+	
+-RDBMS Scalability Architecture:	(scalable to handle more load)
+-------------------------------
+	-Vertical Partitioning for Scalability			(*RDBMS can not horizontally scalled. )
+	-Replication for Reliability/Availability
+
+	Currently, one RDBMS for 3 services(Catalog, Order, Inventory), 
+	
+	After vertical partitioning:
+		one db node for Catalog service, 
+		one db node for Order service, 
+		one db node for Inventory service
+	
+	Now, instead of accessing one database node, now we are accessing 3 separate database nodes, so the load on database node get reduced to one third.
+	
+
+-reads are scalable but write are not scalable. any change done to master is replicated to secondary databases BUT read queries no longer in consistant with master because it will take some time for this replication to happen.
+
+
+
+->NoSQL:	(***We know that we coming here(NoSql DBS) for high scalability and schema less tables. )
+----------------
+	Scalability:
+	------------
+		NoSQL is horizontal scalable. Here we partition data across multiple nodes.
+		BUT there is something that we lose becuase of the fact that now we are not running on a single node, we are running our databases on multiple nodes, so we can not do acid transactions, we can do 2 phase commit but they are not exact replacement of ACID transactions. 
+
+	-Flexible Schema:
+	----------------
+		We achive that using: 
+			Key-Value databases, 
+			Column Family databases, 
+			Document Oriented databases.
+		
+	-Availability:
+	--------------
+		Availability is a big gain that we have in NoSQL but that comes at the cost of Data Consistency. Transactions here are no longer ACID, they become eventually consistant.  Although we can tune the consistency but if we do that we lose the performance. 
+		
+	-Performance:
+	--------------
+		They have aggreate schema that is highly denormalized.
+		
+		
+->Types of NoSQL databases:
+--------------------------
+	key-value:		Redis
+	column-family:	Cassandra	(Thrift)
+	Document:		MongoDB		(TCP/IP)
+	Graph:			Neo4j
+	Search:			BigQuery
+
+Interface layer: 
+----------------
+	MapReduce, Thrift, Rest API
+
+	
+GCP options:
+------------	
+	RDBMS:		Cloud SQL
+	NoSQL:		Cloud BigTable, Fire store
+	In-memory:	Memory Store
+	Warehouse:	BigQuery
+	Object: 	Cloud Storage
+	
+
+NoSQL Features: 
+---------------
+	Performance, 
+	Scalability, 
+	Availability, 
+	Data Storage, 
+	Flexible Schema
+
+RDBMS: 
+------
+	Reliability, 
+	Consistency, 
+	Availability
+
+Scalability: 			hanlde increase demands
+Availability:			run continuously without interruption of service
+
+Partition Tolerance:	continue to operate even in case of unavailable network connection b/w nodes.
+Fault Tolerance:		Replication and Partitioning
+
+Sharding for Scalable:	instead of keeping data on one node, we can keep data on several nodes.
+Replication:			master slave replication
+
+->
+							SQL			NoSQL
+	ACID Transactions		Y			N
+	SQL Support				Y			N
+	Horizontal Scaling 		N			Y
+	High Availability		N			Y
+	
+	
+->SQL good for:	
+--------------
+	highly structured data and don't anticipate changes to the database structure.
+	Working with complex queries and reports
+	
+->NoSQL good for:
+-----------------
+	best fit for unstructured data
+	Expecting high transaction loads
+	scalability, availability and performance are top priority
+	Data consistency and integrity are not top priority.
+	
+-SQL databases use 
+	structured query language (SQL) and have a well-defined schema, making them good for structured data and applications that require complex transactions and joins.
+
+-NoSQL databases, on the other hand, 
+	are designed for unstructured or semi-structured data, and often provide more flexible and scalable solutions for applications that require high performance and data modeling flexibility.
+
+	
+->Cassandra:
+	Web analytics, to count hits by hour, by browser, by IP etc. 
+	Transaction logging. 
+	Data Collection from huge sensor arrays.
+	
+->-MapReduce:
+----------
+	MapReduce is a programming model and an associated implementation for processing and generating big data sets with a parallel, distributed algorithm on a cluster. 
+	
+(https://www.javatpoint.com/indexing-in-dbms)	
+
+-Index, Primary Key and Secondary Key:	
+--------------------------------------
+	Indexing is a data structure technique which allows you to quickly retrieve records from a database file. 
+	
+	An Index is a small table having only two columns. 
+		The first column comprises a copy of the primary or candidate key of a table. 
+		Its second column contains a set of pointers for holding the address of the disk block where that specific key value stored.
+
+	An index –
+		Takes a search key as input
+		Efficiently returns a collection of matching records.
+
+	-Primary Key:
+		The primary key is uniquely identifies a data record. 
+		It’s not mandatory to create a primary key yourself. If you have not defined any primary key, DB implicitly creates one for you.
+
+	-Secondary Key: 
+		Contains a subset of attributes from a table. 
+		A table can have multiple secondary indexes, which give your applications access to many different query patterns.
+
+
+
+-Triggers:
+---------
+	A trigger is a special type of stored procedure that automatically runs when an event occurs in the database server. 
+		
+	The key distinction between the trigger and procedure is that: 
+		A trigger is "called automatically" when a data modification event occurs against a table. 
+		A stored procedure, on the other hand, "must be invoked" directly.
+
+		
+-Types of Triggers in SQL Server, There are two types of triggers:
+-------------------------------------------------------------------
+	DDL Trigger	(Data Definition Language)
+	DML Trigger (Data Modification Language)
+	
+
+-Trigger Points of a SQL Trigger:
+---------------------------------
+	When any DDL operation is done. E.g., CREATE, ALTER, DROP
+	When any DML operation is done. E.g., INSERT, UPDATE, DELETE.
+	
+	For a database operation like LOGON, LOGOFF, STARTUP, SHUTDOWN or SERVERERROR
+
+
+-Triggers are commonly used for:
+-------------------------------
+	automatically generate derived column values
+	prevent invalid transactions
+	security authorizations
+	business rules
+	logging
+	auditing
+	maintain synchronous table replicates
+	gather statistics on table access
+
+	
+->Views:
+--------
+	A view is a data subset by pulling relevant data from multiple tables.
+	You can add SQL statements and functions to a view and present the data as if the data were coming from one single table.
+	
+	Note: 
+		A view always shows up-to-date data! The database engine recreates the view, every time a user queries it.
+	
+	Benefits:
+		Security - 
+			Views can be made accessible to users while the underlying tables are not directly accessible. 
+			This allows the DBA to give users only the data they need, while protecting other data in the same table.
+	
+
+->Stored procedures:
+--------------------
+	Stored procedures are "SQL queries or code statements", you can write and save in advance. 
+	You can also pass parameters to a stored procedure, so that the stored procedure can act based on the parameter values that are passed.
+	You can execute or called these stored procedure as and when needed.
+	
+	Benefits:
+		So if you have an SQL query that you write over and over again, save it as a stored procedure, and then just call it to execute it.
+		It also provides a sense of security and functionality as users who can't access the data directly can be granted access via stored procedures.
+
+
+->Sequence:
+-----------
+	Used to generate a sequence of integers. 
+	This is most commonly used to generate values to identity columns in a table. 
+
+	We can create a sequence by using the 'CREATE SEQUENCE' statement as shown below:
+	
+		CREATE SEQUENCE serial_num START 100;
+	
+	To get the next number 101 from the sequence, we use the nextval() method as shown below:
+		SELECT nextval('serial_num');
+	
+	We can also use this sequence while inserting new records using the INSERT command:
+		INSERT INTO ib_table_name VALUES (nextval('serial_num'), 'interviewbit');
+
+
+		
+==============INDEX VIEW STORED PROCEDURE==========================
+
+->INDEX:
+--------
+	CREATE INDEX index_name ON table_name (column_1, column_2);
+	DROP INDEX index_name; 
+	
+	CREATE UNIQUE INDEX myIndex	ON students (enroll_no);	//no two rows of data in a table have identical key values in 
+															//index table. 	
+
+
+->VIEW:
+-------
+	CREATE VIEW view_name AS SELECT column1, column2, ... FROM table_name WHERE condition;
+	DROP VIEW view_name;
+
+
+->Stored Procedure:
+-------------------
+	CREATE PROCEDURE SelectAllCustomers
+	AS
+		SELECT * FROM Customers
+	GO;
+		
+	Execute a Stored Procedure:
+		EXEC SelectAllCustomers;
+
+
+->PL/SQL:	
+	We can make a single call to the database to run a block of statements.
+	
+	
+	
+==========================	
+->PostgreSQL Vs MySQL:
+---------------------
+https://aws.amazon.com/compare/the-difference-between-mysql-vs-postgresql/
+1)
+	MySQL offers ACID compliance only when you use it with InnoDB and NDB Cluster storage engines or software modules. 
+	PostgreSQL is fully ACID compliant in all configurations.
+2)
+	MySQL databases do not offer Multiversion concurrency control (MVCC), but PostgreSQL supports this feature. 
+		
+		MVCC: creates duplicate copies of records to safely read and update the same data in parallel.
+3)	
+	MySQL is a purely relational database. 
+	PostgreSQL is an object-relational database. This means that in PostgreSQL, you can store data as objects with properties.
+4)
+	While both MySQL and PostgreSQL support stored procedures but
+	PostgreSQL allows you to call stored procedures written in languages other than SQL.
+
+	
+	
+=========================
+
+
+->SQL Unions:	
+-------------
+	Union:		Fetch the union of queries
+	Union All:	Fetch the union of queries with duplicates
+	Intersect:	Fetch the records which are common
+	MINUS:		Opposite of Intersect
+	Except
+	
+	Certain conditions need to be met before executing either of the above statements in SQL:
+		Each SELECT statement within the clause must have:
+			same number of columns
+			similar data types
+			have the same order
+
+->Aggregate or group functions:
+------------------------------
+	AVG() - 	Calculates the mean of a collection of values.
+	MIN() - 	Calculates the minimum of a collection of values.
+	MAX() - 	Calculates the maximum of a collection of values.
+	SUM() - 	Calculates the sum of a collection of values.
+	COUNT() - 	Counts the total number of records in a specific table or view.
+	FIRST() - 	Fetches the first element in a collection of values.
+	LAST() - 	Fetches the last element in a collection of values.
+
+->SQL Logical Operators:
+------------------------ 
+	ALL, SOME, ANY, AND, OR, NOT, IN, EXISTS, BETWEEN, LIKE
+
+
+->SQL NULL Functions:
+--------------------- 
+	IFNULL(), ISNULL(), NVL() : lets you return an alternative value if an expression is NULL
+	
+
+->SQL Constraints:
+------------------	
+	Rules for data in a table.
+	
+	•	NOT NULL - 		Ensures that a column cannot have a NULL value
+	•	UNIQUE - 		Ensures that all values in a column are different
+	•	CHECK - 		Ensures that the values in a column satisfies a specific condition
+	•	DEFAULT - 		Sets a default value for a column if no value is specified
+	•	PRIMARY KEY - 	A combination of a NOT NULL and UNIQUE. Uniquely identifies each row in a table
+	•	FOREIGN KEY - 	Prevents actions that would destroy links between tables
+	
+
+	
+https://www.w3schools.com/SQl/sql_datatypes.asp	
+->SQL Data Types:	
+-----------------
+	String Data Types:			Char, Varchar, Text, Enum, Set,...
+	Numeric Data Types:			Boolean, Int, Integer, Float, Double, Decimal,...
+	Date and Time Data Types:	Date, Datetime, Timestamp, Time, Year,...
+	
+	
+->What is Pattern Matching in SQL?
+----------------------------------
+	LIKE '%Q%'		//anywhere
+	LIKE 'Q%'		//first name beginning with the letter Q
+	NOT LIKE 'Q%'	//first name does not begin with Q.
+	 
+	LIKE '__K%'		// letter K at the third position in their first name.
+	LIKE '___%'		//Matches first names with three or more letters
+	LIKE '____'		//Matches first names with exactly four characters
+
+
+
+->scalar function:	
+-----------------
+	returns a single value based on the input value.
+	
+	•	LEN() - 	Calculates the total length of the given field (column).
+	•	CONCAT() - 	Concatenates two or more strings.
+	
+
+->SQL Injection:	
+----------------
+	SQL injection is a code injection technique that might destroy your database. 
+	SQL injection is one of the most common web hacking techniques.
+	SQL injection usually occurs when you ask a user for input, like their username/userid, and instead of a name/id, the user gives you an SQL statement that you will unknowingly run on your database.
+
+	
+->WAL (Write Ahead Logging):
+-----------------------------
+	Write Ahead Logging is a feature that "increases the database reliability" by "logging changes before" any changes are done to the database. 
+	
+	This ensures that we have enough information when a database crash occurs by helping to pinpoint to what point the work has been complete and gives a starting point from the point where it was discontinued.
+
+
+->What is a Primary Key?
+------------------------
+	The PRIMARY KEY constraint uniquely identifies each row in a table. 
+	It must contain UNIQUE values and has an "implicit" NOT NULL constraint.
+	
+	A table in SQL is strictly restricted to have one and only one primary key, which is comprised of single or multiple fields (columns).
+
+	CREATE TABLE Students (   					/* Create table with a single field as primary key */
+		ID INT NOT NULL,
+		Name VARCHAR(255),
+		PRIMARY KEY (ID)
+	);
+
+	CREATE TABLE Students (   					/* Create table with multiple fields as primary key */
+		ID INT NOT NULL,
+		LastName VARCHAR(255),
+		FirstName VARCHAR(255) NOT NULL,
+		CONSTRAINT PK_Student PRIMARY KEY (ID, FirstName)
+	);
+
+	ALTER TABLE Students ADD PRIMARY KEY (ID);  									/* Set a single column as primary key */
+	
+	ALTER TABLE Students ADD CONSTRAINT PK_Student PRIMARY KEY (ID, FirstName); 	/* Set multiple columns as primary key */
+
+
+->What is a Foreign Key?
+------------------------
+	single or collection of fields in a table that essentially "refers to the PRIMARY KEY in another table". 
+	Foreign key constraint ensures 'referential integrity' in the relation between two tables.
+	
+	/* Create table with foreign key - Way 1 */
+	-------------------------------------------
+		CREATE TABLE Students (   				
+			ID INT NOT NULL
+			Name VARCHAR(255)
+			LibraryID INT
+			PRIMARY KEY (ID)
+			FOREIGN KEY (Library_ID) REFERENCES Library(LibraryID)
+		);
+	
+	/* Create table with foreign key - Way 2 */
+	--------------------------------------------
+		CREATE TABLE Students (   				
+			ID INT NOT NULL PRIMARY KEY
+			Name VARCHAR(255)
+			LibraryID INT FOREIGN KEY (Library_ID) REFERENCES Library(LibraryID)
+		);
+	
+	ALTER TABLE Students ADD FOREIGN KEY (LibraryID) REFERENCES Library (LibraryID);   /* Add a new foreign key */
+
+
+	
+->What are some common clauses used with SELECT query in SQL?
+-------------------------------------------------------------
+	Some common SQL clauses used in conjuction with a SELECT query are as follows:
+
+	WHERE clause,
+	
+	ORDER BY clause: used to sort the records based on some field(s) in ascending (ASC) or descending order (DESC).
+	
+		SELECT *
+		FROM myDB.students
+		WHERE graduation_year = 2019
+		ORDER BY studentID DESC;
+	
+	GROUP BY clause:	
+		used to group records with identical data and can be used in conjunction with some aggregation functions to produce summarized results from the database.
+	
+	HAVING clause: 
+		used to filter records in combination with the GROUP BY clause. 
+		It is different from WHERE, since the WHERE clause cannot filter *aggregated records.
+
+		SELECT COUNT(studentId), country
+		FROM myDB.students
+		WHERE country != "INDIA"
+		GROUP BY country
+		HAVING COUNT(studentID) > 5;
+		
+		
+		
+->List the different types of relationships in SQL.:
+---------------------------------------------------
+	One-to-One - 
+		This can be defined as the relationship between two tables where each record in one table is associated with the maximum of one record in the other table.
+	
+	One-to-Many & Many-to-One - 
+					This is the most commonly used relationship where a record in a table is associated with multiple records in the other table.
+	
+	Many-to-Many - 
+		This is used in cases when multiple instances on both sides are needed for defining a relationship.
+	
+	Self-Referencing Relationships - 
+		This is used when a table needs to define a relationship with itself.
+
+		
+-> What is User-defined function? What are its various types?:
+---------------------------------------------------------------
+	The user-defined functions in SQL are like functions in any other programming language that: 
+		accept parameters, 
+		perform complex calculations, and 
+		return a value. 
+		
+	They are written to use the logic repetitively whenever required. 
+	
+	There are two types of SQL user-defined functions:
+	-------------------------------------------------
+		Scalar Function: 
+			return a single value as output. For ex: LEN(), CONCAT()
+		
+		Table-Valued Functions: 
+			return a table as output.
+			
+			
+->What is OLTP?
+---------------
+	OLTP stands for Online Transaction Processing,	maintain concurrency, usually designed for a large number of users who conduct short transactions. 
+	Queries involved in such databases are generally simple, need fast response times, and return relatively few records. 
+	
+	
+->What is OLAP?
+---------------	
+	OLAP stands for Online Analytical Processing, usually designed for relatively low frequency of online transactions.
+	Queries are often too complex and involve a bunch of aggregations, high on response time.
+	Used for data mining or maintaining aggregated, historical data
+	
+->What is Collation?
+-------------------
+	set of rules that determine how data is sorted and compared. 
+	
+	
+->How to create empty tables with the same structure as another table?
+	------------------------------------------------------------------
+	SELECT * INTO Students_copy	FROM Students WHERE 1 = 2;		//WHERE clause to be false for all records, nothing is 
+																//inserted into the new table.	
+		
+	
+======================
+
+GROUP BY clause in SQL is used to group records with identical data and can be used in conjunction with some "aggregation functions" to produce summarized results from the database.
+	
+HAVING clause in SQL is used to filter records in combination with the GROUP BY clause. It is different from WHERE, since the WHERE clause cannot filter *aggregated records.
+
+		SELECT COUNT(studentId), country FROM students 
+		WHERE country != "INDIA"
+		GROUP BY country
+		HAVING COUNT(studentID) > 5;
+		
+		
+Diff b/w: Drop and Truncate:
+---------------------------		
+	"Drop" in SQL refers to the removal of a table or database from a server. 
+	"Truncate" is a SQL command that removes all rows from a table but keeps the table's structure intact.
+		
+		
+Diff b/w Delete and Truncate:
+-----------------------------
+	The delete statement is used to remove single or multiple records from an existing table "depending on the specified condition". 
+	The truncate command removes the complete data from an existing table but not the table itself. It preserves the table structure or schema. 
