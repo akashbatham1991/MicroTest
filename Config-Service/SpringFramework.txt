@@ -1,0 +1,1152 @@
+https://www.interviewbit.com/spring-interview-questions/?sign_up_medium=ib_article_auth_blocker/#spring-bean-scopes
+
+https://github.com/in28minutes/spring-master-class
+https://github.com/in28minutes/in28minutes-initiatives/tree/master/The-in28Minutes-TroubleshootingGuide-And-FAQ
+https://github.com/in28minutes/spring-master-class/tree/master/01-spring-in-depth
+
+https://github.com/in28minutes/in28minutes-initiatives/blob/master/The-in28Minutes-TroubleshootingGuide-And-FAQ/quick-start.md
+--------------------------
+	Spring Framework:
+		"Define" Dependencies				(@Component, @Service,...)
+		"Identifying" Dependencies			(@ComponentScan)
+		"Autowire" Dependencies				(@Autowired)
+		
+	Two Main Ways to Achieve Autowiring in Spring:
+	----------------------------------------------
+		1. Autowire by Type — using @Autowired
+		--------------------------------------
+			Spring matches the type of the dependency.
+			If multiple beans of the same type exist, you need @Qualifier to disambiguate.
+
+		2. Autowire by Name — using @Resource
+		-------------------------------------
+			Spring matches the name of the field or method with the bean name in the context.
+			If no bean with that name exists, injection fails.
+			
+	Bean Injection:
+	---------------
+		@Autowired:
+			Spring uses reflection to set the field or invoke the setter method with the resolved dependency.	
+			
+		@Resource:
+			Spring uses reflection to inject the dependency.	
+
+	Three Places You Can Apply These Annotations:
+	---------------------------------------------
+		Location 		@Autowired Supported 	@Resource Supported		Description
+		--------		--------------------	-------------------		-----------
+		Field 			Yes 					Yes 					Injects directly into the field using reflection
+		Setter Method 	Yes 					Yes 					Injects via a public setter method
+		Constructor 	Yes 					No 						Injects via constructor (only @Autowired works)
+
+	Comparison Table:
+	-----------------	
+		private SortAlgorithm bubbleSortAlgorithm;
+				(by type)			(by name)
+	
+		Feature 				Autowire by Type (@Autowired)	Autowire by Name (@Resource)
+		-------					-----------------------------	----------------------------
+		Matching Criteria 		Bean type 						Bean name  
+		Annotation 				@Autowired 						@Resource 
+		Multiple Beans Issue 	Needs @Qualifier 				Needs correct name 
+		Flexibility 			More flexible 					More rigid 
+		Provided By 			Spring 							JSR-250 (Java standard) 
+
+
+	@Component : is a very generic annotation.
+	@Controller: is used to define a controller in the web layer. In MVC, the controller is palying a crucial role in making sure that the model is populated and the right view is rendered.
+	@Service: business layer.
+	@Repository : at data layer.  
+
+	@Autowire
+	@Qualifier		resolve conflicts b/w same bean
+	@Primary		resolve conflicts b/w same bean
+
+	@ComponentScan
+	
+	Spring Annotations like: (@Autowire, @Component,...)
+	CDI Annotations like: (@Inject, @Named,...)						:import javax.inject
+
+	Whether you should use CDI annotations or spring annotations ?
+	--------------------------------------------------------------
+		"CDI is java ee standard", we always wants to use standard, like instead of using hibernate we'll use JPA and then use hibernate as implementation. 
+		Similar to that, we can use CDI annotations and spring as their implementation. 
+	
+	Beans: 
+	-------
+		The instances that Spring manages are called Beans. Beans are diff objects that are managed by Spring Framework.
+
+
+	Inversion of Control: 
+	---------------------
+		In case of NEW operator, The class which needs the dependency creates an instance of dependency, :: In case of @Autowired who is creating the instance of dependency, the spring framework is creating the instance of dependency. We are taking the control from the class which needs dependency and giving the control to spring framework. This is called inversion of control.
+	
+	What is an IOC container?
+	-------------------------
+		IoC Container is a framework for implementing automatic dependency injection. 
+		It manages object creation and its life-time and also injects dependencies into the class.	
+	
+	
+	**In spring, there are two implementations of Spring-IOC Container:
+	------------------------------------------------------------
+		1) Application Context,
+		2) Bean Factory
+		
+			*XMLBeanFactory is a popular implementation of BeanFactory.
+			*ClassPathXmlApplicationContext is a popular implementation of ApplicationContext.
+			
+	Application Context:
+	--------------------
+		Application Context is the one where all the beans are created and managed. 		
+	
+	
+	**Required single bean to autowire but it found two:
+		Resolutions:
+		-----------
+			1:	Remove @Component from one class,
+			2:	If you have two components on class path of same type, I can make one of them primary using @Primary,
+			3:	@Qualifier("<name of the bean which you want to inject>")		
+				
+	
+	**There are 3 types of autowiring:
+	-----------------------------------
+		Property based
+		Constructor based	(recommended)		(use when dependency is mandatory)
+		Setter based							(use when dependency is optional)
+			
+			
+	**Spring Modules:
+	-----------------
+		It has solutions for: 
+			web layer, 					(Spring MVC, and also support for structs)
+			business layer, 			(Spring OXM)
+			data access layer, 			(Spring JDBC)(Spring Data JPA)
+			integration layer and		(Spring JMS)
+			cross cutting concerns.		(Spring AOP, and also support for AspectJ)		
+		
+	**Spring Projects:
+	------------------
+		Spring Boot
+		Spring Batch
+		Spring Cloud
+		spring Data
+		Spring Security
+		
+		
+	**-Scope of Beans:
+	----------------
+	Container manages the beans, so the beans are created and the lifecycle is managed by container. 
+		
+		Singleton	(default)
+		Prototype
+		Request
+		Session				(Hibernate also has session-level cache)
+		Application
+		
+		@Scope("prototype")			//at class level.
+		
+		Summary Table:
+		--------------
+			Scope 		Instance Count 	Context Required 	Use Case
+			-----		--------------	----------------	--------
+			singleton 	1 				No 					Stateless services
+			prototype 	Many 			No 					Stateful objects
+			request 	1 per request 	Yes 				Request-specific data
+			session 	1 per session 	Yes 				User session data
+			application 1 per app 		Yes 				Global shared config
+
+		
+	Best Practice Summary:
+	----------------------
+		Bean Type 		Recommended Scope 		Notes 
+		---------		-----------------		-----
+		Stateless 		Singleton 				Most efficient and thread-safe 
+		Stateful 		Request or Prototype 	Avoid shared mutable state
+		Session-based 	Session 				For user-specific data across requests	
+
+
+	**-Lifecycle of Bean:
+	----------------------
+		Container Initialization,
+		Bean Creation,
+		Dependencies injected into bean,
+		@PostConstruct, 
+		@PreDestroy,
+		Container closed.
+
+		
+------------------------------------------------------------START-----------------------------------------		
+Spring Framework:
+----------------
+	Spring Framework is all about 'dependency injection', it's about: 
+		defining the dependency, 
+		indetifying the dependencies, and 
+		autowire them. 
+	
+	"Define" Dependencies:
+		You can define dependencies using varity of annotations (@Component, @Service,...). 
+		
+	"Identifying" Dependencies:
+		once you have defined your dependencies, You need to identify them,  that' where component scan is useful, you can do a "component scan" on specific package, and identify all the components which are defined there. 
+		
+	"Autowire" Dependencies:
+		Once you have all the components and their dependencies identified, you can autowire(@Autowire) them together. 
+		
+	That's the core work of spring framework.
+
+	
+
+
+
+
+-Tight Coupling:
+---------------
+	If I directly instantiate a dependency which we need, is called "Tight Coupling".
+	
+	public class ComplexBusinessService {
+		SortAlgorithm sortAlgo = new BubbleSortAlogrithm();		//tight coupling
+	}
+
+	public class BubbleSortAlogrithm implements SortAlgorithm{}
+	
+
+-Loose Coupling:
+----------------
+	We can write this above code as below to make it loose coupling:
+
+	SortAlgorithm sortAlgo = new BubbleSortAlogrithm();						//if you don't want bubble sort alog, can replace here.
+	ComplexBusinessService cBS = new ComplexBusinessService(sortAlgo);		//loose coupling
+
+//here, ComplexBusinessService is not dependent on specific sort algorithm. You can provide it with any sort algorithm.
+
+
+-
+	It is creating a new instance of BubbleSortAlogrithm, it is creating a new instance of ComplexBusinessService after populating the right dependency, so it's like "create the object and populating dependencies". This is where the Spring Framework comes in. 
+	Spring Framework does exactly the same, it instantiate the object and populate dependencies. 
+	However it is your job as a programmer to tell Spring Framework what are the objects it would need to manage and what are the dependencies of each class.
+
+
+The question is how spring know to do this?
+	As a programmer, we help spring framework to identify what are the objects it needs to manage and what are it's dependencies. 
+	There are two important annotations through which we can do this:
+
+1) @Component:
+-------------
+	Now spring knows it needs to manage the classes which has this annotation. Now spring starts managing instance of this class. Spring would create the instance of this class for you.
+
+
+2) @Autowired:
+--------------
+	Spring would start looking for this dependency. It would start looking among the components it manages, among the instances of class it manages to find the matching thing.
+
+
+-Spring Framework Terminology:
+-----------------------------
+
+-Beans: 
+-------
+	The instances that Spring manages are called Beans. Beans are diff objects that are managed by Spring Framework.
+
+	
+-Autowiring:
+-----------
+	The process where spring identify the dependencies, identify the matches for dependencies and populates them.
+
+	
+-Inversion of Control: 
+---------------------
+	In case of NEW operator, The class which needs the dependency creates an instance of dependency, :: In case of @Autowired who is creating the instance of dependency, the spring framework is creating the instance of dependency. We are taking the control from the class which needs dependency and giving the control to spring framework. This is called inversion of control.
+
+	
+-IOC Container:
+---------------
+	to represent anything that is implementing inversion of control. In case of Spring Framework, the typical IOC Container is "Application Context". 
+	
+	What is an IOC container?
+		IoC Container is a framework for implementing automatic dependency injection. 
+		It manages object creation and its life-time and also injects dependencies into the class.
+
+	
+-Application Context:
+----------------------
+	Application Context is the one where all the beans are created and managed. 
+	Application Context is most important part of the Spring Framework, that's where all the core logic of spring framework happened.
+
+ 
+***-Spring Boot is the best java framework to develop microservices.	
+
+	
+-Section 2:
+
+Setting up java spring framework:
+---------------------------------
+
+go to "start.spring.io" and generate the project without adding any dependency, It would by default create spring as one of the dependency.
+A zip is created, downloaded, import it into eclipse.
+
+The greate thing about creating a spring boot project, spring is directly added in as a dependency.
+
+
+-Using Spring Framework to manage dependencies:
+----------------------------------------------
+We add @Component, @Autowired and then add the code to pick up the beans from application context, but what's happening in the backgroud, let's understand.
+
+to understand it, enable the debug log, in /application.properties file add below line:
+	
+	logging.level.org.springframework = debug
+	
+-Where to search for beans: 
+	because this is a SpringBootApplication, we said that this would automatically search in this package. that's called component scan.
+
+1) first searching this package for any classess with @Component.  Spring starts from the component scan. I'm searching anything defined with @Component(note: @Component is not the only annotation for which spring is do serch, there are other annotations as well).
+
+2) Once spring identified, what components it needs to manage, it starts creating the beans and identified the dependencies by @Autowired. 
+
+3) Since we have provided the constructor so spring use this constructor to do the autowire. "Autowire by type via constructor."
+
+
+Step 6:
+Dynamic Autowiring :
+---------------------
+Required single bean to autowire but it found two:
+
+	Resolutions:
+	-----------
+		1:	Remove @Component from one class,
+		2:	If you have two components on class path of same type, I can make one of them primary using @Primary,
+		3:	@Qualifier("<name of the bean which you want to inject>")
+
+
+-NoSuchBeanDefinitionException:
+-------------------------------
+	If we try to load a bean from application context but there is no matching bean which managed by spring. We might get this becuase @Component is missing at class level.
+
+-Whenever you found exception like: a bean is not found, multiple beans are found, 
+	See if you used the right combination of @Component, @Autowired, @Primary.
+
+
+
+-Step 7:
+Spring Injection using @Autowired or @Resource:
+-----------------------------------------------
+
+	Two Main Ways to Achieve Autowiring in Spring:
+	----------------------------------------------
+		1. Autowire by Type — using @Autowired
+		--------------------------------------
+			Spring matches the type of the dependency.
+			If multiple beans of the same type exist, you need @Qualifier to disambiguate.
+
+		2. Autowire by Name — using @Resource
+		-------------------------------------
+			Spring matches the name of the field or method with the bean name in the context.
+			If no bean with that name exists, injection fails.
+
+	Three Places You Can Apply These Annotations:
+	---------------------------------------------
+		Location 		@Autowired Supported 	@Resource Supported		Description
+		--------		--------------------	-------------------		-----------
+		Field 			Yes 					Yes 					Injects directly into the field using reflection
+		Setter Method 	Yes 					Yes 					Injects via a public setter method
+		Constructor 	Yes 					No 						Injects via constructor (only @Autowired works here)
+
+
+When using annotations like @Autowired, Spring typically performs autowiring by type, but there are ways to achieve autowiring by name too.
+
+	1. Autowire by Type (@Autowired):
+	---------------------------------
+		How It Works:
+		-------------
+			Spring looks for a bean of the same type as the dependency.
+		
+		Example:
+		--------
+			@Component
+			public class Engine {}
+
+			@Component
+			public class Car {
+			
+				@Autowired
+				private Engine engine; 		//Injects the Engine bean by type
+			}
+
+		Behavior:
+		---------
+			If exactly one bean of the required type exists → injected successfully
+			If multiple beans of the same type exist → Spring throws an error unless you qualify it
+		
+		Solution for Multiple Beans:
+		----------------------------	
+			Use @Qualifier to specify which bean to inject:
+
+				@Autowired
+				@Qualifier("dieselEngine")
+				private Engine engine;
+
+
+	2. Autowire by Name (@Resource):
+	--------------------------------
+		How It Works:
+		-------------
+			Spring matches the name of the field or setter method with the bean name in the context.
+		
+			Example:
+			--------
+				@Component("dieselEngine")
+				public class Engine {}
+
+				@Component
+				public class Car {
+					@Resource(name = "dieselEngine")
+					private Engine engine; 				//Injects by bean name
+				}
+
+			Or even:
+			--------
+				@Resource
+				private Engine dieselEngine; 			//Field name matches bean name
+
+		Behavior:
+		---------
+			If a bean with the same name as the field exists → injected
+			If not → Spring throws an error
+
+
+	Comparison Table:
+	-----------------	
+		private SortAlgorithm bubbleSortAlgorithm;
+				(by type)			(by name)
+	
+		Feature 				Autowire by Type (@Autowired)	Autowire by Name (@Resource)
+		-------					-----------------------------	----------------------------
+		Matching Criteria 		Bean type 						Bean name  
+		Annotation 				@Autowired 						@Resource 
+		Multiple Beans Issue 	Needs @Qualifier 				Needs correct name 
+		Flexibility 			More flexible 					More rigid 
+		Provided By 			Spring 							JSR-250 (Java standard) 
+
+
+	Bean Injection:
+	---------------
+		@Autowired:
+			Spring uses reflection to set the field or invoke the setter method with the resolved dependency.	
+			
+		@Resource:
+			Spring uses reflection to inject the dependency.
+
+
+
+	There are 3 types of autowiring:
+	--------------------------------
+		1. Property based
+		2. Constructor based	(Use when dependencies are mandatory)
+		3. Setter based			(Use when dependencies are optional)
+		
+		1. Property Injection:
+		----------------------
+			@Autowired
+			private Engine engine;
+
+			@Resource(name = "dieselEngine")
+			private Engine engine;
+
+
+		2. Setter Injection:
+		--------------------
+			@Autowired
+			public void setEngine(Engine engine) { ... }
+
+			@Resource
+			public void setEngine(Engine dieselEngine) { ... }
+
+
+		3. Constructor Injection:
+		-------------------------
+			@Autowired
+			public Car(Engine engine) { ... } 	//Only works with @Autowired
+
+
+		Comparison Table:
+		-----------------
+			Type 				Injection Point 	Immutability 	Testability 	Recommended
+			----				---------------		------------	-----------		-----------
+			Property-based 		Field 				No 				Hard 			No
+			Setter-based 		Method 				No 				Easier 			Sometimes
+			Constructor-based 	Constructor 		Yes 			Best 			Yes 
+
+
+	
+What are the limitations of autowiring?
+	Overriding possibility: 
+		Dependencies are specified using <constructor-arg> and <property>  settings that override autowiring.
+
+	Data types restriction: 
+		Primitive data types, Strings, and Classes can’t be autowired.
+
+
+		
+	Note: if your class has only single constructor then there is no need to put @Autowired.
+https://stackoverflow.com/questions/33562731/spring-autowire-property-vs-setter
+https://stackoverflow.com/questions/49893344/is-autowired-annotation-mandatory-on-constructor-in-spring-boot
+		
+		
+		
+
+-Step 8:
+***Spring Framework Modules:
+---------------------------
+Spring is not a one big framework, if you look at the maven dependencis, there is not a one big spring jar which is present, there are lot of small jars present. Spring is build in a modular way and this enables you to use specific module without using the other modules of spring. 
+
+Until now we were using core container modules(beans, core, context). 
+
+Spring has very good integration with data and integration layer, one of the important data acess module is "Spring JDBC" which makes JDBC much more easier. Something which would take 25 lines of code in JDBC, would usually take 5-10 lines of code in Spring JDBC. 
+
+The other thing Spring has, good integration with all ORM frameworks. Some of the ORM are Hibernate and MyBatis.
+
+Spring has good integration with JMS. If you want to talk to some other application over the queue, then through "Spring JMS", we'll be able to talk to other application.
+
+Whenever Object to XML transformation is needed, in those kind of scenarios, "Spring OXM" provides lot of useful features.
+
+One of the important thing with the Data Access or Integration, is the "Transaction Management", you would want all the steps in a transaction to be successful or you would want all of them to be rolled back. So Spring has great support for transaction management.
+
+
+The other important Spring Modules are web, Spring has good connection with web frameworks like struts. 
+Spring also offers a web framework called Spring MVC. 
+Spring has good support for WebSocket.
+
+Cross Cutting Stuff: 
+	typically when you talk about application, they have multiple layers, there are things which are applicable to more than one layer, those are called cross cutting concerns. 
+	One of the Cross Cutting Concerns is Unit Testing. Spring has good support for unit testing through Spring Test Framework. 
+
+Spring also enables implementation of things like Security/ Logging.
+
+Spring has moudule 'spring AOP' to do "BASIC" 'aspect oriented programming', 
+if you want to do "ADVANCE" 'aspect oriented programming' with a framework like AspectJ, spring provides good integration with it as well.
+
+*In this step, we saw different modules which are offered by Spring Framework:
+-------------------------------------------------------------------------------
+	It has solutions for web layer, 				(Spring MVC, and also support for structs)
+	it has solutions for business layer, 			(Spring OXM)
+	it has solutions for data access layer, 		(Spring JDBC)(Spring Data JPA)
+	it has solutions for integration layer and		(Spring JMS)
+	it has solutions for cross cutting concerns.	(Spring AOP, and also support for AspectJ)
+
+
+
+
+-Step 9:
+Spring Projects:
+----------------
+----------------
+All 'Spring Modules' have the same release version as the 'Spring Framework' so they are almost like they are part of Spring Framework.
+
+There are other things Spring does other than the Spring Framework and it's modules,: these are called Spring Projects. 
+
+These Spring Projects provides solutions for different problems faced by enterprise applications. 
+Let's talk about few of them:
+
+-Spring Boot: 
+-------------
+	Spring Boot is one of the most popular framework to develop microservices today. 
+	Spring Boot makes it very very easy to develop applications quickly. With features like "startup projects", "auto configuration", "actuator"...
+
+	
+-Spring Cloud:
+--------------
+	Everybody wants to deploy their applicaiton into cloud, And 
+	therefore, it's not sufficient if we develop good applications, We have to develop Cloud native applications. 
+	
+	We would want to be able to: 
+		dynamically configure applications, 
+		dynamically deploy applications,
+		dynamically connect them.
+		 
+	
+	Cloud native applications need a lot of different features. So if you have a microservice which is developed using Spring Boot, you can use Spring Cloud to cloud enable the microservice.
+	
+
+-Spring Data:
+------------
+	Spring data provides a consistent data access. 
+	
+	If I go back a few years back there was only one kind of databases that we typically connect to. We would connect to a proper SQL database. 
+	Today there are abundant of NoSql databases. We have mix of data sources so we have NoSql... we have a wide variety of NoSQL databases. We have SQL databases as well. 
+	
+	How do you ensure that: 
+		the way I'm accessing data from 'all these stuff' is remaining consistent. 
+			That's what Spring Data aims to solve.
+	
+
+-Spring Integration:
+--------------------
+	Address problems with application integration. There is something called enterprise application integration patterns, it'a a very famous book, Spring Integration implements the patterns which are recommended in there. 
+	Spring Integration helps us in connecting enterprise applications very very easily.
+
+
+-Spring Batch:
+--------------
+	Not all processing is done online. Some of the processing is also done in batch applications. Batch applications have their own requirements. Like, for example, I would want to be able to restart a bad job from where it failed or I would want to be able to track down exactly what happening in a batch in much more more minute detail. Spring Batch provides those kinds of features. It enables develping batch applications very easily.
+
+
+-Spring Security:
+-----------------
+	Security is one of the important parts of develping applications. you would want your application to be secure whether you are developing a web application or developing a rest service or anything that you develop, you would want to protect it. 
+	So Spring Security provides solutions for securing your application. 
+	Spring security has support for multiple security options like basic authentication, OAuth authentication.
+
+
+-Spring HATEOAS:
+-----------------
+	enables you to develp HATEOAS compatible services. In REST, it's not sufficient to just return the data, you would also want to return the related "links" that would help the consumer to understand where to go from here. 
+
+
+There are a lot of Spring projects like Spring webservices, Spring session, Spring social, Spring mobile and Spring Android.
+	
+
+Step 10:
+
+Why Spring Framework Popular:
+-----------------------------
+It enables writing testable code. 
+The core feature of Spring is Dependency Injection.  And if we use dependency injection properly then we would be able to write unit tests for code very easily.
+Spring has a really good integration frameworks like Junit and Mockito and it enable us to write good unit test very quickly.
+
+There is no plumbing code at all. With Spring, the amount of code that you need to write is very very less.
+
+Architecture flexibility is brings in. Spring is very modular, There are Spring Modules and Spring Projects for very specific projects. And I can use specific Spring Module without using all others. 
+
+Even though Spring has a really good MVC framework- Spring MVC, it still offers good support to all the other MVC frameworks like Struts. 
+
+Even though Spring has it's own REST support through Spring MVC, it does offer good support with Jersey as well. I mean JAX RS as well.
+
+If I use Spring in my project, my options are not really restricted. I still have the flexibility to choose other frameworks. 
+
+It is able to stay with the trend. For example, there is a lot of evolution in microservices and Cloud. And Spring is able to come up with projects which helps it to stay relevant.
+
+
+-Scope of Beans:
+----------------
+	Container manages the beans, so the beans are created and the lifecycle is managed by container. 
+	
+	Singleton	(default)
+	Prototype
+	Request
+	Session
+	Application
+	
+	-Singleton:	(default)
+	-----------
+		In Spring, by default any bean is Singleton bean, so if you requesting application context 10 times for a bean, you'll get the same bean back.
+
+	
+	-Prototype:
+	----------
+		You'll get a new bean whenever it is requested. 
+		Prototype creates a brand new instance every time you call "getBean" on the ApplicationContext
+		If you're requesting a prototype bean twice, you'll get two different instances of that specific bean. 
+		Like we want new jdbc connection every time.
+
+
+	-Request:
+	---------
+		One bean per HTTP request.
+		This is very usefule in case of web application, one flow of a request is from browser to the server, processed on the server and response comes back to the browser, this is called a request. 
+		When you have a scope of request, then one bean is created per HTTP request.
+
+
+	-Session:
+	---------
+		One bean per a specific user's session.
+		This would mean that a single bean can be used for serving multiple HTTP requests. 
+		
+	- Application:
+	--------------
+		One instance per ServletContext
+		Shared across all sessions and requests
+	
+		
+	-Diff b/w prototype and request scope:
+	---------------------------------------
+	HttpRequest scope:
+		Mark mark1 = context.getBean("mark"); 
+		Mark mark2 = context.getBean("mark"); 
+		mark1 == mark2; //This will return true 
+		
+	Prototype scope:
+		Mark mark1 = context.getBean("mark"); 
+		Mark mark2 = context.getBean("mark"); 
+		mark1 == mark2; //This will return false 
+		
+		
+	So in an HttpRequest, if the getBean method is called twice on Application and there will be only one bean instantiated and reused, whereas the bean scoped to Prototype in that same single HttpRequest would get 2 different instances.
+
+
+-annotation which is used to define scope:
+------------------------------------------	
+	@Scope("prototype")			//at class level.
+	
+	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+
+
+-*Complex scope scenarios of a Spring Bean - Mix Prototype and Singleton:
+-----------------------------------------------------------------------
+	What would happen if a class scope is Singleton but it's dependency class scope is of prototype ?
+		Default: in this case, prototype scope is override by singleton.
+
+	If we want to make this work as it is, then we need to use proxy, instead of giving direct dependency, we need to give it a proxy, like below:
+		@Scope(value="prototype", proxyMode = ScopedProxyMode.TARGET_CLASS)
+
+	Another solution is: 
+		we can also make the parent class scope is prototype but it will now create new objects for every request but we don't want to create unnecessary objects. If we follow this approach, then it will fill the memory fast and might make your system slow.
+
+
+-Difference b/w Spring Singleton and GOF singleton:
+---------------------------------------------------
+	In GOF, singleton pattern means:	one instance "per JVM", 
+	In Spring, singleton means: 		one instance "per application context". 
+
+	In GOF,even if multiple application context are running in same jvm, you have just one instance of that specific class.
+
+	In Spring, there can be one instance of that class per one application context. So if there are five application context that are running in same jvm, then we'll have 5 instances.
+
+	
+Are singleton beans thread-safe?
+	No, the singleton beans are not thread-safe because the concept of thread-safety essentially deals with the execution of the program and the singleton is simply a design pattern meant for the creation of objects. 
+	Thread safety nature of a bean 'depends on the nature of its implementation'.
+
+How can you achieve thread-safety in beans?
+	The thread safety can be achieved by changing the scope of the bean to: 
+		request, 
+		session or 
+		prototype 
+	but at the cost of performance. 
+	This is purely based on the project requirements.
+
+
+
+In concurrent requests, which bean scope is recommended to use?
+---------------------------------------------------------------
+	When handling concurrent requests in a Spring application, the recommended bean scope depends on whether your bean is stateless or stateful:
+	
+	1)
+		Recommended Scope: Singleton
+		----------------------------
+			- Default scope in Spring
+			- One shared instance per application context
+			- Safe for concurrent requests only if the bean is stateless
+			- Ideal for services, controllers, and utility components
+		
+		Why it works: 
+		-------------
+			Each thread has its own stack memory, so method-local variables are isolated—even if multiple threads access the same singleton bean instance.
+
+	2)
+		Use With Caution: Prototype
+		----------------------------
+			- Creates a new instance for every injection.
+			- Useful for stateful beans that hold request-specific data
+			- Not automatically thread-safe—requires manual lifecycle management
+
+	3) 
+		For Web Applications: Request Scope
+		-----------------------------------
+			- Creates a new bean instance per HTTP request
+			- Ideal for request-specific state, like form data or session tokens
+			- Requires a web-aware ApplicationContext
+	
+	Best Practice Summary:
+	----------------------
+		Bean Type 		Recommended Scope 		Notes 
+		---------		-----------------		-----
+		Stateless 		Singleton 				Most efficient and thread-safe 
+		Stateful 		Request or Prototype 	Avoid shared mutable state
+		Session-based 	Session 				For user-specific data across requests
+
+	Pro Tip:
+	-------
+		If you use singleton beans, make sure they are stateless. Avoid class-level mutable fields unless properly synchronized or isolated per thread.
+
+Bean Types:
+-----------
+	1. Stateless Bean (Default in Spring):
+	--------------------------------------
+		No internal state tied to a specific user or request
+		Ideal for services, utilities, and business logic
+
+		Example:
+			@Component
+			public class CalculatorService {
+				public int add(int a, int b) {
+					return a + b;
+				}
+			}
+
+	2. Stateful Bean:
+	-----------------
+		Maintains internal state across method calls
+		Can be risky in a singleton scope if shared across requests
+		
+		Example:
+			@Component
+			@Scope("prototype") // New instance per injection
+			public class ShoppingCart {
+				private List<Item> items = new ArrayList<>();
+
+				public void addItem(Item item) {
+					items.add(item);
+				}
+
+				public List<Item> getItems() {
+					return items;
+				}
+			}
+
+
+	3. Session-Based Bean (Web Context):
+	------------------------------------
+		Scoped to a user's HTTP session
+		Useful for storing user-specific data like preferences, cart, etc.
+
+		Example:
+			@Component
+			@Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
+			public class UserSession {
+				private String username;
+
+				public void setUsername(String name) {
+					this.username = name;
+				}
+
+				public String getUsername() {
+					return username;
+				}
+			}
+
+
+-Using Component Scan to scan for beans:
+----------------------------------------
+
+	Whenever we say it's SpringBoot application, it automatically defines component package and the sub packages of this, so everything in this package or in sub package will be picked up. This is what is default behavior of SpringBoot application. 
+
+	However the beans in other packages are not picked up, so if I want other packages to picked up, then I would need to add Component scan on them as well, 
+		
+		@ComponentScan("com.sd.skd.dkfd.dsfs")
+
+	So it's on you to tell spring, where to search components. and this is called component scan.
+
+
+
+-Lifecycle of Bean - @PostConstruct and @PreDestroy:
+---------------------------------------------------
+
+	When we put @Component on bean, the entire lifecycle of bean is managed by spring,  so the Spring IOC Container will create instance of this bean, and it will also make sure it destroyed once it's no longer needed. So entire lifecycle of this bean is managed by Spring IOC Container.
+
+	If I want to do something on the creation of this bean, or I want to do something before the bean is destroyed:
+
+	@PostConstruct : as soon as bean is created, this post construct is called. 
+	
+	@PreDestroy : is called just before the bean is removed from context. Used on methods as callback.
+
+
+	
+-Context and Dependency Injection:
+----------------------------------
+	CDI is an interface defining how to do dependency injection, it says if I want to autowire something in then you would need to use @Inject, If you want to do @Named means you'll defining a component. 
+	
+	*CDI tries to define common annotations for use with dependency injection. 
+	
+	So instead of using @Autowired, we should use @Inject, AND instead of using @Component, we should use @Named. 
+	To use CDI, we need to add one dependency in pom.xml "javax.inject".
+
+	CDI does not do anything otherthan defining few annotations and it says if @Inject is there then do this, if @Named is there then do this. So this is like an interface.
+
+	Whether you would use spring annotations or CDI annotations, it does not matter because ""spring implements CDI"".
+
+
+	CDI annotations (Inject, Named, Provider, Qualifier, Scope, Singleton) : Spring provides the implementation of these annotations. 
+	So in addition to spring annotations, you can also use the CDI annotations.
+	
+	Spring Annotations like: (@Autowire, @Component,...)
+	CDI Annotations like: (@Inject, @Named,...)						:import javax.inject
+
+
+	Whether you should use CDI annotations or spring annotations ?
+	--------------------------------------------------------------
+		"CDI is java ee standard", we always wants to use standard, like instead of using hibernate we'll use JPA and then use hibernate as implementation. 
+		Similar to that, we can use CDI annotations and spring as their implementation. 
+
+	CDI does offer really good flexibility, tomorrow if you want to switch away from spring as a dependency framework, if you used CDI you had that option.
+
+
+
+-Removing Spring Boot in basic application:	(to understand world before annotations)
+-------------------------------------------
+Until now, we'll use spring boot, now how to use spring without spring boot.
+
+-initialize application context, 
+	**as of now what we are doing is we're using "@SpringBootApplication" to initialize the application context. this is something provided by spring boot, 
+	**now the way to define application context in spring is  by using  "@Configuration" along with "AnnotationConfigApplicationContext".
+	
+	**Spring Boot introduces the @SpringBootApplication annotation. This single annotation is equivalent to using @Configuration, @EnableAutoConfiguration, and @ComponentScan.
+	
+	As a result, when we run this Spring Boot application, it will automatically scan the components in the current package and its sub-packages. Thus it will register them in Spring's Application Context, and allow us to inject beans using @Autowired.
+	
+	After enabling annotation injection, we can use autowiring on properties, setters, and constructors.
+	
+	@Autowired and Optional Dependencies:
+		When a bean is being constructed, the @Autowired dependencies should be available. Otherwise, if Spring cannot resolve a bean for wiring, it will throw an exception. Consequently, it prevents the Spring container from launching successfully with an exception. To fix this, we need to declare a bean of the required type:
+			 @Autowired(required = false)
+			 
+	*Autowiring by Custom Qualifier: https://www.baeldung.com/spring-autowire#
+	
+	Spring uses the bean's name as a default qualifier value. 
+	
+	For @Autowired annotation to work, we also need to enable annotation based configuration in spring bean configuration file. This can be done by "context:annotation-config" element or by defining a bean of type "org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor".
+	By default spring bean autowiring is turned off. Spring bean autowire default value is “default” that means no autowiring is to be performed.
+	
+	-let’s enable annotation-driven injection to load our Spring configuration:
+		@Configuration		//to initialize application context
+		@ComponentScan("com.baeldung.autowire.sample")
+		public class AppConfig {}
+		
+		
+	Extra:
+		@Configuration
+		@EnableJpaRepositories("com.kronos.persons.wfts.dataaccess.impl.repository")
+		public class IPersonWftsConfig {
+		}
+
+		
+
+-Defining Spring Application Context using XML:
+-----------------------------------------------
+in the applicationContext.xml, you can define the beans and their dependencies. 
+ 
+-defining a bean in xml: 
+-----------------------
+	<bean id = "<Class name>" class="<package of that class>">
+	</bean>
+ 
+ 
+-autowire a bean in xml:
+------------------------
+	<bean id = "<Class name>" class="<package of that class>">
+		<property name="" ref=""></property>						//used for autowire
+	</bean>
+
+ 
+ -we would want to load application context using xml:
+ -----------------------------------------------------
+	ClassPathApplicationContext("applicationcontext.xml");
+	
+	
+-Mix XML Context with Component Scan for beans with Annotation;
+--------------------------------------------------------------
+	If you don't want to define every bean in xml file, you can use compoent scan in xml file and define the base package there, now it will auto scan the beans, no need to define every bean in xml file now.
+
+
+
+--IOC Container Vs Application Context Vs Bean Factory:
+------------------------------------------------------
+
+Inversion of Control:
+---------------------
+	In case of NEW operator, The class which needs the dependency creates an instance of dependency, :: In case of @Autowired who is creating the instance of dependency, the spring framework is creating the instance of dependency. 
+	We are taking the control from the class which needs dependency and giving the control to spring framework. This is called inversion of control. And the framework which provide this is called the IOC Container.
+
+	**The IOC container is the one which manages these beans. So it creates beans and do autowire them. IOC Container is a concept.
+
+	**In spring, there are two implementations of IOC Container:
+	------------------------------------------------------------
+		1) Application Context,
+		2) Bean Factory
+
+	Spring recommends to use ApplicationContext in 99% scenarios.
+
+	Application Context is nothing but Bean Factory++.
+
+	the core features of spring are inside the jar called Spring-Core, and that's what the bean factory provides. 
+
+	The Bean Factory provides: 
+		the basic management of beans and wiring of dependencies. That's it, it doesn't provides anything more. 
+
+	The Application Context provides: 
+		more features than a Bean Factory, it provides all the features that are typically needed by enterprise application. 
+		Features like Spring AOP, I18n, WebApplicationContext for web application.
+
+	If memory is very less and less features required then you can go with Bean Factory.
+	
+	*XMLBeanFactory is a popular implementation of BeanFactory.
+	*ClassPathXmlApplicationContext is a popular implementation of ApplicationContext.
+
+
+
+-@Component Vs @Service Vs @Repository Vs @Controller:
+------------------------------------------------------
+
+	@Component : is a very generic annotation.
+	@Controller: is used to define a controller in the web layer. In MVC, the controller is palying a crucial role in making sure that the model is populated and the right view is rendered.
+	@Service: business layer.
+	@Repository : at data layer.  
+
+
+If there is no change in functionality then why should I use specific annotation(@Controller, @Repository, @Service) instead of generic annotation(@Component) ?
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+	1)gives readibility
+	2)Spring provides some defult hanlding
+	3)We can use Spring AOP, identify the annotation and add functionality.
+
+	One of the things which we'll look at in the AOP section, is that you can identify the annotation and add functionality over to that specific thing. 
+
+	So these annotations allows you to "classify your components into different categories" and you can apply different logic for each of these categories. For example, Spring provides default exception translation facility if you use @Repository, there are a lot of JDBC exceptions and spring clasify them and translate them and that feature is provided only if you are using an @Repository annotation. 
+
+	Let's say you would want to log everything that's coming into your business layer, in that kind of scenario, you'll be able to identify everything that has an @Service annotation, you can use AOP to identify that and you can log all of the content that is coming in. 
+
+
+
+-Read values from external property file:
+-----------------------------------------
+
+	@Value("${external.service.url}")
+	private String url;
+
+	*We also need to tell spring to load the property file to make the properties available in context to retrieve:
+		We need to use @PropertySource("classpath: app.properties") along with @Configuration.
+		
+		
+	@ConfigurationProperties	
+		
+Spring Boot Vs Spring Vs Spring MVC:
+-------------------------------------
+
+Spring Framework:
+----------------
+	Spring Framework is all about dependency injection, it's about defining the dependency, indetifying the dependencies, and autowire them. 
+	
+	"Define" Dependencies:
+		You can define dependencies using varity of annotations (@Component, @Service,...). 
+		
+	"Identifying" Dependencies:
+		once you have defined your dependencies, You need to identify them,  that' where component scan is useful, you can do a component scan on specific package, and identify all the components which are defined there. 
+		
+	"Autowire" Dependencies:
+		Once you have all the components and their dependencies identified, you can autowire(@Autowire) them together. 
+		
+	That's the core work of spring framework.
+	
+	
+Spring Modules and Spring Projects:
+----------------------------------
+	However just dependency injection is not sufficient to build great application, you'll need other frameworks, if I would need to talk to database, I would need Hibernate/JPA, if I want to write unit test, I need Junit and Mockito, 
+	
+	Spring Modules and Spring Projects extend this spring eco system, they provide really good integration with other frameworks, so if you want to talk to database, spring provides really good integration with Hibernate/JPA. 
+
+	So the core of Spring Framework is dependency injection and spring modules and spring projects helps you to exend this spring eco system and integrate easily with other frameworks.
+
+
+	Spring MVC (Spring Module):
+	--------------------------
+		Building web application and rest api, we can use @Controller, @RestController, @RequestMapping these all are defined as part of Spring MVC.
+
+	
+	Spring Boot (Starter Project):
+	------------------------------
+		We saw that there are lot of configurations that is needed in your pom.xml, web.xml, whenever you want to build even a simple application with Spring and Spring MVC, and that's where SpringBoot comes in. 
+		Spring Boot is a Spring Project.
+
+	Spring Boot is not a compititors of Spring or Spring MVC, it just a wrapper that makes it easy to use Spring MVC and Spring.
+
+
+
+can we use @Component with jpa in place of @Repository:
+-------------------------------------------------------
+	Yes, you can use @Component instead of @Repository in a Spring Data JPA context—but it’s not recommended. 
+	Here’s why:
+	
+	Why @Repository Is Preferred:
+	----------------------------
+		Exception Translation:	
+			Spring applies automatic exception translation to classes annotated with @Repository. This converts low-level persistence exceptions into Spring’s DataAccessException hierarchy.
+		
+		Semantic Clarity: 
+			Using @Repository clearly communicates the role of the class in the persistence layer, making your architecture easier to understand and maintain.
+		
+		Tooling & Future Enhancements: 
+			Spring modules may treat @Repository differently in future versions. Using the correct stereotype ensures compatibility.
+
+		So yes, it works—but if you're writing a JPA repository, stick with @Repository for better exception handling and clearer intent. 
+
+
+
+	
+
+=================================================================================================================================
+=================================================================================================================================
+=================================================================================================================================
+
+
+Unit Testing with Spring:
+------------------------
+
+-Spring Unit Testing with Java Context:
+---------------------------------------
+
+dependencies needed: spring-test, junit, mockito-core
+
+spring-test is module which is present in spring which helps you to write unit tests with this spring framework.  
+
+To load the entire spring context so that we can retrieve the beans while writing the junits, we can use @ContextConfiguration(classes=<name of the class from where you launch the application or which has @Configuration>).
+
+@ContextConfiguration : helps us to run configuration, 
+
+@RunWith : will launch the configuration
+
+
+Runner: helping to run this context. @RunWith(SpringRunner.class)
+
+we can get the beans from context using @Autowired.
+
+
+
+-Spring Unit Testing with XML context:
+-------------------------------------
+Earlier we defined the context configuration using classes but now we want to load the configuration using location, location is the xml location, 
+
+@ContextConfiguration(locations="/applicationContext.xml")
+
+-if you're writing a unit test and if you want to override something from another context, then you can actually import that context in and override the content of that.
+
+in /testContext.xml, you can override the applicationContext.xml content.
+<import resource="classpath:applicationContext.xml">
+
+and now : @ContextConfiguration(locations="/testContext.xml")
+
+
+-Spring Unit Testing with Mockito:
+----------------------------------
+**Mockito helps in creating mocks and using mocks to wrting unit test.
+
+When we write unit tests with Mockito, we don't need spring context @ContextConfiguration is not needed. We'll need @RunWith(MockitoJUnitRunner.class)
+
+we'll use @Mock, @InjectMock, @Test and Mockito.when(...).thenRutrun(..);
+
+
+Mockito Unit test is faster than spring unit test.
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+	
+

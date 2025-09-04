@@ -1,0 +1,438 @@
+https://medium.com/simform-engineering/spring-boot-caching-with-redis-1a36f719309f
+https://docs.spring.io/spring-data/redis/reference/redis/redis-cache.html
+https://www.bezkoder.com/spring-boot-redis-cache-example/
+https://github.com/bezkoder/spring-boot-redis-example/tree/master
+https://www.concretepage.com/spring-boot/spring-boot-redis-cache
+https://howtodoinjava.com/spring-data/spring-boot-redis-with-lettuce-jedis/
+https://www.baeldung.com/jedis-java-redis-client-library
+https://positivethinking.tech/insights/distributed-caching-using-redis-in-spring-boot-applications/
+
+
+
+Redis:
+------
+	Redis is an Open source "in-memory" key-value data structure store, used as a: 
+		database, 
+		cache and 
+		message broker.
+		
+	Redis Cache minimizes the "number of network calls" made to your application and improves "latency", which in return improves the overall performance of your system architecture.
+
+	
+Redis can be used in various ways, including:
+--------------------------------------------
+	1) In-Memory Database: 
+	----------------------
+		In today’s data-driven world, handling vast amounts of real-time data is a common challenge for businesses. A real-time database is a type of data repository designed to acquire, analyze, and/or augment an incoming stream of data points in real time, often immediately after the data is produced. 
+		Redis may be used to build data infrastructure for real-time applications that need high throughput and low latency.
+
+	2) Cache: 
+	---------
+		Many applications struggle with the need to store and retrieve data quickly, especially in systems with high latency. 
+		Due to its speed, Redis is the ideal choice for caching API calls, session states, complex computations, and database queries.
+
+	3) Message Broker (MQ): 
+	-----------------------
+		It has always been difficult to stream data around the organization and make it accessible for various system components. 
+		Redis supports messaging, event sources, alerts, and high-speed data intake using its stream data type.
+
+	
+Types of Values to Store in Redis:
+----------------------------------
+	It is a versatile key-value store that supports several data structures, such as Strings, Sorted Sets, Hashes, Lists, Streams, Bitmaps, Sets, etc., because it is a NoSQL database and doesn’t need a predetermined schema:
+	
+	Strings: 
+		Use for simple key-value storage, such as caching, configuration, or counters.
+
+	Lists: 
+		Ideal for storing ordered collections of data, like logs, notifications, and queues.
+
+	Sets: 
+		Store unique, unordered values. Use cases include tracking tags, followers, and likes.
+
+	Hashes: 
+		Great for storing objects or structured data. Useful in scenarios like user profiles and storing JSON data.
+
+	Sorted Sets: 
+		Similar to sets but with an associated score. Suitable for leaderboards, rankings, and time-based data.
+
+	Bitmaps: 
+		Efficient for tracking binary data or flags, like user activity or online status.
+
+	Geospatial Data: 
+		Store and query geographical information, such as locations of restaurants or points of interest.		
+
+
+Why Redis Is a Great Cache Engine:
+----------------------------------
+	Feature 				Benefit
+	-------					-------
+	Speed 					Data is stored in memory, making access extremely fast.
+	TTL Support 			You can set expiration times on keys to automatically evict stale data.
+	Persistence Options 	Redis can persist data to disk if needed, combining cache + storage.
+	Eviction Policies 		Supports LRU, LFU, and other strategies to manage memory usage.
+	Pub/Sub & Streams 		Enables real-time messaging and event-driven architectures.
+
+
+Common Caching Patterns with Redis:
+-----------------------------------
+	Cache-aside (Lazy Loading): App checks Redis first; if data isn’t there, it loads from DB and stores in Redis.
+	Write-through: 				Data is written to both Redis and the database simultaneously.
+	Read-through: 				App reads from Redis if a cache miss, the cache itself fetches it from DB.
+
+
+How Does Redis Caching Work?	
+----------------------------
+	Redis Cache effectively stores the results of database retrieval operations, allowing subsequent requests to retrieve the data directly from the cache. 
+	This significantly enhances application performance by reducing unnecessary database calls.
+	
+	However, if the requested data is not found in the cache (cache miss), the service intelligently falls back to the database to retrieve the required information.Subsequently, the fetched data is stored in the Redis cache, enabling future requests for the same data to be served directly from the cache.
+	
+	Similarly, when we perform a DB update operation, the Redis Cache also updated the result in its cache. 
+	Needless to say, for delete operation also it deleted the data from the cache accordingly. 
+	
+	Redis guaranteeing consistent and latest data in the cache and boosting overall efficiency.
+	
+	
+What Happens When Memory Is Full?:
+----------------------------------
+	By default, Redis stores everything in RAM, so when memory is full, it doesn’t automatically spill over to disk. 
+	
+	If you rely solely on in-memory storage without persistence, a crash or power failure means data loss. 
+	Instead:
+		Choose an eviction policy(LRU,LFU,TTL,..) to remove old keys when memory is full.
+		Use persistence Storage to recover data after a restart, not to extend memory.
+	
+	
+Persistent Storage used in Redis ?:
+----------------------------------
+	In the context of Redis persistence, the terms snapshots and append-only file (AOF) refer to two different mechanisms for saving data to disk. 
+
+
+	1. RDB (Redis Database Snapshots): (*.rdb)
+	------------------------------------------
+		At specified intervals, saves the entire dataset to disk as a binary file (dump.rdb)
+		Fast to load, compact file.
+		Risk of data loss between snapshots.
+		
+		Use case:
+			Best for backups or systems where occasional data loss is acceptable.
+
+	
+	2. AOF (Append-Only File):	(*.aof)
+	-----------------------------------	
+		Logs every write operation to a file (appendonly.aof) so it can replay them on restart.
+		More durable than RDB.
+		Slower to load, larger file size.
+		
+		Use case:
+			Best for systems where durability and minimal data loss are critical.
+
+	
+	You can even combine both for a balance of performance and durability.
+	
+	
+Pro Tip: Redis Enterprise or Redis on Flash:
+--------------------------------------------
+	If you need true hybrid: memory + disk storage.
+	
+	Redis Enterprise offers Redis on Flash, which stores cold data on SSDs while keeping hot data in RAM.
+
+	
+Connectors to connect with Redis:
+---------------------------------	
+	Redis supports a wide range of connectors and client libraries across many programming languages to connect with Redis.
+	
+	In java, there are two supported connectors available to connect Redis:
+		1. Lettuce		(asynchronous redis client)
+		2. Jedis		(synchronous redis client)
+	
+	In Spring Boot, Lettuce are resolved by default instead of Jedis. 
+	
+	By default spring-boot-starter-data-redis uses Lettuce under the hood. 
+	To use Jedis we need to exclude Lettuce dependency and include Jedis.
+
+	When to Use Jedis:
+	------------------
+		Jedis is great for small services, synchronous application, legacy systems, doesn't require high concurrency or reactive programming..
+
+	When to Use Lettuce:
+	--------------------
+			You're building a multi-threaded, microservices, reactive, or cloud-native application, better scalability and high-throughput systems.
+			
+	Diff b/w Jedis and spring-data-redis:
+	-------------------------------------	
+		Jedis:
+		------
+			it's a low-level implementation, it acctually works as an Redis driver.
+		
+		spring-data-redis: 
+		------------------
+			it's a spring-boot starter which gives to you a high-level API to interact with Redis data store, but under the hood, spring-data-redis 'relies on' Jedis or letuce to interact with the Redis store.
+		
+	
+When to use @Cacheable, when to use RedisTemplate and when to use Jedis or Lettuce ?
+------------------------------------------------------------------------------------
+	Both Spring Data Redis and RedisTemplate rely on either Jedis or Lettuce as the underlying Redis client. 
+
+
+	1. @Cacheable – Declarative Caching:
+	------------------------------------
+		Use when:
+			You want automatic caching of method results.
+			You're working within Spring Framework and prefer annotation-based configuration.
+			You don’t need fine-grained control over Redis operations.
+		
+		Best for: Service-layer caching in Spring Boot apps.
+
+			@Cacheable(value = "products", key = "#id")
+			public Product getProductById(String id) {
+				return productRepository.findById(id);
+			}
+
+		Spring handles the Redis interaction behind the scenes using a configured CacheManager.
+	
+	
+	2. RedisTemplate – Programmatic Redis Access:
+	---------------------------------------------
+		Use when:
+			You need custom logic for interacting with Redis.
+			You want to work with Redis data structures like hashes, lists, sets, etc.
+			You’re building features like session storage, rate limiting, or pub/sub.
+		
+		Best for: Full control over Redis operations in Spring apps.
+		
+			redisTemplate.opsForValue().set("user:123", user);
+			User cachedUser = redisTemplate.opsForValue().get("user:123");
+
+		It’s thread-safe and integrates well with Spring Boot.
+		
+		Spring Boot auto-configures RedisTemplate based on which client is on the classpath
+	
+		
+	Jedis or Lettuce – Redis Clients:
+	---------------------------------
+		These are low-level Redis clients used by Spring Data Redis or RedisTemplate under the hood.
+			1. Lettuce		(asynchronous redis client)
+			2. Jedis		(synchronous redis client)
+			
+	
+Redis Cache Code Example:
+--------------------------
+	
+	1. Add Dependencies:
+	--------------------
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+
+	2. Enable Caching:
+	------------------
+		@SpringBootApplication
+		@EnableCaching
+		public class RedisCachingApp {
+			public static void main(String[] args) {
+				SpringApplication.run(RedisCachingApp.class, args);
+			}
+		}
+
+
+	3. Configure Redis in application.properties:
+	---------------------------------------------
+		Way-1:
+		------
+			spring.cache.type=redis
+			spring.cache.redis.time-to-live=40000
+			
+			spring.redis.host=localhost
+			spring.redis.port=6379
+			
+			spring.data.redis.username=user
+			spring.data.redis.password=secret
+
+			spring.datasource.url=jdbc:mysql://localhost:3306/rediscachetest
+			spring.datasource.username=root
+			spring.datasource.password=****
+		
+		Way-2:
+		------
+			Spring Boot will now auto-configure the cache according to the default RedisCacheConfiguration. 
+			
+			You may also add your own custom configuration by configuring the RedisCacheConfiguration bean:
+	
+				@Bean
+				public RedisCacheConfiguration cacheConfiguration() {
+					return RedisCacheConfiguration
+						.defaultCacheConfig()
+						.entryTtl(Duration.ofMinutes(60))
+						.serializeValuesWith(RedisSerializationContext
+							.SerializationPair
+							.fromSerializer(new GenericJackson2JsonRedisSerializer()));	
+
+
+	4. Use Caching in Service:
+	--------------------------
+		@Service
+		public class ProductService {
+			@Cacheable("products")
+			public Product getProductById(Long id) {
+				return new Product(id, "Redis-powered Laptop");
+			}
+		}
+		
+		
+Why You Don’t Need to Manually Configure RedisCacheManager:
+-----------------------------------------------------------
+	When you add the required dependencies and annotate your application with @EnableCaching, Spring Boot automatically configures a RedisCacheManager for you. 
+	
+	Here's why:
+		Spring Boot detects Redis via the spring-boot-starter-data-redis dependency.
+		It sees that caching is enabled (@EnableCaching).
+		It auto-configures a RedisCacheManager using sensible defaults:
+			Host: localhost
+			Port: 6379
+			Default TTL: none (unless customized)
+			Serialization: typically uses GenericJackson2JsonRedisSerializer
+	
+	This means you can start using caching annotations like @Cacheable("users") right away—no need to define a CacheManager bean manually.
+
+	
+	When You Would Configure It Yourself:
+	-------------------------------------
+		You only need to manually configure RedisCacheManager if you want to:
+			Set custom TTLs for different caches
+			Change serialization strategy
+			Disable caching of null values
+			Use key prefixes or fine-tune cache behavior
+		
+		Example:
+			@Bean
+			public RedisCacheConfiguration cacheConfiguration() {
+				return RedisCacheConfiguration.defaultCacheConfig()
+					.entryTtl(Duration.ofMinutes(30))
+					.disableCachingNullValues()
+					.serializeValuesWith(
+						SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+			}
+
+
+		So in short: Spring Boot handles the setup for you, but gives you full control if you want to customize.
+		
+		
+Why Connection Pooling Matters:
+-------------------------------
+	Redis connections are TCP-based, and creating/destroying them repeatedly is expensive. 
+	
+	Without pooling, each request would:
+	-----------------------------------
+		Open a new connection
+		Execute the command
+		Close the connection
+	
+		This leads to:
+		--------------
+			Increased latency
+			Higher resource usage
+			Risk of hitting connection limits
+			Potential failures under load
+	
+	With a connection pool:
+	-----------------------
+		Connections are reused
+		You avoid the overhead of frequent connection setup
+		You can limit and manage concurrent connections
+		Performance and stability improve dramatically
+
+	When Pooling Is "Essential":
+	----------------------------
+		Using Jedis: 				Jedis is not thread-safe, so pooling is mandatory in multi-threaded apps.
+		High-throughput systems: 	Apps with lots of Redis operations benefit from pooling.
+		Blocking clients: 			If your Redis client uses blocking I/O, pooling helps avoid thread contention.
+
+	When Pooling Is "Optional":
+	---------------------------
+		Using Lettuce: 
+			Lettuce is thread-safe and supports non-blocking I/O. You can share a single connection across threads, making pooling optional unless you need advanced control.
+		
+		Low-traffic apps: For simple scripts or low-volume services, pooling might be overkill.
+
+	Summary:
+	--------
+		Scenario 						Pooling Needed?
+		--------						---------------
+		Jedis in multi-threaded app 	Yes
+		Lettuce in reactive app 		Optional
+		High-load production system 	Yes
+		Simple CLI or dev script 		Not required
+
+
+Type of connection pool:
+------------------------
+	When working with Redis as a cache, the type of connection pool you use depends on the Redis client library you're using in your application. 
+
+	Connection Pool Options by Redis Client:
+	----------------------------------------
+		Redis Client 	Connection Pool Used 		
+		------------	---------------------
+		Jedis (Java) 	Apache Commons Pool 2 				
+		Lettuce (Java) 	Optional Pooling or Multiplexing 	
+
+		
+		Lettuce: Pooling vs. Multiplexing:
+		----------------------------------
+			Multiplexing: 	"One connection" shared across threads (efficient for async/reactive apps).
+			Pooling: 		"Multiple connections" managed in a pool (useful for blocking operations).
+
+		
+	What Is JedisPool?:
+	-------------------
+		It manages a pool of reusable Redis connections.
+		
+		Why it matters: 
+			Creating a new Redis connection for every operation is expensive. JedisPool avoids this by reusing connections, improving performance and scalability.
+
+		Internally, it uses Apache Commons Pool 2 to manage the lifecycle of connections.
+		
+			When your app needs to interact with Redis, it borrows a Jedis instance from the pool.
+			If no idle connections are available, it waits (or fails, based on config).
+			You perform Redis operations like set, get, del, etc., using the borrowed Jedis object.
+			After use, the connection is returned to the pool for reuse.
+			If the connection is broken, it’s discarded and replaced.
+
+	Example Code:
+	-------------
+		JedisPoolConfig poolConfig = new JedisPoolConfig();
+		poolConfig.setMaxTotal(128);
+		poolConfig.setMaxIdle(64);
+		poolConfig.setMinIdle(16);
+		poolConfig.setTestOnBorrow(true);
+
+		try (JedisPool jedisPool = new JedisPool(poolConfig, "localhost", 6379)) {
+			try (Jedis jedis = jedisPool.getResource()) {
+				jedis.set("key", "value");
+				String value = jedis.get("key");
+				System.out.println("Retrieved: " + value);
+			}
+		}
+
+	Key Configuration Parameters:
+	-----------------------------
+		maxTotal: 		Max number of active connections.
+		maxIdle: 		Max number of idle connections.
+		minIdle: 		Minimum number of idle connections to maintain.
+		testOnBorrow: 	Validates connection before use.
+
+	Benefits of Using JedisPool:
+	----------------------------
+		Thread-safe connection management
+		Improved performance under load
+		Reduced latency from connection reuse
+		Automatic handling of broken connections.
+
+	

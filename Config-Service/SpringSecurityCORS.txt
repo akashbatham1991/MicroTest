@@ -1,0 +1,170 @@
+->Understanding CORS:
+---------------------
+	CORS (Cross-Origin Resource Sharing) is a security feature that "allows or restricts" resources on a web server to be requested from another domain outside the server’s domain.
+	
+	CORS doesn't protect anything in the frontend, CORS is a way to "prevent cross-site scripting (XSS)" from web sites which are not authorized.
+	CORS is relevant only for browsers & HTML. And non-browsers clients are not restricted by the CORS headers.
+	
+		Note:
+			Cross Site Scripting (XSS) is a vulnerability in a web application that allows a third party to execute a script in the user’s browser on behalf of the web application.
+			
+	The Cross-Origin Resource Sharing(CORS) standard works by "adding new HTTP headers" that let servers describe which origins are permitted to read that information from a web browser.
+	
+	The CORS headers are effective only for browser's XHR calls. It will not prevent direct loading of resources.
+	The browser (in the XHR calls) sends the Origin header and you could check and "sent or deny" the hostname from the Origin header.
+	
+	To apply CORS restrictions to your API, you need to configure your server to include "specific HTTP response headers", primarily: 
+		Access-Control-Allow-Origin, 
+		Access-Control-Allow-Methods,  
+		Access-Control-Allow-Headers,
+		Access-Control-Allow-Credentials		
+		
+		to control which origins (domains) can access your API. 		
+		
+	1. Understanding CORS:
+	---------------------
+		Same-Origin Policy:
+		------------------
+			Web browsers have a security mechanism called the same-origin policy, which restricts web pages from accessing resources from a different domain (origin). 
+
+		CORS as a Solution:
+		------------------
+			CORS provides a way for web pages to access resources from different domains, but only with explicit permission from the server. 
+
+		CORS Headers:
+		------------
+			The server uses HTTP response headers to indicate which origins are allowed to access the resources. 	
+			
+		
+	2. Key CORS Headers:
+	-------------------
+		Access-Control-Allow-Origin: 
+			Specifies which origins are allowed to access the resource. You can use a wildcard * to allow all origins, or specify specific domains (e.g., https://example.com). 
+
+		Access-Control-Allow-Methods: 
+			Specifies which HTTP methods (e.g., GET, POST, PUT, DELETE) are allowed for the cross-origin request. 
+
+		Access-Control-Allow-Headers: 
+			Specifies which custom headers are allowed in the request. 
+
+		Access-Control-Allow-Credentials: 
+			Indicates whether the response can include credentials (like cookies or HTTP authentication). 
+
+		Access-Control-Expose-Headers: 
+			Specifies which headers are exposed to the client. 	
+			
+			
+	4. Best Practices:
+	-----------------
+	Be Specific:
+		Avoid using the wildcard * for Access-Control-Allow-Origin in production environments. Instead, specify the exact domains that need access. 
+
+	Security:
+		Carefully consider which HTTP methods and headers to allow to minimize security risks. 
+		
+		
+What is CORS and how do you configure it in Spring Security?
+Answer: 
+------
+	CORS (Cross-Origin Resource Sharing) is a security feature that allows or restricts resources on a web server to be requested from another domain outside the server’s domain.
+	
+Why CORS Is Triggered in Browsers but Not in Postman
+?? What Is CORS?
+	Cross-Origin Resource Sharing (CORS) is a browser security feature that restricts web pages from making requests to a different domain than the one that served the page. It’s enforced by browsers to protect users from malicious sites trying to access sensitive data from other origins.
+
+Example-1:
+----------
+So, a page served from https://myapp.com trying to call https://api.myserver.com is making a cross-origin request.
+If the resource server (api.myserver.com) does not include the appropriate CORS headers like:
+Access-Control-Allow-Origin: https://myapp.com
+
+	Then the browser will:
+		Block the response entirely
+		Show a CORS error in the console
+		Prevent JavaScript from accessing the response
+	
+Example-2:
+----------
+	A page from evil.com tries to fetch data from bank.com/api. If bank.com doesn’t explicitly allow evil.com via CORS headers, the browser blocks the response.
+
+
+How Does CORS prevents XSS?
+---------------------------
+	CORS does not directly prevent XSS. But it helps limit the damage that a successful XSS attack can cause:
+	
+	1. Indirect Protections:
+	------------------------
+	Stops malicious scripts from reading sensitive data from other origins.	
+		Even if a script is injected via XSS, it can’t fetch data from another domain unless that domain allows it via CORS.
+	
+	Prevents credential leakage across origins
+		Cookies and tokens tied to one origin can’t be accessed by scripts from another origin unless explicitly allowed.
+	
+	What CORS Doesn’t Do
+		It doesn’t sanitize input.
+		It doesn’t block script injection.
+		It doesn’t prevent malicious code from running on the same origin.
+
+	
+Summary:
+--------
+	CORS is about the browser enforcing rules on cross-domain HTTP requests.
+	
+	It’s not that your application can’t call other domains—it’s that browsers won’t let it happen unless CORS is configured properly.
+
+
+To configure CORS in Spring Security:
+------------------------------------
+	import org.springframework.context.annotation.Bean;
+	import org.springframework.context.annotation.Configuration;
+	import org.springframework.web.cors.CorsConfiguration;
+	import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+	import org.springframework.web.filter.CorsFilter;
+
+	@Configuration
+	public class CorsConfig {
+
+		@Bean
+		public CorsFilter corsFilter() {
+			UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+			CorsConfiguration config = new CorsConfiguration();
+			config.setAllowCredentials(true);
+			config.addAllowedOrigin("http://example.com");
+			config.addAllowedHeader("*");
+			config.addAllowedMethod("*");
+			source.registerCorsConfiguration("/**", config);
+			return new CorsFilter(source);
+		}
+	}	
+		
+	
+How to Enable CORS in Spring Boot:
+----------------------------------
+	@Configuration
+	public class WebConfig implements WebMvcConfigurer {
+	
+		@Override
+		public void addCorsMappings(CorsRegistry registry) {
+			registry.addMapping("/**")
+					.allowedOrigins("https://example.com")
+					.allowedMethods("GET", "POST", "PUT", "DELETE");
+		}
+	}
+
+	Or with annotations:
+
+	@CrossOrigin(origins = "https://example.com")
+	@RestController
+	public class MyController {
+		@GetMapping("/data")
+		public String getData() {
+			return "Hello!";
+		}
+	}
+
+
+
+
+
+
+	

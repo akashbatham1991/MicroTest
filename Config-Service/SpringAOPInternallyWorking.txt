@@ -1,0 +1,327 @@
+How Spring AOP internally works:
+--------------------------------
+	Spring AOP is best for simple, modular cross-cutting concerns like logging, security, and transactions.
+	
+	Spring AOP (Aspect-Oriented Programming) works by "weaving additional behavior", called advice, into your existing code at specific points, without modifying the actual business logic.
+	
+	
+Analogy:
+--------
+	Think of Spring AOP as assigning a security guard (proxy) to a room (bean). 
+	The guard checks every visitor (method call) and applies rules (advice) like logging or access control before letting them in.	
+
+
+Types of Weaving:
+-----------------
+	Type 				Description
+	----				-----------
+	Runtime			  	Spring AOP default; uses proxies at runtime.
+	Load-Time		 	AspectJ and Java agents to weave aspects when classes are loaded. 
+	Compile-Time 		AspectJ weaves aspects during compilation; not used by Spring AOP directly.
+
+	Note:
+		Spring AOP supports only Runtime weaving.
+		
+
+What Is a Proxy?
+----------------
+	A proxy is an object that wraps another object to intercept method calls—often to add behavior like logging, transactions, security checks, etc.
+
+How to create Proxy Object:
+---------------------------
+	Below are two core mechanisms used to create proxy objects:
+		1. JDK dynamic proxies
+		2. CGLIB proxies 	
+	
+
+Spring Boot Default Behavior:
+-----------------------------
+	Spring will automatically choose the appropriate proxying mechanism based on your bean:
+		If a bean implements an interface → JDK proxy
+		If it doesn’t → CGLIB proxy
+
+
+Internal Mechanism:
+-------------------
+	1. Proxy Creation
+	2. Bean Replacement
+	3. Method Interception
+	4. Advice Execution
+	
+	1. Proxy Creation:
+	------------------
+		Spring AOP uses runtime weaving via proxies.
+		If the target class implements an interface, Spring uses JDK dynamic proxies.
+		If not, it uses CGLIB proxies to subclass the target class.
+
+	2. Bean Replacement:
+	--------------------
+		During bean initialization, Spring checks for AOP annotations (@Aspect, @Around, etc.).
+		If matched, Spring replaces the original bean with a proxy in the ApplicationContext.
+
+	3. Method Interception:
+	-----------------------
+		When a method is called on the proxy, it intercepts the call.
+		The proxy checks if the method matches any pointcut.
+		If matched, the corresponding advice is executed before, after, or around the method.
+
+	4. Advice Execution:
+	--------------------
+		Advice logic is executed using reflection and invocation handlers.
+		For example, @Before advice logs before the method runs, while @Around can control whether the method runs at all.
+
+	
+
+What are the practical use cases for Spring AOP:
+------------------------------------------------
+	1. Logging & Monitoring
+	2. Security & Authorization
+	3. Transaction Management
+	4. Caching
+	5. Auditing
+	6. Exception Handling
+	7. Validation
+	8. Performance Profiling
+	9) Custom Use Cases
+	
+	
+	1. Logging & Monitoring:
+	------------------------
+		- Automatically log method calls, parameters, and execution time.
+		- Track performance bottlenecks across services.
+		- Example: Log every service method call with @Before and @After advice.
+
+	2. Security & Authorization:
+	----------------------------
+		- Enforce access control before method execution.
+		- Validate user roles or permissions using custom annotations.
+		- Example: Use @Before("@annotation(Secured)") to check user access rights.
+
+	3. Transaction Management:
+	--------------------------
+		- Wrap methods in transactions to ensure atomicity.
+		- Roll back automatically on exceptions.
+		- Example: Combine @Transactional with AOP for custom rollback logic.
+
+	4. Caching:
+	-----------
+		- Cache method results to avoid expensive computations or DB calls.
+		- Retrieve from cache before method execution.
+		- Example: Use @Around("@annotation(Cacheable)") to intercept and manage cache.
+
+	5. Auditing:
+	------------
+		- Track who accessed what and when.
+		- Log changes to sensitive data for compliance.
+		- Example: Log user actions with @Before("@annotation(Auditable)")
+
+	6. Exception Handling:
+	----------------------
+		- Centralize error handling logic.
+		- Convert exceptions into user-friendly messages.
+		- Example: Use @Around advice to catch and log exceptions across layers.
+
+	7. Validation:
+	--------------
+		- Automatically validate method parameters.
+		- Prevent invalid data from propagating.
+		- Example: Use AOP to enforce custom validation rules beyond @Valid.
+
+	8. Performance Profiling:
+	-------------------------
+		- Measure execution time of methods.
+		- Identify slow operations in production.
+		- Example: Use @Around advice to time method execution.
+	
+	9) Custom Use Cases:
+	--------------------
+		- License checks before method execution.
+		- Auto-registering beans in JMX.
+		- Runtime enforcement of business rules.
+
+	
+What are the limitations of using Spring AOP:
+---------------------------------------------
+	1. Technical Limitations:
+	-------------------------
+		Method-Level Only: 
+			Spring AOP supports only method execution join points. You can't advise field access, constructors, or internal method calls within the same class.
+		
+		Public Methods Only: 
+			Only public methods are eligible for proxying. Private, protected, or package-private methods are ignored.
+		
+		Self-Invocation Issue: 
+			If a method within a class calls another method in the same class, the advice won’t be triggered because the proxy isn’t involved in internal calls.
+		
+		No Aspect-on-Aspect: 
+			You can't apply advice to other aspects. Once a class is marked as an aspect, Spring excludes it from auto-proxying.
+
+	2. Developer Experience Challenges:
+	-----------------------------------
+		Debugging Complexity: 
+			Since aspects are applied behind the scenes, it can be hard to trace behavior during debugging. You might not realize an aspect is affecting a method just by looking at the code.
+	
+	3. Performance Considerations:
+	------------------------------
+		Runtime Overhead: 
+			Proxy creation and method interception add a small performance cost. While usually negligible, it can matter in high-throughput systems.
+		
+		Code Bloat: 
+			Weaving aspects can increase the size of compiled code, especially if overused.
+
+	4. Portability & Flexibility:
+	-----------------------------
+		Limited Scope: 
+			Spring AOP is proxy-based and works only with Spring-managed beans. It can't intercept calls to objects outside the Spring container.
+		
+		Less Powerful Than AspectJ: 
+			For advanced use cases like compile-time weaving or advising non-Spring objects, AspectJ is more suitable.
+
+
+How does Spring AOP compare to AspectJ:
+---------------------------------------
+	Spring AOP and AspectJ are both powerful tools for aspect-oriented programming in Java, but they differ significantly in scope, capabilities, and complexity.
+	
+	Weaving Mechanism:
+	------------------
+		Feature 			Spring AOP 						AspectJ
+		-------				----------						-------
+		Weaving Type 		Runtime (proxy-based) 			Compile-time, post-compile, and load-time 
+		Proxy Mechanism 	JDK dynamic proxy or CGLIB 		No proxies; direct bytecode weaving
+		Target Scope 		Spring-managed beans only 		Any Java class
+
+	Join Point Support:
+	-------------------
+		Join Point Type 		Spring AOP 	AspectJ
+		---------------			----------	-------
+		Method Execution 		✅ 			✅ 
+		Method Call 			❌ 			✅ 
+		Constructor Execution 	❌ 			✅ 
+		Field Access/Assignment ❌ 			✅ 
+		Static Initializers 	❌			✅ 
+		Internal Method Calls 	❌ 			✅
+
+	
+Performance & Complexity:
+-------------------------
+	Spring AOP:
+	-----------
+		Easier to learn and integrate with Spring projects.
+		Slight runtime overhead due to proxy creation.
+		Limited to public methods and external calls.
+	
+	AspectJ:
+	--------
+		Higher performance due to compile-time weaving.
+		More complex setup (requires AspectJ compiler or LTW).
+		Can be used outside Spring and supports deep interception.
+	
+	Benchmarks suggest AspectJ can be 8–35x faster than Spring AOP in high-load scenarios.
+
+
+When to Use What?
+-----------------
+	Use Spring AOP if:
+	------------------
+		You're working within the Spring ecosystem.
+		You need simple, method-level interception (e.g. logging, transactions).
+		You prefer minimal configuration and runtime flexibility.
+	
+	Use AspectJ if:
+	---------------
+		You need full AOP capabilities (e.g. field access, constructor interception).
+		Performance is critical.
+		You're working outside Spring or need broader weaving.
+
+
+Alternatives to Spring AOP and AspectJ:
+---------------------------------------
+	JBoss AOP:
+	----------
+		Part of the JBoss application server
+		Integrates well with Java EE
+		Supports method, constructor, and field interception
+	
+	Guice AOP:
+	----------
+		Lightweight AOP support via Google Guice
+		Uses method interceptors and annotations
+		Best for dependency-injected applications
+
+
+
+
+
+
+
+
+
+
+
+===========================================================================================================
+
+
+
+How @Transactional internally works:
+------------------------------------
+	The @Transactional annotation in Spring is a powerful tool for managing database transactions declaratively.
+
+Internal Mechanism:
+-------------------
+	1. Proxy Creation:
+	------------------
+		Spring AOP wraps beans annotated with @Transactional in a proxy.
+		If the bean implements an interface, Spring uses JDK dynamic proxies.
+		Otherwise, it uses CGLIB proxies to subclass the bean.
+
+	2. Method Interception:
+	-----------------------
+		When a method is called, the proxy intercepts it.
+		The TransactionInterceptor (an AOP advice) checks if a transaction is needed.
+		Based on the method’s metadata (like propagation, isolation), it starts, joins, or skips a transaction.
+
+	3. Transaction Manager Delegation:
+	----------------------------------
+		The interceptor delegates to a PlatformTransactionManager (e.g., JpaTransactionManager).
+		It decides whether to:
+		Start a new transaction
+		Join an existing one
+		Suspend the current transaction
+
+	4. Thread Binding:
+	------------------
+		Spring binds the transaction and EntityManager to the current thread using ThreadLocal.
+		This ensures consistency across DAO/service layers during the transaction.
+
+	5. Commit or Rollback:
+	----------------------
+		If the method completes successfully, the transaction is committed.
+		If an exception occurs:
+		Unchecked exceptions (like RuntimeException) trigger a rollback by default.
+		Checked exceptions require explicit configuration (rollbackFor).
+
+
+Key Components Involved:
+------------------------
+	Component 					Role
+	---------					----
+	@Transactional 				Declares transaction boundaries
+	TransactionInterceptor 		AOP advice that wraps method calls
+	PlatformTransactionManager 	Manages transaction lifecycle (start, commit, rollback) 
+	EntityManager Proxy 		Delegates to actual EntityManager bound to the thread 
+
+
+
+	Common Pitfalls:
+	----------------
+		Self-invocation: 			Internal method calls bypass the proxy, so @Transactional won’t apply.
+		Non-public methods: 		Only public methods are intercepted by default.
+		Misconfigured propagation: 	Can lead to unexpected rollbacks or nested transactions.
+
+
+
+
+
+	
+	
+

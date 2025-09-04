@@ -1,0 +1,434 @@
+https://www.youtube.com/watch?v=sATuxP_qC-4	
+https://www.youtube.com/playlist?list=PL0zysOflRCelmjxj-g4jLr3WKraSU_e8q
+https://learncodewithdurgesh.com/
+
+https://www.youtube.com/watch?v=41cEyHX0nuE&t=10s	(22 lectures)
+https://github.com/daisy-world/spring-boot-actuator/tree/master
+
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		
+		
+		Actuator comes with most endpoints disabled. Only two available by default are: 
+			"/health" and 
+			"/info".
+
+		management.endpoints.web.exposure.include=*								//include
+		management.endpoints.web.exposure.exclude=loggers						//exclude		
+		management.endpoints.web.base-path=/mgmt
+		management.endpoints.health.show-details=always							(it will give you more info about health)	
+		management.endpoint.shutdown.enabled=true								(explicitly enable a specific endpoint)
+		management.endpoint.health.enabled=true									(explicitly enable a specific endpoint)		
+		
+		http://localhost:8080/actuator/											(default)
+		http://localhost:8080/actuator/features									(with new end point)
+		http://localhost:8080/actuator/startup									(startup endpoint)
+		
+		Custom Health Indicator:				Implements HealthIndicator interface and override it's health method.
+		
+		Custom Extending Existing Endpoints:	@EndpointWebExtension(endpoint = InfoEndpoint.class)
+		
+		Custom endpoint:						@Endpoint(id="features"), @ReadOperation, @WriteOperation, @DeleteOperation
+		
+		Custom StartupEndpoint:					new SpringApplication(new BufferingApplicationStartup(2048));
+	
+		Custom base path instead of /actuator:	management.endpoints.web.base-path=/mgmt
+		
+		Enable or disable the endpoint using @Endpoint(id = “features”, enableByDefault = false).
+		
+		"actuator-provided endpoints" used for monitoring the Spring boot application:
+			Health
+			Info
+			Heapdump
+			Threaddump
+			Httptrace
+			Beans
+			Env
+			Mappings
+			Configprops
+			Shutdown
+			
+			
+	The "ApplicationStartup" interface comes with three implementation variants:
+	----------------------------------------------------------------------------
+		DefaultApplicationStartup
+		BufferingApplicationStartup
+		FlightRecorderApplicationStartup	
+		
+		This implementation is an "in-memory solution" that keeps a configured number of events in memory. 
+		This information is drawn out using the startup actuator endpoint or can be read and processed within the application.
+				
+		optimize the startup time by tracking the 'application startup events':
+		
+		A typical application startup contains three major parts:
+			The lifecycle of the application context itself. (reading config, classes etc)
+			Bean creation, evaluation and the post processing.
+			Event processing from the application itself.
+			
+		Two steps needed to configure it:
+			1) app.setApplicationStartup(new BufferingApplicationStartup(2048)); 	//2048 for in-memory store
+			2) management.endpoints.web.exposure.include=startup	
+			
+		Now you can access the information by sending the request:
+			http://localhost:8080/actuator/startup	
+		
+		
+		
+		
+===========================================START====================================================================
+
+Spring Boot Actuator:
+--------------------
+	We’ll learn how to use, configure, and extend this "monitoring tool".
+	
+	Actuator brings production-ready features to our application.
+		Monitoring our app, 
+		gathering metrics, 
+		understanding traffic and 
+		the state of our database 
+		
+	becomes trivial with this dependency.
+	
+	It uses HTTP endpoints or JMX beans to enable us to interact with it.
+	
+	Once this dependency is on the classpath, several endpoints are available for us out of the box.
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+	
+	Actuator comes with most endpoints disabled. Only two available by default are "/health" and "/info".
+
+	If we want to enable all of them, we could set: 	management.endpoints.web.exposure.include=*. 
+	
+	Alternatively, we can list endpoints that should be enabled.
+	
+	Also, all Actuator endpoints are placed under the "/actuator" path by default.
+	
+	
+->"actuator-provided endpoints" used for monitoring the Spring boot application:
+	Health
+	Info
+	Heapdump
+	Threaddump
+	Httptrace
+	Beans
+	Env
+	Mappings
+	Configprops
+	Shutdown
+	
+How to get the list of all the beans in your Spring boot application?
+	Spring Boot actuator “/Beans” is used to get the list of all the spring beans in your application.
+
+How to check the environment properties in your Spring boot application?
+	Spring Boot actuator “/env” returns the list of all the environment properties of running the spring boot application.
+	
+	
+	
+Hypermedia for Actuator Endpoints:	(Custom base path instead of /actuator)
+----------------------------------	---------------------------------------
+	Spring Boot adds a discovery endpoint that returns links to all "available actuator endpoints". This will facilitate discovering actuator endpoints and their corresponding URLs.
+
+	By default, this 'discovery endpoint' is accessible through the /actuator endpoint. it’ll return the actuator links for the various endpoints.
+	
+	
+	Moreover, if we configure a custom management base path, then we should use that base path as the discovery URL.
+	
+	For instance, if we set: 
+		
+		management.endpoints.web.base-path=/mgmt, 
+		
+		then we should request the /mgmt endpoint to see the list of links.
+
+	when the management base path is set to /, the discovery endpoint is "disabled" to prevent the possibility of a clash with other mappings.
+
+
+->Enable All Endpoints:
+-----------------------
+	In order to access the actuator endpoints using HTTP, we need to both enable and expose them.
+	
+	We need to add the following configuration to expose all endpoints:
+		management.endpoints.web.exposure.include=*
+		
+	To explicitly enable a specific endpoint (e.g., /shutdown), we use:
+		management.endpoint.shutdown.enabled=true
+		management.endpoint.health.enabled=true
+
+	To expose all enabled endpoints except one (e.g., /loggers), we use:
+		management.endpoints.web.exposure.include=*								//include
+		management.endpoints.web.exposure.exclude=loggers						//exclude
+		
+	management.endpoints.health.show-details=always	(it will give you more info about health)	
+	
+	
+	Extra:
+	------
+	Comparing Devtools configuration:
+		spring.devtools.restart.exclude=resources/**,web-inf/**	
+		spring.devtools.restart.enabled=true
+		spring.devtools.livereload.enabled=true/false
+	
+
+	
+https://springhow.com/spring-boot-health-check-indicators/		
+https://www.youtube.com/watch?v=sATuxP_qC-4	
+
+->Create custom database health checker in spring boot actuator:
+----------------------------------------------------------------
+	We just need to implement HealthIndicator interface and override it's health method as below:
+	
+	@Controller
+	public class MyDBHealthService implements "HealthIndicator" {
+	
+		public boolean isHealthGood(){
+			//custom logic
+			return true;
+		}
+		
+		@Override
+		Public Health health(){
+			if(isHealthGood()){
+				//return Health.up();
+				return Health.up().withDetails("DB Service", "DB service is up").build();
+			} else {
+				return Health.down.withDetails("DB Service", "DB service is down").build();
+			}
+		}
+	}
+
+When you restart your tomcat, this will become part of existing health response.
+
+
+Spring Boot Health actuator:
+---------------------------
+	Spring boot makes health checks easier for us by providing opinionated /actuator/health endpoint.
+	The HealthEndpoint of spring-boot-starter-actuator module collects Health information for any beans that are defined as HealthIndicator.
+	
+	For a simple web application, there are two HealthIndicator beans Auto-Configured by default. And they are for: 
+		Ping health check and 
+		Disk Space health check. 
+		
+			These two health information come from 'DiskSpaceHealthIndicator' and 'PingHealthIndicator' respectively.
+			
+			However, More health indicators comes into place when we start adding starters.
+				
+	
+	Health Check from Starters:
+	---------------------------
+		Usually, starters comes with their 'own health indicator' auto-configurations. 	
+		For Example, 
+			adding spring-boot-starter-jdbc adds a database Health check. 
+			
+			
+https://springhow.com/spring-boot-health-check-indicators/			
+Health check groups:
+--------------------
+	We can group health check components for various reasons. 
+	For example, 
+		let’s say our application use Mail, Database and RabbitMQ for some of its business logic. But there might be cases that some client requests only use database and email functionality. 
+		
+		Here the client faces the following inconveniences:
+			With this default arrangement, health-check happens for all components. Thus, the API for health check takes more time.
+			If RabbitMQ connection is down, then the whole /actuator/health returns status as down. However, we won’t know if the component that it needs is down.
+			The client will have to check each and every component’s health. And it checks that by accessing /actuator/health/<component-name>. But for more than one component, the client would still spend more effort doing health-checks.
+
+	To summarize, These are the inconveniences we should avoid. To do that, we could arrange our health indicators to a named group. For instance, The below configuration creates an health group called my-health-check.
+
+		management.endpoint.health.group.my-health-check.include = db,ping
+		
+		
+	Understandably, We can also also access this health check group by its name:
+		http://localhost:8080/actuator/health/my-health-check
+
+	
+	With this approach, the client only has to hit one URL for application status check. The client doesn’t have to worry about any component failures other than db and ping.
+
+	Most importantly, you could even set 
+		
+		management.endpoint.health.group.my-health-check.show-details=never.
+		
+		Here, the custom health check can hide sensitive data.
+		
+		
+	
+	
+https://www.youtube.com/watch?v=41cEyHX0nuE&t=10s	
+
+-Creating a Custom actuator Endpoint:
+-------------------------------------
+@Endpoint, @ReadOperation, @WriteOperation, @DeleteOperation	
+
+	@Component
+	@Endpoint(id = "features")
+	public class FeaturesEndpoint {
+
+    private Map<String, String> features = new HashMap<>();
+		features.add("v1","SpringBootV1");
+		features.add("v2","SpringBootV2")
+
+    @ReadOperation
+    public Map<String, Sting> features() {
+        return features;
+    }
+
+    @ReadOperation
+    public String feature(@Selector String name) {
+        return features.get(name);
+    }
+
+    @WriteOperation
+    public void configureFeature(@Selector String name, String feature) {
+        features.put(name, feature);
+    }
+
+    @DeleteOperation
+    public void deleteFeature(@Selector String name) {
+        features.remove(name);
+    }
+}
+
+->how to configure custome actuator endpoint in spring boot?
+------------------------------------------------------------	
+	The endpoint id i.e custom_endpoint needs to be configured in the list of actuator endpoints to be enabled.
+
+	application.properties/
+		management.endpoints.web.exposure.include=health,info,custom_endpoint
+	
+	
+
+	Now restart your embedded tomcat server, now Spring Boot will register this endpoint.	
+	Now if you call: http://localhost:8080/actuator,  your new custom enpoints would also visible along with other actuator	links.
+
+	-You can call your custom endpoint like below:
+	---------------------------------------------
+	The path of our endpoint is determined by the id parameter of @Endpoint. In our case, it’ll route requests to /actuator/features.
+
+		GET:	http://localhost:8080/actuator/features
+		GET:	http://localhost:8080/actuator/features/v1
+	
+		POST:	http://localhost:8080/actuator/features/		Body: {"name":"v3","feature":"SpringBootV3"}
+	
+		DELETE: http://localhost:8080/actuator/features/v1
+	
+	
+	We can, however, enable or disable the endpoint using @Endpoint(id = “features”, enableByDefault = false).
+  
+  
+  
+ ->Extending Existing Endpoints:
+ ----------------------------------
+	We can easily extend the behavior of a predefined endpoint using the: 	
+		@EndpointExtension or 
+	
+	its more concrete specializations 
+		@EndpointWebExtension or 
+		@EndpointJmxExtension:
+	
+	@Component
+	@EndpointWebExtension(endpoint = InfoEndpoint.class)
+	public class InfoWebEndpointExtension {
+
+    private InfoEndpoint delegate;
+
+    // standard constructor
+
+    @ReadOperation
+    public WebEndpointResponse<Map> info() {
+        Map<String, Object> info = this.delegate.info();
+        Integer status = getStatus(info);
+        return new WebEndpointResponse<>(info, status);
+    }
+
+    private Integer getStatus(Map<String, Object> info) {
+        // return 5xx if this is a snapshot
+        return 200;
+    }
+}
+
+
+
+https://springhow.com/spring-boot-startup-actuator-endpoint/
+
+->Startup Actuator Endpoint in Spring Boot:	(optimize the startup time of Spring Boot applications.)
+-------------------------------------------
+	
+	How we can use it to "optimize the startup time of Spring Boot applications".
+	We can speed the Spring Boot application startup by tracking the 'application startup events'. 
+	
+	A typical application startup contains three major parts:
+		The lifecycle of the application context itself. (reading config, classes etc)
+		Bean creation, evaluation and the post processing.
+		Event processing from the application itself.
+		
+	By tracking these steps using Startup Actuator Endpoints, we can pinpoint which part of the application is dragging down the application start up time. 
+	We can even identify which beans take time and probably fix them.
+	
+	Spring Boot achieves this functionality via the newly introduced 'ApplicationStartup' implementations.
+	
+	The "ApplicationStartup" interface comes with three implementation variants:
+	----------------------------------------------------------------------------
+		DefaultApplicationStartup
+		BufferingApplicationStartup
+		FlightRecorderApplicationStartup
+		
+		
+	->Configure "Startup Actuator" endpoint:
+	--------------------------------------	
+	
+		Remember that the application startup is made of a set of steps. When these events are fired, the Application startup can track them and provide the metric in an easily understandable format.
+		
+		A buffering implementation is a straightforward approach for that. 
+		
+		This implementation is an "in-memory solution" that keeps a configured number of events in memory. 
+		This information is drawn out using the startup actuator endpoint or can be read and processed within the application. 
+		
+			Here is a simple example:
+			-------------------------
+			
+			@SpringBootApplication
+			public class ActuatorStartupExampleApplication {
+				public static void main(String[] args) {
+					SpringApplication app = new SpringApplication(ActuatorStartupExampleApplication.class);
+					app.setApplicationStartup(new BufferingApplicationStartup(2048)); //2048 configuration for in-memory store.
+					app.run(args);
+				}
+			}
+	
+	
+		Along with the above change, you need to enable the management endpoint for the startup to see the results:
+			management.endpoints.web.exposure.include=startup
+
+			
+		Now you can access the information by sending the request:
+			http://localhost:8080/actuator/startup
+	
+		Two steps needed to configure it:
+			1) app.setApplicationStartup(new BufferingApplicationStartup(2048));
+			2) management.endpoints.web.exposure.include=startup
+			
+	
+	IMPORTANT: 
+		The Actuator Endpoint is only available for use if it is enabled along with BufferingApplicationStartup. Otherwise, the StartupEndpointAutoConfiguration will not configure a StartupEndpoint.
+
+		
+============================
+
+		management.endpoints.web.exposure.include=*								//include
+		management.endpoints.web.exposure.exclude=loggers						//exclude		
+		management.endpoints.health.show-details=always							(it will give you more info about health)	
+		management.endpoint.shutdown.enabled=true
+		management.endpoint.health.enabled=true
+		management.endpoint.health.group.my-health-check.include = db,ping
+		management.endpoint.health.group.my-health-check.show-details=never.
+		
+		http://localhost:8080/actuator/											(default)
+		http://localhost:8080/actuator/features									(with new end point)
+		http://localhost:8080/actuator/startup									(startup endpoint)
+	
+		spring.devtools.restart.exclude=resources/**,web-inf/**	
+		spring.devtools.restart.enabled=true
+		spring.devtools.livereload.enabled=true/false		

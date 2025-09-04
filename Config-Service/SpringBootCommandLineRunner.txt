@@ -1,0 +1,119 @@
+https://mkyong.com/spring-boot/spring-boot-commandlinerunner-example/
+
+
+CommandLineRunner (or ApplicationRunner):
+-----------------------------------------
+
+Spring Boot CommandLineRunner:
+-----------------------------
+	The CommandLineRunner is an interface in Spring Boot. 
+	When a class implements this interface, Spring Boot will automatically run its "run" method **after loading the 'application context'. 
+	
+	Usually, we use this CommandLineRunner to perform 'startup tasks' like: 
+		user or database initialization, 
+		data seeding, or 
+		other startup activities.
+	
+
+Implementing CommandLineRunner:
+-------------------------------
+	
+	Way-1:
+	-----
+		We can create a @Component bean that implements the CommandLineRunner interface and override the run() method. 
+		*Spring will run the code during the Spring application startup:
+		
+		@Component
+		public class DatabaseInitializer implements CommandLineRunner {
+
+			@Autowired
+			BookRepository bookRepository;
+
+			@Override
+			public void run(String... args) {
+
+				bookRepository.save(
+					new Book("Book A",
+                      BigDecimal.valueOf(9.99),
+                      LocalDate.of(1982, 8, 31))
+				);
+
+				System.out.println("Database initialized!");
+			}
+		}
+		
+		
+	Way-2:
+	------
+		Another common way is to make the @SpringBootApplication class implements the CommandLineRunner interface directly:
+		
+		@SpringBootApplication
+		public class StartApplication2 implements CommandLineRunner {
+
+			public static void main(String[] args) {
+				SpringApplication.run(StartApplication2.class, args);
+			}
+
+			@Autowired
+			BookRepository bookRepository;
+
+			@Override
+			public void run(String... args) {
+
+				bookRepository.save(
+					new Book("Book A",
+                      BigDecimal.valueOf(9.99),
+                      LocalDate.of(1982, 8, 31))
+				);
+				
+				System.out.println("Database initialized!");
+			}
+		}
+		
+		
+	Way-3:
+	------
+		It’s also common for the developer to annotate the CommandLineRunner as a @Bean; 
+		Spring will also run the code during the startup of the Spring application:
+		
+		
+		@SpringBootApplication
+		public class StartApplication {
+
+			public static void main(String[] args) {
+				SpringApplication.run(StartApplication.class, args);
+			}
+
+			@Autowired
+			BookRepository bookRepository;
+
+			@Bean
+			public CommandLineRunner startup() {
+
+				return args -> {
+
+					bookRepository.save(
+						new Book("Book A",
+                          BigDecimal.valueOf(9.99),
+                          LocalDate.of(1982, 8, 31))
+					);
+
+					System.out.println("Database initialized!");
+
+				};
+			}
+		}
+		
+		
+		
+->Configure "Startup Actuator" endpoint at application launchup:
+---------------------------------------------------------------
+	@SpringBootApplication
+	public class ActuatorStartupExampleApplication {
+		
+		public static void main(String[] args) {
+			SpringApplication app = new SpringApplication(ActuatorStartupExampleApplication.class);
+			app.setApplicationStartup(new BufferingApplicationStartup(2048));	//2048 configuration for in-memory store.
+			app.run(args);
+		}
+	}

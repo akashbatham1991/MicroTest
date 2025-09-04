@@ -1,0 +1,170 @@
+How autoprovisioning works in spring boot:
+------------------------------------------
+	Auto-configuration means Spring Boot tries to guess and configure beans you’re likely to need, based on:
+		1. Dependencies in your pom.xml or build.gradle
+		2. Classes present in the classpath
+		3. Properties defined in application.properties or application.yml
+	
+	
+	How It Works Internally:
+	------------------------
+	
+	1. Annotations That Trigger It:
+	-------------------------------
+		@SpringBootApplication includes:
+			@EnableAutoConfiguration: activates auto-configuration
+			@ComponentScan: scans for beans
+			@Configuration: marks the class as a source of bean definitions
+	
+	2. Classpath Scanning:
+	----------------------
+		Spring Boot scans your classpath for known libraries (e.g., H2, JPA, Kafka).
+		If it finds a match, it loads the corresponding auto-configuration class from spring-boot-autoconfigure.jar.
+	
+	3. Conditional Configuration:
+	-----------------------------
+		Auto-config classes use annotations like:
+			@ConditionalOnClass: 		only configure if a class is present.
+			@ConditionalOnMissingBean: 	only configure if a bean isn’t already defined.
+			@ConditionalOnProperty: 	only configure if a property is set.
+
+	4. Override Behavior:
+	---------------------
+		You can override auto-configured beans by defining your own.
+		
+		You can disable specific auto-configs using:
+			@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+
+Where It Lives:
+---------------
+	All auto-config logic is bundled in:	spring-boot-autoconfigure.jar
+	
+	It contains dozens of classes like WebMvcAutoConfiguration, JpaAutoConfiguration, etc.
+
+
+Debugging Auto-Config:
+----------------------
+	To see what’s being auto-configured:
+		Run your app with --debug
+		
+		Spring Boot prints a conditions report, showing which auto-configs were applied or skipped.
+
+
+How @EnableAutoConfiguration works internally:
+----------------------------------------------
+	When you annotate your main class with @SpringBootApplication, it implicitly includes @EnableAutoConfiguration. This annotation triggers the auto-configuration process.
+
+	Auto-Configuration Classes:
+	---------------------------
+		Spring Boot scans for configuration classes listed in:
+		
+			META-INF/spring.factories
+
+		Specifically, it looks for entries under the key:
+		
+			org.springframework.boot.autoconfigure.EnableAutoConfiguration
+
+			These entries point to classes like DataSourceAutoConfiguration, JpaAutoConfiguration, etc.
+
+
+	
+	Conditional Configuration:
+	--------------------------
+		Spring Boot provides several conditional annotations to control when your config is applied or activate:
+		
+			@ConditionalOnClass: 			Only configure if, a specific class is on the classpath.
+			@ConditionalOnMissingBean: 		Only configure if, a bean hasn’t already been defined.
+			@ConditionalOnProperty: 		Only configure if, a specific property is set or matches a value.
+			@ConditionalOnWebApplication: 	Only configure if, it’s a web app.
+		
+		This ensures that Spring Boot doesn’t blindly configure everything, it adapts based on your environment and dependencies.
+		You can also create your own auto configuration class by using these annotations on your class.
+			
+			@ConditionalOnClass:
+			--------------------
+				Guarding Against Missing Dependencies
+				
+				If your configuration relies on a third-party library (like Hibernate, Jackson, or Redis), you don’t want it to activate unless that library is actually present.
+				
+					@Configuration
+					@ConditionalOnClass(name = "org.hibernate.SessionFactory")
+					public class HibernateAutoConfiguration {
+						// Only applies if Hibernate is available
+					}
+
+				This prevents ClassNotFoundException and keeps your app lightweight when unused features are excluded.
+
+			
+			@ConditionalOnMissingBean:
+			--------------------------
+				when you want to provide a default bean, but only if the user hasn’t already defined one.
+
+			@ConditionalOnProperty:
+			-----------------------
+				It lets you toggle configuration logic based on values in application.properties or application.yml. 
+				Think of it as a feature switch that activates beans only when certain properties are set.
+
+				1. Feature Toggles:
+				-------------------
+					Enable or disable parts of your application dynamically:
+
+						@Bean
+						@ConditionalOnProperty(name = "feature.x.enabled", havingValue = "true")
+						public FeatureXService featureXService() {
+							return new FeatureXService();
+						}
+
+					This bean will only be created if feature.x.enabled=true.
+
+				
+				2. Environment-Specific Configuration:
+				--------------------------------------
+					You might want different behavior in dev vs. prod:
+
+						@Bean
+						@ConditionalOnProperty(name = "cache.enabled", matchIfMissing = false)
+						public CacheManager cacheManager() {
+							return new CustomCacheManager();
+						}
+	
+
+	
+	Debugging Tip:
+	--------------
+		To see what’s being auto-configured, use:
+			--debug
+
+		Or inspect the /actuator/conditions endpoint (if enabled) to see which auto-configurations were applied or skipped.
+	
+	
+	Step-by-Step: Creating Custom Auto-Configuration:
+	-------------------------------------------------
+	
+		1. Create a Configuration Class:
+		--------------------------------
+			Use @Configuration and conditional annotations to define your beans:
+			
+				@Configuration
+				@ConditionalOnClass(MyService.class) 		// Only load if MyService is on the classpath
+				@ConditionalOnMissingBean(MyService.class) 	// Only create if not already defined
+				public class MyServiceAutoConfiguration {
+
+					@Bean
+					public MyService myService() { 
+						return new MyService(); 			// Your custom bean
+						}
+					}
+
+
+		2. Register in spring.factories:
+		--------------------------------
+			Create a file at:
+				src/main/resources/META-INF/spring.factories
+
+			Add this entry:
+				org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+				com.example.autoconfig.MyServiceAutoConfiguration
+
+			This tells Spring Boot to load your auto-config class when @EnableAutoConfiguration is active.
+
+	

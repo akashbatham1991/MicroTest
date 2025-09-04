@@ -1,0 +1,108 @@
+CORS:
+-----
+	CORS stands for Cross-Origin Resource Sharing.
+	You need it for "authorized resource sharing with external third parties". 
+	
+	
+Why is cross-origin resource sharing important?
+-----------------------------------------------
+	In the past, when internet technologies were still new, cross-site request forgery (CSRF) issues happened. These issues sent fake client requests from the victim's browser to another application.
+
+	For example, 
+		the victim logged into their bank's application. Then they were tricked into loading an external website on a new browser tab. The external website then used the victim's cookie credentials and relayed data to the bank application while pretending to be the victim. Unauthorized users then had unintended access to the bank application.
+
+	**To prevent such CSRF issues, all browsers now implement the "same-origin" policy.		
+	CORS is an extension of the same-origin policy. 
+
+
+	
+What is CORS?
+=============	
+	It's a mechanism that allows a web page to access resources from a different domain than the one that served the web page, effectively bypassing the same-origin policy. 
+	
+	How to implement CORS:
+		This is achieved through the use of HTTP headers, which determine whether browsers block cross-origin requests. 
+	
+	How it Works:
+		CORS uses HTTP headers to control access. 
+		The server sends specific headers to the browser, indicating whether and how cross-origin requests from a particular origin are permitted. 
+		
+	Benefits:
+		CORS is crucial for integrating web applications with external services, APIs, or resources hosted on different domains, such as fetching data from a third-party database or using a public font library. 
+	
+	Examples:
+		CORS is used in various scenarios, including fetching data from a REST API, loading images from a different domain, or embedding content from a third-party website. 
+		
+	Same-Origin Policy:
+		By default, browsers restrict JavaScript code from making requests to a different domain (origin) than the one that loaded the page. This policy is in place for security reasons. 	
+		
+	Bypassing the Policy:
+		CORS allows web servers to explicitly opt-in to allowing cross-origin access to their resources. 
+	
+	
+What is CORS in rest API?
+=========================
+		CORS, or Cross-Origin Resource Sharing, is a mechanism that allows a web server to relax the same-origin policy, enabling web applications to make requests to different domains than their own. It's a security standard that provides controlled access to resources from different origins. 
+
+	Same-Origin Policy:
+		Web browsers enforce the same-origin policy to protect users from malicious websites. This policy restricts scripts running in a browser from making requests to a different domain, protocol (e.g., HTTP vs. HTTPS), or port than the one that served the script. 
+		
+	CORS as a Solution:
+		CORS provides a way for servers to explicitly allow or deny requests from different origins, effectively relaxing the restrictions of the same-origin policy. 	
+		
+	How it Works:
+		When a browser makes a cross-origin request, it includes an "Origin header" in the request, indicating the origin of the requesting page. The server can then respond with an "Access-Control-Allow-Origin" header, specifying which origins are allowed to access the resource. 	
+		
+	Benefits of CORS:
+		Controlled Access: 
+			CORS allows servers to selectively grant access to resources from specific origins, enhancing security. 
+		
+		Integration with External APIs: 
+			It enables applications to easily integrate with third-party APIs that may be hosted on different domains. 
+		
+		Enhanced Development: 
+			CORS simplifies the development process for web applications that need to interact with resources on different domains. 	
+			
+	Example:
+		If a front-end website on example.com needs to make a request to an API on api.example.org, CORS is required. The api.example.org server would need to configure CORS to allow requests from example.com. 		
+		
+		
+	
+
+
+->
+When you make a cross-origin request, this is the request-response process:
+---------------------------------------------------------------------------
+	1.The browser adds an origin header to the request with information about the current origin's protocol, host, and port.
+	2.The server checks the current origin header and responds with the requested data and an Access-Control-Allow-Origin header.
+	3.The browser sees the access control request headers and shares the returned data with the client application.
+	
+	Alternatively, if the server doesn’t want to allow cross-origin access, it responds with an error message.
+	
+	
+->
+Cross-origin resource sharing example:
+--------------------------------------
+	For example, consider a site called https://news.example.com. This site wants to access resources from an API at partner-api.com.
+
+	Developers at https://partner-api.com first configure the cross-origin resource sharing (CORS) headers on their server by adding new.example.com to the allowed origins list. They do this by adding the below line to their server configuration file.
+
+	Access-Control-Allow-Origin: https://news.example.com
+
+	Once CORS access is configured, news.example.com can request resources from partner-api.com. For every request, partner-api.com will respond with Access-Control-Allow-Credentials : "true." The browser then knows the communication is authorized and permits cross-origin access.
+
+	If you want grant access to multiple origins, use a comma-separated list or wildcard characters like * that grant access to everyone.	
+	
+	The server response headers must include the following:
+		Access-Control-Allow-Methods
+		Access-Control-Allow-Headers
+		Access-Control-Allow-Origin
+		
+	An example server response is given below:
+		HTTP/1.1 200 OK
+
+		Access-Control-Allow-Headers: Content-Type
+		Access-Control-Allow-Origin: https://news.example.com
+		Access-Control-Allow-Methods: GET, DELETE, HEAD, OPTIONS
+
+	

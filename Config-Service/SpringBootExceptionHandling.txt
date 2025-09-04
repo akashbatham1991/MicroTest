@@ -1,0 +1,249 @@
+https://www.tutorialspoint.com/spring_boot/spring_boot_exception_handling.htm
+https://www.youtube.com/watch?v=jk_O8mRz2Ik
+https://www.youtube.com/watch?v=LNkHpE-6hCk
+https://www.javadevjournal.com/spring/exception-handling-for-rest-with-spring/
+
+@ControllerAdvice
+@ExceptionHandler
+ResponseEntityExceptionHandler
+
+->Diff b/w @RestControllerAdvice and @ControllerAdvice:
+--------------------------------------------------------
+	@RestControllerAdvice = @ControllerAdvice + @ResponseBody
+	
+	
+->Diff b/w @RestControler and @Controller:
+------------------------------------------	
+	@RestControler = @Controller + @ResponseBody
+
+
+----------------------------------------------------START---------------------------------------------
+
+Spring Boot - Exception Handling:
+---------------------------------
+
+Controller Advice:	(class level)
+-----------------
+	The @ControllerAdvice is an annotation, to handle the exceptions "globally". Thus it is going to intercept exceptions from controllers accross the application.
+
+
+	
+Exception Handler:	(method level)
+-----------------
+	The @ExceptionHandler is an annotation used to handle the "specific exceptions" and sending the custom responses to the client.
+	
+	Note:
+		If we want to handle exception for 'single' controller class, then we can use this annotation in that specific controller class, then whenever there is any exception in that controller, the exception handler method of that controller class will execute.
+		
+		Now if we want to introduce 'global' exception handler which will work for all controller in your project, 
+		then we should use both: 
+			@ControllerAdvice and 
+			@ExceptionHandler. 
+		We can place all the exception handler methods in single class.
+		
+		Whenever there is any exception occurred in this project, this exception handler class will handle all the exceptions. 
+		It has handlers for respective exceptions and if no exception handler method match then in that case generic exception handler method will run which is having Exception class.
+		
+		
+ResponseEntityExceptionHandler: 
+-------------------------------
+	you don't need to extend ResponseEntityExceptionHandler if you don't need all the exception mappings, it provides.
+
+
+->You can use the following code to create @ControllerAdvice class to handle the exceptions globally:
+
+		@ControllerAdvice
+		public class ProductExceptionController {
+		}
+	
+	
+->Define a exception class that extends the RuntimeException class:
+
+	public class ProductNotfoundException extends RuntimeException {
+		public ProductNotfoundException(String message) {
+				super(message);
+			}
+	}	
+
+
+->You can define the @ExceptionHandler method to handle the exceptions as shown. 
+This method should be used for writing the Controller Advice class file:
+
+		@ExceptionHandler(value = ProductNotfoundException.class)
+		public ResponseEntity<Object> exception(ProductNotfoundException exception) {
+		}
+
+	Note:
+		The parameter exception(ProductNotfoundException) and the value(ProductNotfoundException) of ExceptionHandler should match.
+		
+
+->Now, use the code given below to throw the exception from the API:
+
+		@RequestMapping(value = "/products/{id}", method = RequestMethod.PUT)
+		public ResponseEntity<Object> updateProduct() { 
+			throw new ProductNotfoundException();
+	}
+
+
+->The complete code to handle the exception is given below.:
+------------------------------------------------------------
+	@ControllerAdvice
+	public class ProductExceptionController {
+	
+		@ExceptionHandler(value = ProductNotfoundException.class)
+		public ResponseEntity<Object> exception(ProductNotfoundException exception) {
+			return new ResponseEntity<>("Product not found", HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	
+	If the Product is not found, then it throws the ProductNotFoundException class:	
+		@RestController
+		public class ProductServiceController {
+   
+			@RequestMapping(value = "/products/{id}", method = RequestMethod.PUT)
+			public ResponseEntity<Object> updateProduct() { 
+				throw new ProductNotfoundException();
+			}	
+		}
+		
+*********************************************************************		
+=====================================================================		
+->Diff b/w @RestControllerAdvice and @ControllerAdvice:
+--------------------------------------------------------
+	@RestControllerAdvice = @ControllerAdvice + @ResponseBody
+	
+	
+->Diff b/w @RestControler and @Controller:
+------------------------------------------	
+	@RestControler = @Controller + @ResponseBody
+=====================================================================		
+*********************************************************************		
+		
+========================
+
+/*
+Whenever there is any exception occurred in this project, this exception handler class will handle all the exceptions. It has handlers for respective exceptions and if no exception handler method match then in that case generic exception handler method will run which is having Exception class.
+ */
+@RestControllerAdvice
+public class CustomizedResponseEntityExceptionHandler {
+
+    /*
+    We don't need to call this methods anywhere in this project, we only need to throw
+    this particular exception.
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(value=HttpStatus.NOT_FOUND)
+    protected ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException ex){
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body("Requested resource does not found");
+    }
+
+    @ExceptionHandler(InvalidInputException.class)
+    @ResponseStatus(value=HttpStatus.BAD_REQUEST)
+    protected ResponseEntity<String> handleInvalidInput(InvalidInputException ex){
+        return ResponseEntity
+                .badRequest()
+                .body("Invalid Input");
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    @ResponseStatus(value=HttpStatus.INTERNAL_SERVER_ERROR)
+    protected ResponseEntity<String> handleNullPointerException(NullPointerException ex){
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Something is wrong...");
+    }
+
+    @ExceptionHandler(Exception.class)
+    public final ResponseEntity<String> handleAllExceptions(Exception exception) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Invalid Input");
+    }
+}		
+
+
+https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/web/servlet/mvc/method/annotation/ResponseEntityExceptionHandler.html#handleException(java.lang.Exception,org.springframework.web.context.request.WebRequest)
+===============================
+ResponseEntityExceptionHandler: 
+-------------------------------
+	you don't need to extend ResponseEntityExceptionHandler if you don't need all the exception mappings it provides.
+
+	@ExceptionHandler({
+	HttpRequestMethodNotSupportedException.class,
+	HttpMediaTypeNotSupportedException.class,
+	HttpMediaTypeNotAcceptableException.class,
+	MissingPathVariableException.class,
+	MissingServletRequestParameterException.class,
+	MissingServletRequestPartException.class,
+	ServletRequestBindingException.class,
+	MethodArgumentNotValidException.class,
+	HandlerMethodValidationException.class,
+	NoHandlerFoundException.class,
+	NoResourceFoundException.class,
+	AsyncRequestTimeoutException.class,
+	ErrorResponseException.class,
+	MaxUploadSizeExceededException.class,
+	ConversionNotSupportedException.class,
+	TypeMismatchException.class,
+	HttpMessageNotReadableException.class,
+	HttpMessageNotWritableException.class,
+	MethodValidationException.class,
+	BindException.class})
+	@Nullable
+	public final ResponseEntity<Object> handleException(Exception ex, WebRequest request) throws Exception
+	
+	
+	For ex: 
+		If you're throwing any of the exception from above list, you should extends ResponseEntityExceptionHandler and should override handleException mehtod.
+		Whenever there is matching exception occurred in your application, the respective handler will executed automatically.
+		
+		
+	1)	
+		@ExceptionHandler(MethodArgumentNotValidException.class)
+		@ResponseStatus(value=HttpStatus.BAD_REQUEST)
+		protected ResponseEntity<String> handleException(MethodArgumentNotValidException ex){
+			return ResponseEntity.badRequest().body("Invalid Input");
+		}
+		
+		//MethodArgumentNotValidException.class
+			This exception definition is alredy provided in ResponseEntityExceptionHandler class, so we don't need to throw this exception anywhere in our application, this exception would be thrown automatically whenever the matching exception occurred anywhere in our application.
+	
+	2)
+		@ExceptionHandler(InvalidInputException.class)
+		@ResponseStatus(value=HttpStatus.BAD_REQUEST)
+		protected ResponseEntity<String> handleException(InvalidInputException ex){
+			return ResponseEntity.badRequest().body("Invalid Input");
+		}
+		
+		//InvalidInputException
+		This exception is custom exception, so this handler would be executed only when we throw this exception in our application whenever user provide wrong input, it's like a validation failed exception.
+		
+		
+		
+Exception Handling for Asynchronous Processing:
+----------------------------------------------
+	Spring’s @Async enables asynchronous processing, which introduces a different exception-handling strategy. By default, exceptions thrown in asynchronous methods are not propagated back to the caller.
+
+	To capture these exceptions, you need to use wrappers like Future or CompletableFuture.		
+	
+	Example: Handling Async Exceptions
+	----------------------------------
+		@Async
+		public CompletableFuture<String> processTask() {
+			try {
+				// Simulate some processing
+				return CompletableFuture.completedFuture("Task completed");
+			} catch (Exception ex) {
+				logger.error("Error during async processing: {}", ex.getMessage(), ex);
+				return CompletableFuture.failedFuture(ex);
+			}
+		}
+		
+	Using CompletableFuture.failedFuture(ex):
+	-----------------------------------------
+		captures exceptions in the async context and returns them for further handling by the caller. This approach ensures that asynchronous exceptions are logged and can be managed properly.
+
+	

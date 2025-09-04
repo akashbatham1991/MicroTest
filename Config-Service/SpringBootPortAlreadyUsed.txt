@@ -1,0 +1,33 @@
+https://www.javaguides.net/2023/08/port-already-in-use-spring-boot.html
+
+Port Already in Use Spring Boot - Fixed:
+----------------------------------------
+	In Spring Boot applications, if you see an error indicating that a port is already in use, it means another process (possibly another instance of your application or a different application) is already running and using the desired port.
+	
+	The default port for a Spring Boot web application is 8080. 
+
+	Resolution:
+	-----------
+	
+	1) 
+	Change the Spring Boot Application Port:
+	
+	by adding or modifying the server.port property: the application.properties or application.yml file:
+
+		if you're using application.properties:	
+			server.port=8081
+
+		Or, 
+		
+		if you're using application.yml:
+			server:
+			  port: 8081
+
+
+	
+	2)
+	Identify the Process Using the Port and Kill the Process
+	
+	3)
+	Ensure You're Not Starting the Application Multiple Times
+

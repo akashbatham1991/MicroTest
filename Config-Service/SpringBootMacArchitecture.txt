@@ -1,0 +1,19 @@
+Mac architecture in Spring Boot:
+--------------------------------
+	When people mention Mac architecture in Spring Boot, they’re usually referring to running or building Spring Boot applications on Apple Silicon (ARM64) Macs—like M1, M2, or M3 chips.
+
+	Running Spring Boot on Mac (Apple Silicon):
+	------------------------------------------
+	Java Compatibility: 
+		Most modern JDKs (like Azul Zulu, Oracle, or GraalVM) now support ARM64 architecture natively.
+	
+	Spring Boot Support: 
+		Spring Boot runs smoothly on Apple Silicon using these JDKs. You can use tools like IntelliJ IDEA or VS Code without issues.
+	
+	Performance Boost: 
+		Apple Silicon offers impressive performance and energy efficiency, especially for compiling and running Spring Boot apps.
+
+
+
+
+

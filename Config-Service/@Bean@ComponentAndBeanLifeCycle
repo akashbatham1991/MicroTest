@@ -1,0 +1,183 @@
+https://stackoverflow.com/questions/10604298/spring-component-versus-bean
+
+difference between @component and @bean:
+----------------------------------------
+	1. @Component is a class level annotation whereas 
+	   @Bean is a method level annotation and name of the method serves as the bean name.
+
+	2. @Component need not to be used with the @Configuration annotation whereas 
+	   @Bean annotation has to be used within the class which is annotated with @Configuration.
+	
+	3. @Component auto detects and configures the beans using classpath scanning whereas 
+	   @Bean explicitly declares a single bean, rather than letting Spring do it automatically.
+	
+	4. We cannot create a bean of a class using @Component, if the class is outside spring container whereas 
+	   we can create a bean of a class using @Bean even if the class is present outside the spring container.
+	
+	5. When you use @Bean annotation, you control instance creation logic in method's body. But 
+	   With @Component annotation, you cannot.
+
+	6. Use @Component to mark classes for automatic bean creation.
+	   Use @Bean when you need more control over bean creation and configuration or for third-party classes.
+
+	7. @Component does not decouple the declaration of the bean from the class definition whereas 
+	   @Bean decouples the declaration of the bean from the class definition.
+	
+	8. @Component has different specializations like @Controller, @Repository and @Service whereas 
+	   @Bean has no specializations.
+		
+	9. @Component is more straightforward, while @Bean offers greater flexibility.	
+			
+	10.	They both indicate that the annotated class has one or more beans need to be registered to Spring-IOC-Container.
+	
+	
+When should you use @Bean?
+--------------------------
+	@Component is preferable for component scanning and automatic wiring.
+	
+	Sometimes automatic configuration is not an option. When? 
+		Let's imagine that you want to wire components from 3rd-party libraries (you don't have the source code so you can't annotate its classes with @Component), so automatic configuration is not possible.
+
+	The @Bean annotation returns an object that spring should register as bean in application context. 
+	The body of the method bears the logic responsible for creating the instance.	
+
+	You can use @Bean to make an existing third-party class available to your Spring framework application context.
+		
+	
+	@Component Example:
+	-------------------
+		
+		@Component
+		public class MyService {
+			// ...
+		}
+		
+		
+	@Bean Example:
+	--------------
+		
+		@Configuration
+		public class AppConfig {
+		
+			@Bean
+			public MyService myService() {
+				MyService service = new MyService();
+				service.setProperty("some value");
+				return service;
+			}
+		}
+		
+	Example:
+	--------
+		    - 	@Controller
+				public class LoginController 
+				{  
+					--code--
+				}
+
+				@Configuration
+				public class AppConfig {
+				
+					@Bean
+					public SessionFactory sessionFactory() 
+					{ 
+						--code--
+					}
+				}
+				
+	
+===========================	
+->Spring Bean life cycle:
+===========================
+	The Spring Bean life cycle refers to the "series of steps" a Spring bean goes through from its creation to its disposal.
+	The Spring IoC container manages this process, ensuring beans are properly initialized and managed.
+		
+	The bean life cycle refers to: 
+		when & how the bean is instantiated, 
+		what action it performs until it lives, and 
+		when & how it gets destroyed.
+	
+	When we run the program,: 
+		First of all, the spring container gets started. 
+		After that, the container creates the instance of a bean as per the request, and 
+		Then the required dependencies are injected. 
+		At the end, the bean is destroyed when the spring container is closed.
+
+	Understanding this lifecycle is important for: 
+		managing resources effectively and 
+		ensuring that beans are properly initialized and cleaned up.
+	
+		
+	Bean Life Cycle Phases:
+	-----------------------
+		The lifecycle of a Spring bean consists of the following phases, which are listed below
+
+		Container Started: 			The Spring IoC container is initialized.
+		Bean Instantiated: 			The container creates an instance of the bean.
+		Dependencies Injected: 		The container injects the dependencies into the bean.
+		Custom init() method: 		If the bean implements InitializingBean or has a custom initialization method specified 
+									via @PostConstruct or init-method.
+		Bean is Ready: 				The bean is now fully initialized and ready to be used.
+		Custom utility method: 		This could be any custom method you have defined in your bean.
+		Custom destroy() method:	If the bean implements DisposableBean or has a custom destruction method specified via 
+									@PreDestroy or destroy-method, it is called when the container is shutting down.
+				
+	
+	Spring framework provides two annotations to implement bean life cycle in Spring:
+		@PostConstruct
+		@PreDestroy
+
+		Annotation names are self explanatory. 
+			PostConstructs means after constructing the properties of the class. 
+			PreDestroy means before destroying the bean.	
+			
+		However for these annotations to work, we need to provide below in spring configuration xml file:
+			context:annotation-config. 
+		
+	
+	To provide the facility to the created bean to invoke custom init() method on the startup of a spring container and to invoke the custom destroy() method on closing the container, we need to annotate init() method by @PostConstruct annotation and destroy() method by @PreDestroy annotation.	
+	
+	Note: To invoke the destroy() method we have to call the close() method of ConfigurableApplicationContext.
+	
+		public class HelloWorld {
+			
+			@PostConstruct
+			public void init() throws Exception
+			{
+				System.out.println("Bean HelloWorld has been instantiated and I'm the init() method");
+			}
+
+			@PreDestroy
+			public void destroy() throws Exception
+			{
+				System.out.println(Container has been closed and I'm the destroy() method");
+			}
+		}
+		
+		
+In Spring Boot, you typically do not need to explicitly declare "context:annotation-config" in your configuration files. Here's why:
+
+	What context:annotation-config Does:
+	------------------------------------	
+		In traditional Spring (non-Boot), this XML tag:
+			<context:annotation-config />
+
+
+		is used to enable support for annotations like:
+			@Autowired
+			@PostConstruct		(used over init() method)
+			@PreDestroy			(used over destroy() method)
+			@Resource
+			@Value
+		
+		It tells Spring to look for these annotations and wire beans accordingly.
+
+	
+	Spring Boot's Behavior:
+	-----------------------
+		Spring Boot automatically enables annotation-based configuration through its use of:
+			@SpringBootApplication (which includes @ComponentScan and @Configuration)
+			Auto-configuration mechanisms
+			Classpath scanning
+
+		So, if you're using Spring Boot with Java-based configuration (which is the norm), you do not need context:annotation-config.

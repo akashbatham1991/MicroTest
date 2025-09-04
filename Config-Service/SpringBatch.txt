@@ -1,0 +1,376 @@
+https://www.baeldung.com/introduction-to-spring-batch
+https://www.geeksforgeeks.org/spring-batch-job-scheduling-and-job-execution/
+https://medium.com/@elouadinouhaila566/understanding-spring-batch-a-comprehensive-guide-393904ac401c
+https://docs.spring.io/spring-batch/reference/index.html
+https://spring.io/guides/gs/batch-processing
+https://docs.spring.io/spring-boot/how-to/batch.html
+https://app.pluralsight.com/library/courses/getting-started-spring-batch/table-of-contents
+https://www.geeksforgeeks.org/introduction-to-spring-batch/
+
+Code: 
+-----
+https://github.com/michaelhoffmantech/patient-batch-loader
+https://github.com/michaelhoffmantech/patient-batch-loader/releases
+
+
+Spring Batch:
+-------------
+	It’s ideal for "handling large volumes of data" in a non-interactive, scheduled, and transactional manner.
+
+
+Typical Use Cases:
+------------------
+	ETL (Extract, Transform, Load) operations
+	Data migration between systems
+	Report generation from large datasets
+	Scheduled jobs like nightly updates or backups
+	Financial transaction processing in bulk
+
+
+Core Components of Spring Batch:
+--------------------------------
+	1. Job:
+	-------
+		A Job 'represents a batch process' 'consisting of one or more Steps'. 
+		Each job can be configured to run either once or repeatedly.
+
+	2. Step:
+	--------
+		A Step is a phase of a Job that "encapsulates the processing logic", including: 
+			reading, 
+			processing, and 
+			writing data.
+
+	3. ItemReader, ItemProcessor, ItemWriter:
+	-----------------------------------------
+		ItemReader: 	Reads data from a source 						(e.g., a file or database).
+		ItemProcessor: 	Processes the data 								(e.g., transforms or filters).
+		ItemWriter: 	Writes the processed data to a destination.
+
+	4. JobRepository: 
+	-----------------
+		Stores the metadata about jobs and steps.
+		such as the execution history, job parameters, and the status of the job execution. It allows the Spring Batch to restart the jobs from the last committed point in the case of failure.	
+	
+	5. JobLauncher: 
+	---------------
+		Launches the batch job.
+		It takes a Job and a set of JobParameters and starts the job execution. 
+		The JobLauncher can be configured to run jobs asynchronously or synchronously.
+
+
+
+	Here are some key benefits:
+	---------------------------
+	
+	Resource Utilization: 
+		Batch processing allows jobs to be executed during off-peak hours, optimizing the use of system resources and minimizing impact on other operations.
+
+	Reduced Overhead: 
+		By processing data in bulk rather than individually, it minimizes the overhead associated with frequent I/O operations, reducing execution time.
+
+	Parallel Processing: 
+		Many batch frameworks support partitioning, allowing multiple jobs or steps to run in parallel, further enhancing throughput.
+
+	Scheduled Execution: 
+		Batch jobs can be scheduled to run automatically at regular intervals (e.g., nightly data imports), reducing the need for manual intervention and errors associated with manual processing.
+
+	Consistency: 
+		Automating repetitive tasks ensures that they are executed consistently and accurately every time.
+
+	Fault Tolerance: 
+		Batch processing frameworks often include mechanisms for handling errors, such as retries, skips, and logging. This improves the robustness of the system.
+
+	Job Restartability: 
+		Many batch processing systems allow jobs to resume from the last successful step in case of failures, reducing data loss and downtime.
+
+	Reduced Operational Costs: 
+		By optimizing resource usage and minimizing manual tasks, organizations can reduce operational costs associated with data processing.
+
+
+Spring Batch - Job Scheduling and Job Execution:
+------------------------------------------------
+
+	Dependency needed:
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-batch</artifactId>
+		</dependency>
+		
+	
+	Step-by-Step Implementation:
+	----------------------------
+	
+		Scenario: CSV to Database
+		-------------------------
+			Step 1: Create a Batch Job:
+			---------------------------
+				We’ll create a job that:
+					Reads: 		the customer data from a CSV file.
+					Process: 	the data to capitalizes the customer names.
+					Writes: 	the updated data to a relational database.
+			
+			Step 2: Execute the batch job: JobLauncher
+			------------------------------------------
+					jobLauncher.run(job, params);
+					
+			
+		Step 1: Create a Batch Job:
+		---------------------------
+			Let's create a simple batch job that reads data from a CSV file, processes it, and writes the results to another file. You'll need to create an item reader, processor, and writer;
+			
+		
+			@Configuration
+			@EnableBatchProcessing
+			public class BatchConfiguration {
+
+				@Autowired
+				private JobBuilderFactory jobBuilderFactory;			// it creates the job instance.
+
+				@Autowired
+				private StepBuilderFactory stepBuilderFactory;			// It creates the step instance.
+
+				@Bean
+				public ItemReader<String> itemReader() {
+					// Implement your item reader logic (e.g., read from a CSV file).
+					// Return a reader for the input data.
+				}
+
+				@Bean
+				public ItemProcessor<String, String> itemProcessor() {
+					// Implement your item processor logic (e.g., data transformation).
+					// Return a processor for data processing.
+				}
+
+				@Bean
+				public ItemWriter<String> itemWriter() {
+					// Implement your item writer logic (e.g., write to a file or database).
+					// Return a writer for output data.
+				}
+				
+				@Bean
+				public Job job() {
+					return jobBuilderFactory.get("job")				// Create a job
+							.start(step())							// Define the first step in the job
+							.build();								// Build the job
+				}
+
+				@Bean
+				public Step step() {
+					return stepBuilderFactory.get("step")			// Create a step named "step"
+							.<String, String>chunk(10)				// **Process 10 items at a time
+							.reader(itemReader())					// Set the item reader
+							.processor(itemProcessor())				// Set the item processor	
+							.writer(itemWriter())					// Set the item writer
+							.build();								// Build the step
+				}
+			}
+
+			/*
+			In this code, we define a batch job with a step that includes an item reader, processor, and writer.
+			You should replace the placeholder methods with your specific logic for reading, processing, and writing data.
+			*/
+			
+			
+		Step 2: Execute the batch job: JobLauncher:
+		-------------------------------------------
+			Use JobLauncher when you need to trigger the execution of a batch job. 
+			
+			This is typically done from:
+			----------------------------
+				1. A CommandLineRunner or ApplicationRunner
+				2. A REST controller
+				3. A Scheduled task
+
+				You pass in the Job and a set of JobParameters
+				It delegates the actual execution to Spring Batch internals
+		
+			Way-1 : Schedule the Batch Job:
+			-------------------------------	
+				Now, let's schedule the batch job to run at specific intervals using Spring's @Scheduled annotation. We'll create a simple scheduler class.
+				
+				@Component
+				public class BatchScheduler {
+
+					@Autowired
+					private JobLauncher jobLauncher;
+
+					@Autowired
+					private Job job;
+
+					@Scheduled(cron = "0 0 0 * * ?") 						// Schedule at midnight daily
+					public void performBatchJob() throws Exception {
+						JobParameters params = new JobParametersBuilder()
+								.addString("JobID", String.valueOf(System.currentTimeMillis())).toJobParameters();
+								
+						jobLauncher.run(job, params);
+					}
+				}
+
+				/*
+				In this code, we use the @Scheduled annotation to schedule the performBatchJob method to run daily at midnight. 
+				Inside this method, we launch the Spring Batch job with appropriate parameters.
+				*/
+				
+				
+			Way-2: A REST controller:
+			-------------------------
+				@RestController
+				@RequestMapping("/job")
+				public class JobResource {
+
+					private final JobLauncher jobLauncher;
+					private final Job job;
+
+					public JobResource(JobLauncher jobLauncher, Job job) {
+						this.jobLauncher = jobLauncher;
+						this.job = job;
+					}
+
+					@GetMapping("/{fileName:.+}")
+					public ResponseEntity<String> runJob(@PathVariable String fileName) {
+						Map<String, JobParameter> parameterMap = new HashMap<>();
+						parameterMap.put(Constants.JOB_PARAM_FILE_NAME, new JobParameter(fileName));
+						try {
+							jobLauncher.run(job, new JobParameters(parameterMap));
+						} catch (Exception e) {
+							return new ResponseEntity<String>("Failure: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+						}
+						return new ResponseEntity<String>("Success", HttpStatus.OK);
+					}
+				}
+			
+			
+	JobRepository:
+	--------------
+		Spring Batch uses JobRepository behind the scenes to:
+			Store job and step execution details
+			Determine if a job instance with the same parameters has already run
+			Resume jobs from where they left off
+
+		You usually don’t interact with JobRepository directly unless you're:
+			Building custom job monitoring tools
+			Manually querying job execution data
+			Implementing advanced restart or recovery logic
+	
+			
+			@Bean
+			public JobRepository jobRepository(DataSource dataSource, PlatformTransactionManager transactionManager) throws Exception {
+				return new JobRepositoryFactoryBean() 					// Create a JobRepositoryFactoryBean instance
+					   .setDataSource(dataSource) 						// Specify the data source for storing job details
+					   .setTransactionManager(transactionManager) 		// Set the transaction manager
+					   .getObject(); 									// Retrieve the JobRepository instance
+			}		
+			
+------------------------------------------------------------------------------------------------------------------------
+
+			
+			
+What Is Chunk-Oriented Processing?:
+-----------------------------------
+	chunk-oriented processing is a powerful and efficient way to handle large volumes of data. 
+
+	Spring Batch reads, processes, and writes data in chunks—a fixed number of items at a time—rather than processing the entire dataset in one go. 
+	This improves performance and memory efficiency.
+
+Chunk Lifecycle:
+----------------
+	Let’s say you define a chunk size of 10. Here's what Spring Batch does:
+	
+	1. Read One by One:
+	-------------------
+		The ItemReader is called once per item.
+		It reads one item at a time and adds it to an internal list (the chunk).
+
+	2. Process One by One:
+	----------------------
+		Each item read is passed individually to the ItemProcessor (if defined).
+		The processor transforms or filters the item and returns the result.
+	
+	3. Write in Bulk:
+	-----------------
+		Once the chunk reaches the defined size (e.g., 10 items), the entire list of processed items is passed to the ItemWriter.
+		The writer writes all 10 items in one go.
+
+	4. Commit Transaction:
+	----------------------
+		After writing, the transaction is committed.
+		Then the next chunk begins.
+
+	Key Insight:
+	------------
+		Read and process = one by one
+		Write and commit = in chunks
+
+	Key Benefits:
+	-------------
+		Transactional Safety: 	If a failure occurs, only the current chunk is rolled back—not the entire job.
+		Memory Efficiency: 		Only a small subset of data is held in memory at any time.
+		Performance: 			Reduces I/O overhead by batching writes.
+
+	Example:
+	--------
+		If you set chunk(10):
+
+			stepBuilderFactory.get("myStep")
+				.<InputType, OutputType>chunk(10)
+				.reader(myReader)
+				.processor(myProcessor)
+				.writer(myWriter)
+				.build();
+
+		Spring Batch will:
+		------------------
+			Call reader.read() 10 times
+			Call processor.process() 10 times
+			Then call writer.write(List<OutputType>) once with 10 items
+
+
+	Behind the Scenes (Pseudocode):
+	-------------------------------
+		
+		List<Item> chunk = new ArrayList<>();
+		
+		Read:
+		-----
+			for (int i = 0; i < chunkSize; i++) {
+				Item item = itemReader.read();			//Call reader.read() 10 times
+				if (item == null) break;
+				chunk.add(item);
+			}
+			
+		Process:
+		--------
+			List<Item> processed = chunk.stream()
+				.map(itemProcessor::process)			//Call processor.process() 10 times
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+
+		Write:
+		------
+			itemWriter.write(processed);				//call writer.write(processed) once with 10 items
+
+
+	Notes:
+	------
+		The commit-interval(chunkSize=10) defines how many items are processed per transaction.
+		If an exception occurs during processing or writing, the entire chunk is retried or skipped based on configuration.
+		You can tune the chunk size based on memory, I/O latency, and transaction overhead.
+		
+		
+	What Happens After itemWriter.write(processed):
+	-----------------------------------------------
+		Once the ItemWriter writes the chunk of processed items to the destination (e.g., database, file, etc.), Spring Batch does not retain the list of items in memory.
+
+		Post-Write Cleanup:
+		-------------------
+			The chunk list is discarded after writing.
+			Spring Batch prepares for the next chunk.
+			Memory is freed unless you’ve explicitly retained references elsewhere.
+
+		Memory Management:
+		------------------
+			Spring Batch is designed to be efficient and scalable, especially for large datasets:
+				It processes chunks in isolation.
+				After each chunk is committed, the framework clears internal buffers.
+				This prevents memory leaks and ensures that the job can handle millions of records without bloating.

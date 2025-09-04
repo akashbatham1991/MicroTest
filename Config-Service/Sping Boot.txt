@@ -1,0 +1,635 @@
+https://www.youtube.com/watch?v=729Pd-ZQ4uA&list=PL0zysOflRCelmjxj-g4jLr3WKraSU_e8q
+
+SpringBOot Interview questions:
+-------------------------------
+https://www.youtube.com/watch?v=aW68FHrLAmA
+https://www.youtube.com/watch?v=hnQP2aIKBxM
+https://www.interviewbit.com/spring-boot-interview-questions/#pros-of-using-spring-boot
+
+https://docs.spring.io/spring-boot/docs/current/reference/html/using.html#using.structuring-your-code
+https://www.tutorialspoint.com/spring_boot/spring_boot_building_restful_web_services.htm
+
+https://spring.io/projects/spring-boot
+https://github.com/in28minutes/spring-boot-examples		(git clone https://github.com/in28minutes/spring-boot-examples.git)
+
+https://www.baeldung.com/spring-boot-actuators
+
+https://docs.spring.io/spring-boot/docs/1.5.16.RELEASE/reference/html/using-boot-devtools.html
+https://www.geeksforgeeks.org/spring-boot-devtools/
+https://github.com/IMRFeng/spring-boot-features/tree/spring-boot-devtools	(Code)
+
+https://github.com/daisy-world/SpringbootWithRestAPI
+
+https://github.com/KeshavPrabhakar/Shared-Projects/tree/master
+https://www.youtube.com/watch?v=ROWTZuEhuqg
+
+https://github.com/orgs/springhow/repositories?type=all
+
+============================================================================================================================
+Sprint boot is a Java-based 'spring' framework used for "Rapid Application Development".
+
+Understand the World before SpringBoot:
+--------------------------------------
+	Before Spring Boot, "dependency management" is very challenging task, 
+		we need to manage frameworks and their versions, 
+		Need to manage web.xml
+	
+	Spring Boot dependency management:
+	---------------------------------
+		Spring Boot dependency management is used to manage 'dependencies and configuration' 'automatically' without you specifying the version for any of that dependencies.
+		
+
+Understanding the Goal of SpringBoot:
+------------------------------------
+	Help you build "production ready applications" "quickly".
+	
+	PRODUCTION READY:
+	----------------
+		There are lot of features that you need in an application before your application go into production.
+
+		
+	Spring Initializer:				helps in creating spring boot projects easily.
+	Spring Boot Starter Projects: 	helps you to quickly find dependencies for your projects. 
+	Spring Boot Auto Configuration: would automatically provide configuration based on the dependencies which are in the class 
+									path.
+	Spring Boot Dev Tools: 			will help you to make application changes without having to manually restart the server. 
+
+
+	@SpringBootApplication  = 
+								@SpringBootConfiguration + 
+								@EnableAutoConfiguration + 
+								@ComponentScan 
+	
+	@RequestMapping	(@GetMapping, @PostMapping, @PutMapping, @DeleteMapping)
+	
+	Spring Initializer:				helps in creating spring boot projects easily.	(start.spring.io)
+	Spring Boot Starter Projects: 	helps you to quickly find dependencies for your projects. 
+	Spring Boot Auto Configuration: automatically provide configuration based on the dependencies which are in the class path. 
+	Spring Boot Dev Tools: 			will help you to make application changes without manually restart the server. 
+
+	Diff ways of Profiling:
+	-----------------------
+		1)	profiling using application.properties		(spring.profiles.active=prod)
+		
+		2)  profiling using command line args			(mvn spring-boot:run -Dspring-boot.run.profiles=prod)
+		
+		3)	dynamic profiling 							(@Profile("prod"))
+														@Profile can be used at class level as well as at method level.
+
+	Spring Boot support a number of embedded servers, the default is spring-boot-starter-tomcat. However there are other options available like: spring-boot-starter-jetty.
+	
+	server.port: 9000		//The service now starts on port 9000.
+	
+	CommandLineRunner would invoked as soon as the application is launched. We can override run method to "do something here on application startup".
+	
+	spring.main.web-application-type=none.				(disable default web server)
+	
+	@EnableAutoConfiguration(exclude={className})		(disable a specific auto-configuration class)
+	
+	@SpringBootApplication(exclude= {Student.class})	(exclude any package without using the basePackages filter)
+
+	-Enable debugging log in the spring boot application:
+		We can start the application with --debug switch.
+		We can set the logging.level.root=debug 			(in /application.properties).
+		
+		Default logging level is: INFO
+
+	
+=====================================================START=========================================================
+	
+STEP 02
+Understand the World before SpringBoot:
+--------------------------------------
+	Before Spring Boot, "dependency management" is very challenging task, 
+		we need to manage frameworks and their versions, 
+		Need to manage web.xml
+	
+	Spring Boot dependency management:
+	---------------------------------
+		Spring Boot dependency management is used to manage 'dependencies and configuration' 'automatically' without you specifying the version for any of that dependencies.
+	
+->Spring Boot:
+-------------
+	Sprint boot is a Java-based 'spring' framework used for "Rapid Application Development".
+	
+
+Step 03:
+New Spring Boot Projecy with Spring Initializer:
+------------------------------------------------
+	Go to start.spring.io	(called Spring Initializer)	: helps in creating spring boot projects easily.
+
+	Note: Do not use SNAPSHOT versions, becuase these are under development.
+
+	Group: 		Similar to package
+	Artifact: 	Similar to Class
+
+	Spring Boot 3+ needs atleast Java 17,
+
+	To be able to build rest api, we need dependencies, Spring Web (build web including RESTful, applications using Spring MVC. Uses Apache Tomcat as the default embedded container.)
+
+	Click on Generate button, download zip file, extract it and import it into eclipse.
+
+	@SpringBootApplication, has main methods to lauch up application.
+
+
+
+Stpe 04:
+Build API with Spring Boot:
+---------------------------
+	@RestController
+	@RequestMapping	(@GetMapping, @PostMapping, @PutMapping, @DeleteMapping)
+
+	As we can see, creating REST API with Spring Boot is very easy, we did not need to configure spring beans or any xml at all. 
+	How Spring Boot making this possible, that's what we'll be exploring in next steps.
+
+
+Step 05:
+Understanding the Goal of SpringBoot:
+------------------------------------
+	Help you build "production ready applications" "quickly".
+	
+	PRODUCTION READY:
+	----------------
+		There are lot of features that you need in an application before your application go into production.
+
+		
+	Spring Initializer:				helps in creating spring boot projects easily.
+	Spring Boot Starter Projects: 	helps you to quickly find dependencies for your projects. 
+	Spring Boot Auto Configuration: would automatically provide configuration based on the dependencies which are in the class 
+									path.
+	Spring Boot Dev Tools: 			will help you to make application changes without having to manually restart the server. 
+
+
+Step 06:
+Spring Boot Starter Projects:	(dependency descriptors)
+-----------------------------
+	Whenever we want to build any application, we need a lot of frameworks. 
+	Question is how can I group them and make it easy to build application?
+		that's what starter projects provides.
+	
+	For ex:
+		Spring Boot Starter Web: 
+		------------------------
+			Starter for building web, including RESTful applications using Spring MVC. Uses 'Tomcat' as the default embedded container.
+
+	if you open "spring-boot-starter-web", you can see, it would define no of dependencies, these all dependencies are predefined for you:
+		spring-boot-starter : 			help you to lanuch spring context,
+		spring-boot-starter-json: 		we would want to use 'bean to json and json to bean' conversion
+		spring-boot-starter-tomcat: 	we would want to be able to run the application in tomcat 
+		spring-mvc: 					to build rest api
+
+	SpringBoot provides you a varity of starter projects.
+
+
+
+Step 07:
+Spring Boot Auto Configuration:		("spring-boot-autoconfigure.jar")
+-------------------------------
+
+	Whenever you build web application with spring boot, we need lot of configuration, how can I simplify this: 
+		that's the auto configuration.
+		
+	The automated configurations are generated based on which frameworks are in the classpath.
+
+	In the pom.xml, we can add in lot of starter projects, and these brings in lot of frameworks,  so depending on the frameworks on class path, we can auto configured lot of things.
+
+	Spring Boot Starter Projects brings in a lot of dependencies and 
+	Spring Boot Auto Configuration would look at the dependencies, look at the jars/classes and it would provide automatic configuration for your application. 
+	All the logic for spring boot auto configuration present in a jar called "spring-boot-autoconfgure.jar"
+	
+	So all the auto configuration is done based on the classes which we see in spring-boot-autoconfgure.jar
+	
+	Spring Boots provides default auto configurations, however you can also override that by providing your own configuration. 
+		
+		
+		
+->Enabling Logging:
+-------------------		
+	-src/main/resources/application.properties/
+		log.level.org.springframework=debug 		(for this package org.springframework enable the debug log)
+
+		default logging level is "info".
+
+
+Step 08:
+Spring Boot Dev Tools:	(tomcat server restart automatically)
+---------------------
+	Whenever there is any 'java/property' file changed happened, tomcat server restart 'automatically'. 
+	But for 'pom.xml' changes, we need to restart server 'manually'.
+
+	We need to add dependency to enable it:	spring-boot-devtools
+	
+
+
+https://www.youtube.com/watch?v=PNmLLgpj0Xs&list=PL0CyZKPJn9TMy4eVDhPeCwmiY1N5-GBVV&index=6	
+https://www.youtube.com/watch?v=ROWTZuEhuqg
+Step 09:
+Profiles:
+--------
+	Enable you to provide "environments specific configuration". 
+
+	Diff environments(qa, dev, stage, prod) needs diff configurations for the same application. Like Might be different database(qa databae, dev database, prod database), diff web services.
+	
+	You can create a separate profiles for each environment.
+	
+	Let's say, 
+		in dev environment, you want to enable debug level logs but 
+		in prod environment, you want to log info level
+			That's what a profile does.
+
+	application.properties/		(default)
+		logging.level.org.springframework=debug
+
+	application-dev.properties/
+		logging.level.org.springframework=trace
+
+	application-prod.properties/
+		logging.level.org.springframework=info 
+
+
+	
+	->Let's say I go in application.properties file, I want to configure a profile of production, the way I can do that;
+		
+		spring.profiles.active=prod
+
+	so if I configure specific profile, the values from the default configuration which is present in application.properties and the values from application-prod.properties are merged together, whatever is configured in application-prod.properties has higher priority.
+
+	set active profiles which you want to be active.	
+	
+	
+Diff ways of Profiling:
+-----------------------
+	1)	profiling using application.properties		(spring.profiles.active=prod)
+	2)  profiling using command line args			(mvn spring-boot:run -Dspring-boot.run.profiles=prod)
+	3)	dynamic profiling 							(@Profile("prod"))
+	
+	
+https://docs.spring.io/spring-framework/reference/core/beans/environment.html#beans-definition-profiles-java	
+
+	Dynamic Profiling:
+	-----------------
+		Use this particular bean when 'prod' profile is active or when 'test' profile is active.
+	
+		The @Profile annotation lets you indicate that a component is eligible for registration when one or more specified profiles are active. 
+	
+		@Profile("dev")
+		@Profile("prod")
+		@Profile({"prod","dev"})
+		@Profile("!prod")
+		@Profile("default")
+	
+		The following operators are supported in profile expressions: &, |, !	(AND, OR, NOT)
+	
+		@Profile can be used at "class level" as well as at "method level".
+	
+	
+->How to read properties values in java file using @Value:
+----------------------------------------------------------
+/application.properties
+	user.name=Raj
+	user.pwd=12345
+	
+In java file:
+	
+	@Value("${user.name}")
+	private String name;			//here value of name will be picked up from properties file.
+	
+	
+	Note:
+		@Value annotation is also used in open projection.
+	
+
+step 10:
+ConfigurationProperties:
+-------------------------
+
+	Let's suppose we want lot of configurations for diff services, how does spring boot help us manage this application configuration, How can I define a property value here in application.properties and make use of it in a spring boot application.
+
+	//currency-service.url=<>
+	//currency-service.password=<>
+	//currency-service.username=<>
+
+	@ConfigurationProperties(prefix = "currency-service")
+
+	If you have complex configuration of application, in that case you can use @ConfigurationProperties.
+
+
+Step 11:
+Embedded Servers:
+----------------
+	Whenever you want to deploy something to production, you would want our deployment process to be really really simple, why? becuase we have multiple environments like dev/qa/stage/prod, and typically you're following an agile approach then you might be doing multiple deployments per day. so making your deployment as simple as possible is very important.
+
+	-Old deployment approach:
+		Install Java
+		Install Web/Application Server
+		Deploy the application war
+	
+	-Embedded Server - Simpler Alternative
+		the server or tomcat is alreay part of your jar file, therfore:
+		Install Java
+		Run Jar file	(**we don't need webserver installed, becuase the webserver is part of jar file)
+	
+	
+	If you see, spring-boot-starter-web automatically brings in spring-boot-starter-tomcat. and this tomcat is alreay part of jar and therefor to run our application, we just need java.
+
+	Spring Boot support a number of embedded servers, the default is spring-boot-starter-tomcat. However there are other options available like: spring-boot-starter-jetty.
+
+
+Step 12:
+Actuator:	(Monitoring)
+---------
+	To monitor and manage your application in production, it provides no of endpoints, 
+
+	dependency:	spring-boot-starter-actuator
+
+	bydefault it only exposes the health endpoints, if you want more features from actuator, you need to enable them in application.properties, :
+	
+	src/main/resources/application.properties
+	-----------------------------------------
+		management.endpoints.web.exposure.include=*					(it exposes all the endpoints provided by actuator)
+		management.endpoints.web.exposure.include=health, metrics	(we can also configure the endpoints which I want)
+
+		
+-Switch to a Different Server Port:
+------------------------------------
+Spring Boot Actuator defaults to running on port 8080. By adding an src/main/resources/application.properties file:
+
+	server.port: 9000		//The service now starts on port 9000.
+	
+	
+-Using Component Scan to scan for beans:
+----------------------------------------
+
+	Whenever we say it's SpringBoot application, it automatically defines component package and the sub packages of this, so everything in this package or in sub package will be picked up. This is what is default behavior of SpringBoot application. 
+
+	However the beans in other packages are not picked up, so if I want other packages to picked up, then I would need to add Component scan on them as well, 
+		
+		@ComponentScan("com.sd.skd.dkfd.dsfs")
+
+	So it's on you to tell spring, where to search components. and this is called component scan.
+
+	
+	
+-We got the application context from here. @SpringBootApplication class. We'll use this application context to retrieve the beans. 
+
+-CommandLineRunner: 
+-------------------
+	CommandLineRunner would invoked as soon as the application is launched. We can override 'run' method to "do something here on application startup".
+
+	@SpringBootApplication
+	public class SlotConnectApplication implements CommandLineRunner {
+	
+		@Autowired
+		SlotService slotService;
+
+		@Autowired
+		MongoConnectRepository mongoConnectRepository;*/
+	
+		public static void main(String[] args) {										(static)
+			SpringApplication.run(SlotConnectApplication.class, args);
+		}
+	
+		@Override
+		public void run(String... args) {												(non-static)
+			slotService.getDemoDetails();
+	}
+}
+	
+
+Step 13:
+Spring Boot Vs Spring Vs Spring MVC:
+-------------------------------------
+
+Spring Framework:
+----------------
+	Spring Framework is all about 'dependency injection', 
+	it's about: 
+		defining the dependency, 				(@Component, @Service,...)
+		indetifying the dependencies, and 		(@ComponentScan,....)
+		autowire them. 							(@Autowire,...)
+	
+	"Define" Dependencies:
+		You can define dependencies using varity of annotations (@Component, @Service,...). 
+		
+	"Identifying" Dependencies:
+		once you have defined your dependencies, You need to identify them,  that' where component scan is useful, you can do a component scan on specific package, and identify all the components which are defined there. 
+		
+	"Autowire" Dependencies:
+		Once you have all the components and their dependencies identified, you can autowire(@Autowire) them together. 
+		
+	That's the core work of spring framework.
+	
+	
+Spring Modules and Spring Projects:
+----------------------------------
+	However just dependency injection is not sufficient to build great application, 
+	you'll need other frameworks: 
+		if I would need to talk to database, I would need Hibernate/JPA, 
+		if I want to write unit test, I need Junit and Mockito, 
+	
+	Spring Modules and Spring Projects extend this spring eco system, 
+	they 'provide really good integration with other frameworks', 
+	so if you want to talk to database, spring provides really good integration with Hibernate/JPA. 
+
+
+	Spring MVC (Spring Module):
+	--------------------------
+		Building web application and rest api, we can use @Controller, @RestController, @RequestMapping, these all are defined as part of Spring MVC.
+
+	
+	Spring Boot (Starter Project):
+	------------------------------
+		We saw that there are lot of configurations that is needed in your pom.xml, web.xml, whenever you want to build even a simple application with Spring and Spring MVC, and that's where SpringBoot comes in. 
+		Spring Boot is a Spring Project.
+
+	Spring Boot is not a compititors of Spring or Spring MVC, it just a wrapper that makes it easy to use Spring MVC and Spring.
+
+
+	
+->The  
+
+	
+@SpringBootApplication  = @SpringBootConfiguration + @EnableAutoConfiguration + @ComponentScan
+
+@ResponseBody: 
+	when we use this annotation over rest method then we can return string as is otherwise we've to return view name, means a page of that name.
+
+
+======================================	
+->The entry point of the spring boot application is the class that contains @SpringBootApplication annotation and the main method.
+Spring Boot automatically scans all the components included in the project by using @ComponentScan annotation.
+
+	@SpringBootApplication 
+	public class MyApplication { 
+	
+       public static void main(String[] args) {       
+	   
+          SpringApplication.run(MyApplication.class); //SpringApplication.run() knows how to launch the 'web' application.
+           // other statements     
+		} 
+	}
+
+
+- Can we override or replace the Embedded tomcat server in Spring Boot?
+	Yes, 
+		we can replace the Embedded Tomcat server with any server by using the Starter dependency in the pom.xml file. 
+		Like, you can use spring-boot-starter-jetty as a dependency for using a jetty server in your project.
+	
+-Can we disable the default web server in the Spring boot application?
+	Yes, 
+		we can use application.properties to configure the web application type i.e spring.main.web-application-type=none.
+	
+-How to disable a specific auto-configuration class?
+	@EnableAutoConfiguration(exclude={className})
+	
+-Can you tell, how to exclude any package without using the basePackages filter?
+	@SpringBootApplication(exclude= {Student.class})
+
+	
+	
+https://docs.spring.io/spring-boot/docs/1.3.5.RELEASE/reference/html/howto-data-access.html	
+->@EnableJpaRepositories:
+-------------------------
+	Spring Boot tries to guess the location of your @Repository definitions, based on the @EnableAutoConfiguration it finds. To get more control, use the @EnableJpaRepositories annotation (from Spring Data JPA).
+	
+	->EnableJpaRepositories: (not needed in spring boot because of @EnableAutoConfiguration)
+	------------------------
+		Use only for repositories and not for entity or config. 
+		Main goal for this annotation is to find all repositories.
+	
+	you can configure jpa repositories in couple of ways (dependent on package structure in your peoject):
+	
+		@EnableJpaRepositories -- in this case, spring parse all packages to find repositories.
+
+		@EnableJpaRepositories(basePackages="root package") -- same as @EnableJpaRepositories
+
+		@EnableJpaRepositories(basePackages="path.to.repositories.package") -- in this case spring parse only 'path.to.repositories.package' package and sub packages to find repositories.
+	
+	
+	
+-@RestController:
+----------------
+	It is a combination of @Controller and @ResponseBody, used for creating a restful controller. 
+	It converts the response to JSON or XML. 
+	It ensures that data returned by each method will be written straight into the response body instead of returning a template.
+
+	@RestController	= @Controller + @ResponseBody
+	
+
+-What is the difference between @RestController and @Controller in Spring Boot?
+-------------------------------------------------------------------------------
+	@Controller, map the model object to view or template and make it human readable but 
+	@RestController simply returns the object and object data is directly written in HTTP response as JSON or XML.
+	
+-@ResponseBody: 
+	when we use this annotation over rest method then we can return string as is otherwise we've to return view name, means a page of that name.
+
+-What is the difference between RequestMapping and GetMapping?
+	RequestMapping can be used with GET, POST, PUT, and many other request methods using the method attribute on the annotation. 
+	Whereas getMapping is only an extension of RequestMapping which helps you to improve on clarity on request.
+
+-enable debugging log in the spring boot application:
+	We can start the application with --debug switch.
+	We can set the logging.level.root=debug property in application.property file.
+	
+	
+-What is dependency Injection?
+	The process of injecting dependent bean objects into target bean objects is called dependency injection.
+
+	Setter Injection: 
+		The IOC container will inject the dependent bean object into the target bean object "by calling the setter method."
+
+	Constructor Injection: 
+		The IOC container will inject the dependent bean object into the target bean object "by calling the target bean constructor."
+
+	Field Injection: 
+		The IOC container will inject the dependent bean object into the target bean object "by Reflection API."
+		
+		
+What is an IOC container?
+	IoC Container is a framework for implementing automatic dependency injection. 
+	It manages object creation and its life-time and also injects dependencies into the class.
+	
+-Minimum Java version needed for Spring Boot?
+	Java 8
+
+-Note: AOP dependency is not available on the Spring Initializr website anymore.
+
+Recommendation:
+---------------
+STEP I: Create a project without adding AOP.
+
+STEP II: Add this dependency into your pom.xml.
+	
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-aop</artifactId>
+	</dependency>	
+
+	
+->Spring Boot RabbitMQ:
+-----------------------
+		https://springhow.com/spring-boot-rabbitmq/
+		
+		
+
+->5 Essential Optimizations Every Spring boot Developer Should Know!!
+
+https://medium.com/@harshgajjar7110/supercharge-your-spring-boot-app-5-proven-tactics-to-optimize-performance-and-boost-speed-3e4309761358
+https://www.linkedin.com/advice/0/what-common-performance-issues-spring-boot-restful-gvhcf
+https://stackoverflow.com/questions/59217076/how-to-enhance-a-spring-boot-rest-api-to-deal-with-tens-of-thousands-or-more-inc
+https://www.linkedin.com/advice/1/what-best-performance-tuning-techniques-optimizing-qy4he
+https://developer.okta.com/blog/2018/07/30/10-ways-to-secure-spring-boot
+
+		
+	
+-Disable all Database related auto configuration in Spring Boot
+---------------------------------------------------------------
+	We can excludes those db related class under @EnableAutoConfiguration annotation.
+	
+	@EnableAutoConfiguration(exclude = {
+		DataSourceAutoConfiguration.class, 
+		DataSourceTransactionManagerAutoConfiguration.class, 
+		HibernateJpaAutoConfiguration.class
+		})
+
+->Overriding spring boot auto-configuration:
+--------------------------------------------
+https://docs.spring.io/spring-boot/docs/1.0.0.RC5/reference/html/boot-features-developing-auto-configuration.html
+https://docs.spring.io/spring-boot/reference/features/developing-auto-configuration.html
+
+	Classes that implement auto-configuration are annotated with @AutoConfiguration. 
+
+	Additional @Conditional annotations are used to constrain when the auto-configuration should apply. 
+	
+	Usually, auto-configuration classes use @ConditionalOnClass and @ConditionalOnMissingBean annotations. This ensures that auto-configuration applies only when relevant classes are found and when you have not declared your own @Configuration.		
+	
+	Condition Annotations:
+	----------------------
+		You almost always want to include one or more @Conditional annotations on your auto-configuration class. 
+		
+		The @ConditionalOnMissingBean annotation is one common example that is used to allow developers to override auto-configuration if they are not happy with your defaults.
+		
+		Spring Boot includes a number of @Conditional annotations that you can reuse in your own code by annotating @Configuration classes or individual @Bean methods. 
+		
+		These annotations include:
+		--------------------------
+			Class Conditions			( @ConditionalOnClass and @ConditionalOnMissingClass)
+			Bean Conditions				( @ConditionalOnBean and @ConditionalOnMissingBean)
+			Property Conditions			( @ConditionalOnProperty)
+			Resource Conditions			( @ConditionalOnResource)
+			Web Application Conditions	( @ConditionalOnWebApplication and @ConditionalOnNotWebApplication)
+			SpEL Expression Conditions	( @ConditionalOnExpression)
+			
+			
+------------------------
+
+
+		
+		
+
+
+
+
+        
+

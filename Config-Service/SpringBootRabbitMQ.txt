@@ -1,0 +1,273 @@
+https://springhow.com/spring-boot-rabbitmq/
+https://github.com/springhow/spring-boot-rabbitmq-example/tree/master/src/main
+
+Publish: RabbitTemplate.convertAndSend()
+Subscribe: @RabbitListener(queues = "hello")
+
+
+Spring Boot RabbitMQ:
+---------------------
+	RabbitMQ is a message broker that receives and forwards messages.
+	
+	you will learn how to publish to and subscribe from queues and exchanges.
+	
+	
+	Setting up RabbitMQ in local machine:
+	-------------------------------------
+		Way-1:
+		-----
+			You can download the RabbitMQ installer from the official download page. 
+
+		Way-2:
+		------
+			However, It is easier to set up RabbitMQ as a docker image.
+			
+			$ docker run -d  --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-management
+
+		Way-3:
+		------
+			You can also use a docker-compose file if you are comfortable with. Code language: YAML (yaml)
+
+				version: '3'
+				 services:
+				   rabbitmq:
+					 image: rabbitmq:3-management
+					 ports:
+					 - 5672:5672
+					 - 15672:15672
+
+					 
+		Once the docker container is up, verify that the RabbitMQ Management console is available at http://localhost:15672.
+	
+	
+	RabbitMQ Spring Boot Starter:
+	-----------------------------
+		RabbitMQ is an AMQP compliant message broker. For this reason, you just need to import the amqp starter from spring boot.
+
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-amqp</artifactId>
+			</dependency>
+
+			This dependency will auto-configure the connection to RabbitMQ available in the localhost.
+			
+			
+	Configure RabbitMQ in Spring Boot:
+	----------------------------------
+		By default, The docker image creates a user with credentials guest/guest. So let’s configure the connection properties accordingly.
+
+			spring.rabbitmq.host=localhost
+			spring.rabbitmq.port=5672
+			spring.rabbitmq.username=guest
+			spring.rabbitmq.password=guest
+			
+			
+	Creating Queues in RabbitMQ:
+	---------------------------
+		You can create queues and exchanges from the RabbitMQ management console. But, it is easier to create queues by declaring them in the application. Define a Queue Bean to create queues if not present.
+
+			@Bean
+			public Queue helloQueue() {
+				return new Queue("hello");
+			}
+
+			There are also variants to Queue constructor where you can define durable, autoDelete and exclusive properties.
+			
+			
+	Publishing Message To RabbitMQ from Spring Boot:
+	------------------------------------------------
+		Like RestTemplate and JdbcTemplate, Spring Boot offers 'rabbitTemplate'
+		to publish messages from Spring Boot. 
+		
+		For instance, the following code will publish a string to the queue every 5 seconds.
+
+			@Autowired
+			private RabbitTemplate rabbitTemplate;
+
+
+			@Scheduled(fixedDelay = 5000)
+			public void pushMessage() {
+				String messageString = "Hello Rabbit @" + LocalDateTime.now().format(DateTimeFormatter.ISO_TIME);
+				rabbitTemplate.convertAndSend("hello", messageString);
+			}
+			
+			You can verify the message publishing by checking the messages in the web console.
+
+
+			
+	Reading messages from RabbitMQ:
+	-------------------------------
+		To read messages from the Queue, you need to use the @RabbitListener annotation. 
+		This annotation takes a queue name or exchange. 
+		For example, the following code will print all messages from the queue named hello.
+
+			@RabbitListener(queues = "hello")
+			public void getString(String message) {
+				logger.warn("From Queue : {}", message);
+			}		
+			
+			
+			
+	Publishing complex Objects:
+	---------------------------
+		By default, Spring boot and RabbitMQ only supports Strings and byte arrays for message passing. This means you should only send java.lang.String objects or Java Serialized objects(JSO).
+
+		For example, let’s consider the following POJO class.
+
+			public class Notification implements Serializable {
+				String subject;
+				String content;
+			//getter setter tostring
+			}
+
+			With this POJO, we will replace the string with an object in the call to rabbitTemplate.
+
+			@Scheduled(fixedDelay = 5000)
+			public void publishNotification() {
+				rabbitTemplate.convertAndSend("helloPojo", 
+							  new Notification("Hello Rabbit", LocalTime.now().format(DateTimeFormatter.ISO_TIME)));
+			}
+
+			As the parameter is a java object and not just a string, the message becomes a base64 encoded byte array.
+
+			
+	
+
+	Reading Objects from RabbitMQ:
+	-----------------------------
+		Let’s see how we can read this serialized message.
+		Also note that At receiving end, we just need to specify the appropriate parameter type. Notice that I have
+
+			@RabbitListener(queues = "helloPojo")
+			public void getPojo(Notification message) {
+				logger.info("From Queue : {}", message);
+			}
+
+		As you see, Spring Boot takes care of Serializing the objects to and from RabbitMQ. 
+		
+		However, there is one problem. 
+			So far we have been the producer and consumer of these messages. 
+			What if another application not based on java wants to read these messages?
+
+				By Default, A SimpleMessageConverter takes care of the serialization. If you could provide a custom MessageConverter, then the problem is solved. 
+				
+				Let’s see how to do that:	
+				
+					Publish objects as JSON:
+					------------------------
+						If you plan on publishing Objects as JSON, you need to provide a MessageConverter implementation for the same. But, thanks to Spring Boot, it already comes with Jackson2JsonMessageConverter support.
+
+						To enable JSON support, You just need to add the following bean to your application.
+
+							@Bean
+							MessageConverter messageConverter(){
+								return new Jackson2JsonMessageConverter();
+							}
+
+								This bean requires the jackson mapper dependency for JSON conversion. 
+								
+									<dependency>
+										<groupId>com.fasterxml.jackson.core</groupId>
+										<artifactId>jackson-databind</artifactId>
+									</dependency>
+									
+										Once added, you can immediately see the change in the message format.
+
+										
+	https://springhow.com/spring-boot-health-check-indicators/
+	RabbitMQ Health Check Actuator Endpoint:
+	----------------------------------------
+		Spring boot makes health checks easier for us by providing opinionated /actuator/health endpoint.
+		The HealthEndpoint of spring-boot-starter-actuator module collects Health information for any beans that are defined as HealthIndicator.
+		
+		There are two HealthIndicator beans Auto-Configured by default. And they are for: 
+			Ping health check and 
+			Disk Space health check. 
+			
+			However, More health indicators comes into place when we start adding starters.
+			
+		Usually, starters comes with their own health indicator auto-configurations. 
+		Almost all the spring boot starters bring some form of health check contributor. And RabbitMQ starter is not any different. 
+		
+		
+		
+Code Example:
+-------------
+https://github.com/springhow/spring-boot-rabbitmq-example/tree/master/src/main
+
+	1)
+		@Configuration
+		public class RabbitMQConfig {
+			public static final Logger logger = LoggerFactory.getLogger(RabbitMQConfig.class);
+
+			@Bean
+			Queue helloQueue() {
+				return new Queue("hello");
+			}
+
+			@Bean
+			Queue helloPojoQueue() {
+				return new Queue("helloPojo");
+			}
+
+			@Bean
+			MessageConverter messageConverter() {
+				return new Jackson2JsonMessageConverter();
+			}
+
+		}
+		
+		
+	2)
+		@Service
+		public class PublishService {
+
+			@Autowired
+			private final RabbitTemplate rabbitTemplate;
+
+			public PublishService(RabbitTemplate rabbitTemplate) {
+				this.rabbitTemplate = rabbitTemplate;
+			}
+
+
+			@Scheduled(fixedDelay = 5000)
+			public void pushMessage() {
+				String messageString = "Hello Rabbit @ " + LocalTime.now().format(DateTimeFormatter.ISO_TIME);
+				rabbitTemplate.convertAndSend("hello", messageString);
+			}
+
+			@Scheduled(fixedDelay = 5000)
+			public void publishNotification() {
+				rabbitTemplate.convertAndSend("helloPojo", new Notification("Hello Rabbit", LocalTime.now().format(DateTimeFormatter.ISO_TIME)));
+			}
+		}
+		
+		
+	3)
+		@Service
+		public class ListenerService {
+
+			public static final Logger logger = LoggerFactory.getLogger(ListenerService.class);
+
+			@RabbitListener(queues = "hello")
+			public void getString(String message) {
+				logger.info("From Queue : {}", message);
+			}
+
+			@RabbitListener(queues = "helloPojo")
+			public void getPojo(Notification message) {
+				logger.info("From Queue : {}", message);
+			}
+		}
+		
+		
+	4)
+		@Data
+		@AllArgsConstructor
+		@NoArgsConstructor
+		@ToString
+		public class Notification implements Serializable {
+			String subject;
+			String content;
+		}
+				

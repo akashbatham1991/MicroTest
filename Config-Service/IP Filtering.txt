@@ -1,0 +1,114 @@
+IP Filtering or IP whitelisting in Spring Boot:
+-----------------------------------------------
+	IP filtering: 
+		is a great way to "restrict access" to certain endpoints or the entire app based on client IP addresses.
+	
+	IP whitelisting: 
+		is a security mechanism that "allows access" to a system or resource only from specific, trusted IP addresses. 
+	
+	You can implement IP filtering or IP whitelisting using a Servlet Filter, Spring Security, or even a custom interceptor, depending on your needs.
+	
+
+	Option 1: Using a Servlet Filter:
+	---------------------------------
+		This is a lightweight approach for basic IP filtering.
+		
+		1. Create a Filter Class:
+		-------------------------
+			@Component
+			public class IpFilter implements Filter {
+
+				private static final Set<String> ALLOWED_IPS = Set.of("192.168.1.10", "203.0.113.5");
+
+				@Override
+				public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+						throws IOException, ServletException {
+
+					String clientIp = request.getRemoteAddr();
+
+					if (ALLOWED_IPS.contains(clientIp)) {
+						chain.doFilter(request, response); 	// allow request
+					} else {
+						HttpServletResponse httpResponse = (HttpServletResponse) response;
+						httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+					}
+				}
+			}
+
+		2. Register the Filter (Optional):
+		----------------------------------
+			If you want to control the order or URL patterns:
+
+			@Bean
+			public FilterRegistrationBean<IpFilter> ipFilterRegistration() {
+				FilterRegistrationBean<IpFilter> registration = new FilterRegistrationBean<>();
+				registration.setFilter(new IpFilter());
+				registration.addUrlPatterns("/secure/*");
+				registration.setOrder(1);
+				return registration;
+			}
+
+
+	Option 2: Using Spring Security:
+	--------------------------------
+		If you're already using Spring Security, this integrates well.
+		
+		Custom Access Control:
+		-------------------------
+			@Configuration
+			@EnableWebSecurity
+			public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+				private static final String[] ALLOWED_IPS = {"192.168.1.10", "203.0.113.5"};
+
+				@Override
+				protected void configure(HttpSecurity http) throws Exception {
+					http
+						.authorizeRequests()
+						.antMatchers("/secure/**").access(this::ipAccessControl)
+						.anyRequest().permitAll();
+				}
+
+				private boolean ipAccessControl(Authentication authentication, HttpServletRequest request) {
+					String clientIp = request.getRemoteAddr();
+					return Arrays.asList(ALLOWED_IPS).contains(clientIp);
+				}
+			}
+
+
+	Option 3: Using HandlerInterceptor:
+	-----------------------------------
+		This works well if you want to apply IP filtering to specific controller logic.
+
+			@Component
+			public class IpInterceptor implements HandlerInterceptor {
+
+				private static final Set<String> ALLOWED_IPS = Set.of("192.168.1.10");
+
+				@Override
+				public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+						throws Exception {
+
+					String clientIp = request.getRemoteAddr();
+					if (!ALLOWED_IPS.contains(clientIp)) {
+						response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+						return false;
+					}
+					return true;
+				}
+			}
+
+
+			Register it via WebMvcConfigurer:
+			---------------------------------
+				@Configuration
+				public class WebConfig implements WebMvcConfigurer {
+					@Autowired
+					private IpInterceptor ipInterceptor;
+
+					@Override
+					public void addInterceptors(InterceptorRegistry registry) {
+						registry.addInterceptor(ipInterceptor).addPathPatterns("/secure/**");
+					}
+				}
+

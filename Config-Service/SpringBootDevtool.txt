@@ -1,0 +1,121 @@
+https://www.youtube.com/watch?v=1xZfemw_9hk&list=PL0zysOflRCelmjxj-g4jLr3WKraSU_e8q&index=17
+https://www.geeksforgeeks.org/spring-boot-devtools/
+https://docs.spring.io/spring-boot/docs/1.5.16.RELEASE/reference/html/using-boot-devtools.html
+
+
+
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-devtools</artifactId>
+		<scope>runtime</scope>
+	</dependency>
+	
+	spring.devtools.restart.exclude=resources/**,web-inf/**	
+	spring.devtools.restart.enabled=true
+	spring.devtools.livereload.enabled=true
+		
+	On adding DevTools dependencies, the word ‘devtools’ appears alongside your project name.	
+	
+	DevTools were built only for development-specific purposes, it is very smart enough that it "disables itself" when the application is deploying in a production env.
+		
+	
+-------------------------------------------START--------------------------------------------
+Spring Boot DevTools:
+--------------------
+	It aims to 'reduce development time', by intelligently detecting code changes to 'auto-recompile' your code, reducing the need to manually restart your application.
+
+	Spring Boot DevTools offers many other development-time features listed below:
+	------------------------------------------------------------------------------
+		Automatic Restart		(code changes will auto detect and server restart, we need to refresh the browser to update.)
+		Live Reload				(we don't need to even refresh the browser, changes will updated on browser automatically)
+		Property Default		(Disabling browser caching to detect changes automatically.)
+		Global Settings
+		Remote Debug Tunneling
+
+
+-DevTools Configuration in Spring Boot:
+--------------------------------------
+
+	-For Maven build automation tools dependency is-
+	-----------------------------------------------
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-devtools</artifactId>
+		<scope>runtime</scope>
+	</dependency>
+	
+	
+	-For Gradle build automation tools dependency is-
+	------------------------------------------------
+	dependencies { 
+		compile("org.springframework.boot:spring-boot-devtools")   
+	}  
+		OR  
+		
+	dependencies {     
+		developmentOnly("org.springframework.boot:spring-boot-devtools")   
+	}
+	
+	
+-Application Properties Settings for Spring Boot DevTools:
+----------------------------------------------------------
+	Toggle DevTools:
+		It can be used to customize the detection of classpath changes to trigger auto restart of your Spring Boot Application
+
+		spring.devtools.restart.enabled=true
+		
+	Exclude Resources from DevTools:
+		It can be used to specify certain resources that will excluded to trigger a restart of your Spring Boot Application.
+
+		spring.devtools.restart.exclude=resources/**,web-inf/**
+		
+	Enable/Disable LiveReloader for DevTools:
+
+		spring.devtools.livereload.enabled=true/false
+		
+->		
+	spring.devtools.restart.exclude=resources/**,web-inf/**	
+	spring.devtools.restart.enabled=true
+	spring.devtools.livereload.enabled=true/false
+		
+		
+Verify Spring Boot DevTools Configuration:
+-------------------------------------------
+	On adding DevTools dependencies, the word ‘devtools’ appears alongside your project name.
+	
+
+Note:
+	DevTools were built only for development-specific purposes, it is very smart enough that it "disables itself" when the application is deploying in a production setting.
+	
+	
+	
+->Automatic application restart:
+-------------------------------
+	With DevTools when we make changes to Java code or properties file, the application gets updated with new changes. It monitors for changes and automatically restarts the application. 
+	
+	A few more points regarding automatic restart are listed:
+	---------------------------------------------------------
+		With the DevTools in the application’s classpath, the application is loaded in two different class loaders in the JVM.
+	
+		When DevTools is present in the classpath, Spring Boot uses two class loaders to load your application:
+		
+		1. Base Class Loader:
+		---------------------
+			Loads third-party libraries (e.g., dependencies from pom.xml or build.gradle)
+			These classes are considered stable and unlikely to change during development
+			Shared across restarts to improve performance
+		
+		2. Restart Class Loader:
+		------------------------
+			Loads your application classes (i.e., everything under src/main/java)
+			Is recreated every time the application restarts
+			Enables hot swapping of code changes without restarting the entire JVM
+
+		Automatic Restart:
+		------------------
+			When you change a class or resource, DevTools triggers a restart using the new restart class loader.
+
+	
+	This will help reduce the amount of time to start the application.
+
+

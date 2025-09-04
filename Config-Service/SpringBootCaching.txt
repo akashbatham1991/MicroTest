@@ -1,0 +1,830 @@
+https://auth0.com/blog/spring-boot-caching-101/#Supported-Cache-Providers
+https://docs.spring.io/spring-framework/reference/integration/cache.html
+https://github.com/Tonel/spring-boot-caching-auth0
+
+
+The Cache Abstraction:
+----------------------
+	The cache abstraction is an abstraction, not a cache implementation.
+	
+	Spring’s cache abstraction is exactly that: an abstraction layer. 
+		It provides a uniform API for caching, but it doesn’t implement the actual caching logic itself. Instead, it delegates to a backing cache provider (like Redis, Caffeine, Ehcache, etc.) that handles the real storage and retrieval of cached data.
+
+	
+	This abstraction is materialized by below two interfaces: 
+	--------------------------------------------------------
+		Cache and CacheManager.
+		
+		Cache: 			the actual data store, Backed-by actual storage engine (ConcurrentMap, Redis, Caffeine, etc.)
+		CacheManager:	the controller or orchestrator that manages multiple Caches instances.
+
+		Redis: 				the actual cache engine.
+		
+		RedisCacheManager:	
+			It implements CacheManager interface, allowing you to use annotations like @Cacheable, @CacheEvict, and @CachePut with Redis seamlessly.
+			It uses Redis to store and retrieve cached data, improving performance by reducing database hits.
+
+
+	How CacheManager, Cache and CacheProvider Work Together:
+	--------------------------------------------------------
+		When you annotate a method with @Cacheable("users"):
+			Spring uses the CacheManager to retrieve the "users" cache.
+			That Cache is backed by a cache provider (e.g., Redis).
+			The provider handles actual storage, eviction, and retrieval.
+
+	
+Cache Provider and Cache Manager:
+---------------------------------
+	Spring Boot auto-configures a CacheManager based on the CacheProvider (e.g., Redis, Caffeine, Ehcache).
+
+	To use own choice cache provider and cache manager, below changes needs to be done:
+	
+		1) Add dependency of backed storage:		spring-boot-starter-data-redis	
+		2) Add configuration:						spring.cache.type=redis	and host/port
+		3) Register bean of cacheManager:		 	RedisCacheManager
+
+Cache Providers:
+----------------
+	The actual implementation that powers the cache.
+	Determines how data is stored, evicted, serialized, and persisted.
+	Can be in-memory, distributed, or persistent.
+
+	Below are "cache providers or backing stores", they determine where and how the cached data is physically stored and from which it is read. Here's a quick rundown of each:
+	
+	Cache Providers in Spring:
+	--------------------------
+		Provider 		Storage Type 			Storage Location 		Use Case Highlights
+		--------		------------			----------------		-------------------
+		ConcurrentMap 	In-memory (default) 	JVM heap 				Simple, lightweight, no TTL or eviction
+		Caffeine 		In-memory (advanced) 	JVM heap 				High-performance, supports eviction policies & TTL 
+		Ehcache 		In-memory / disk 		JVM heap or disk 		Mature, configurable, supports persistence 
+		Redis 			Remote (distributed) 	External Redis server 	Scalable, shared across services, supports TTL & 
+																		eviction, transactions, clustering, persistence 
+
+	How Spring Uses These Providers:
+	--------------------------------
+		When you annotate a method with @Cacheable, Spring "delegates" the actual storage and retrieval to the configured cache provider. 
+
+		For example:
+			@Cacheable("users")
+			public User getUserById(Long id) {
+				// expensive DB call
+			}
+
+	Switching Providers:
+	--------------------
+		It allows you to switch cache providers without changing your business logic. You can switch providers by updating your dependencies and configuration:
+		
+		1. Caffeine:
+		------------
+			1)
+				<dependency>
+				  <groupId>com.github.ben-manes.caffeine</groupId>
+				  <artifactId>caffeine</artifactId>
+				</dependency>
+			
+			2)	
+				spring.cache.type=caffeine
+		
+		2. Ehcache: 
+		-----------
+			Add ehcache.xml and 
+			
+			configure:
+				spring.cache.type=ehcache
+
+		3. Redis: 
+		--------- 
+			configure: host/port in configuration file and 
+			add dependency: spring-boot-starter-data-redis.
+
+
+	Which provider is best for high throughput?:
+	--------------------------------------------
+		For high throughput, especially in large-scale or real-time applications, Redis is widely considered the top performer among cache providers
+
+		How It Compares to Others:
+		--------------------------
+			Provider 		Throughput 		Scalability 	Latency 		Notes
+			--------		-----------		------------	--------		-----
+			Redis 			⭐⭐⭐⭐⭐ 	⭐⭐⭐⭐⭐ 	⭐⭐⭐⭐ 		Best for distributed, real-time use
+			Caffeine 		⭐⭐⭐⭐ 		⭐⭐ 			⭐⭐⭐⭐⭐ 	Great for local, in-memory caching 
+			Ehcache 		⭐⭐⭐ 		⭐⭐⭐ 		⭐⭐⭐ 		Good for hybrid memory/disk setups
+			ConcurrentMap 	⭐⭐ 			❌ 				⭐⭐⭐ 		Simple, not suitable for scale
+
+
+CacheManager:
+-------------	
+	It manages different cache implementations. 
+	Each CacheManager is backed by a specific storage mechanism, which determines how and where the cached data is stored.
+
+	CacheManagers and Their Backing Stores:
+	---------------------------------------
+		CacheManager Type 			Backing Storage 	
+		-----------------			---------------
+		ConcurrentMapCacheManager 	ConcurrentHashMap 	
+		CaffeineCacheManager 		Caffeine (in-memory)
+		EhCacheCacheManager 		Ehcache (memory/disk)	
+		RedisCacheManager 			Redis (external server, distributed)
+		SimpleCacheManager 			Custom in-memory caches 
+		JCacheCacheManager 			JSR-107 compliant store :Abstracts over providers like Ehcache, Hazelcast, Infinispan
+		HazelcastCacheManager 		Hazelcast (distributed)
+		InfinispanCacheManager 		Infinispan(distributed)
+
+
+	How Spring Boot Chooses a CacheManager:
+	---------------------------------------
+		Spring Boot auto-configures a CacheManager based on the CacheProvider (e.g., Redis, Caffeine, Ehcache).
+		Spring Boot auto-configures a CacheManager based on the dependencies in your classpath:
+		
+			If no provider is specified → 	uses ConcurrentMapCacheManager
+			If Redis is present → 			uses RedisCacheManager
+			If Caffeine is present → 		uses CaffeineCacheManager
+			If Ehcache is present → 		uses EhCacheCacheManager
+
+
+			
+CacheResolver: Custom Cache Selection Logic:
+--------------------------------------------
+	Purpose:
+		Determines which cache(s) to use for a given method invocation.
+		
+	Default Behavior:
+		Spring uses the SimpleCacheResolver, which selects caches based on the @Cacheable annotation's value or cacheNames.
+		
+	Why Use It:
+		You want dynamic cache selection based on method parameters, user roles, or runtime conditions.
+		You need to route cache operations to different cache managers (e.g., Redis for some data, Caffeine for others).
+
+	Bonus: Role Extraction Tips:
+		If you're using Spring Security, you can extract roles from SecurityContextHolder.
+		For request-type-based resolution, you might inspect headers or method annotations.
+
+	Example:
+	--------
+		@Component("customCacheResolver")
+		public class CustomCacheResolver implements CacheResolver {
+			@Override
+			public Collection<? extends Cache> resolveCaches(CacheOperationInvocationContext<?> context) {
+				// Custom logic to choose caches
+				return List.of(...);
+			}
+		}
+
+	Then use it like:
+		
+		@Cacheable(cacheResolver = "customCacheResolver")
+		public String getData(String key) { ... }
+
+
+
+CacheErrorHandler: Graceful Error Handling:
+-------------------------------------------
+	Purpose:
+		Handles runtime exceptions during cache operations (get, put, evict, clear).
+	
+	Default Behavior:
+		Spring throws exceptions if cache operations fail.
+	
+	Why Use It:
+		You want to log errors without crashing the app.
+		You need fallback behavior when cache is unavailable.
+		You want to monitor cache failures for observability.
+
+	Example:
+	--------
+		@Component
+		public class CustomCacheErrorHandler implements CacheErrorHandler {
+			@Override
+			public void handleCacheGetError(RuntimeException exception, Cache cache, Object key) {
+				log.warn("Cache get failed for key: {}", key, exception);
+			}
+
+			@Override
+			public void handleCachePutError(RuntimeException exception, Cache cache, Object key, Object value) {
+				log.warn("Cache put failed for key: {}", key, exception);
+			}
+
+			@Override
+			public void handleCacheEvictError(RuntimeException exception, Cache cache, Object key) {
+				log.warn("Cache evict failed for key: {}", key, exception);
+			}
+
+			@Override
+			public void handleCacheClearError(RuntimeException exception, Cache cache) {
+				log.warn("Cache clear failed", exception);
+			}
+		}
+
+		To register it:
+		---------------
+			@Configuration
+			public class CacheConfig {
+				@Bean
+				public CacheErrorHandler cacheErrorHandler() {
+					return new CustomCacheErrorHandler();
+				}
+			}
+
+	
+What @EnableCaching Actually Does:
+-----------------------------------
+	When you annotate a configuration class(@Configuration or @SpringBootApplication) with @EnableCaching, Spring Boot:
+		1. Activates caching support in the application context.
+		2. Auto-configures a CacheManager bean based on your chosen cache provider (e.g., Redis, Caffeine, Ehcache).
+		3. Enables detection of caching annotations like @Cacheable, @CachePut, and @CacheEvict on your beans.
+	
+		So essentially, it allows Spring to intercept method calls and apply caching logic.
+
+		Behind the Scenes:
+		------------------
+			Spring uses proxy-based AOP (Aspect-Oriented Programming) to wrap your beans and intercept method calls. When a method annotated with @Cacheable is called:
+				Spring checks if the result is already in the cache.
+				If yes, it returns the cached value.
+				If not, it executes the method and stores the result in the cache.
+
+				Example Usage:
+					@Configuration
+					@EnableCaching
+					public class AppConfig {
+						// You can define a custom CacheManager here if needed
+					}
+
+				And in your service:
+					@Cacheable("products")
+					public Product getProductById(Long id) {
+						// Simulate expensive DB call
+					}
+
+	
+	1) Default Cache Manager Feature:
+	---------------------------------
+		When you use @EnableCaching in a Spring Boot application without explicitly defining a CacheManager bean, Spring Boot automatically registers a default ConcurrentMapCacheManager. This is a simple, thread-safe in-memory cache backed by a ConcurrentHashMap.
+					
+			@SpringBootApplication  
+			@EnableCaching   
+			public class SpringBootCachingApplication {  
+				public static void main(String[] args) {  
+					SpringApplication.run(SpringBootCachingApplication.class, args);  
+				}  
+			}
+		
+		
+			What Happens Behind the Scenes:
+			-------------------------------
+				Spring Boot detects that caching is enabled via @EnableCaching.
+				It checks if a CacheManager bean is already defined.
+				If not, it auto-configures a ConcurrentMapCacheManager as the default.
+				
+				This means you can start using caching annotations like @Cacheable right away:
+
+					@Cacheable("books")
+					public Book findBookByIsbn(String isbn) {
+						// expensive DB call
+					}
+
+				No extra configuration needed—unless you want to switch to a more advanced provider like Redis, Caffeine, or Ehcache.
+
+		
+		2. Custom CacheManager Feature:
+		-------------------------------
+			You can override the default cacheManager feature by defining your own @Bean of type CacheManager, like below:
+			
+			Example for enabling Redis Caching:
+			-----------------------------------
+				@Configuration
+				@EnableCaching
+				public class CachingConfig {
+		
+					@Bean
+					public RedisCacheManager cacheManager(RedisConnectionFactory factory) {
+						return RedisCacheManager.builder(factory)
+							.cacheDefaults(RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(10)))
+							.build();
+					}
+				}
+				
+			you can configure your own choice CacheManager bean if:
+				You want to use a different provider (e.g. Redis, Caffeine).
+				You need custom TTLs, eviction policies, or serialization.
+				You want to configure multiple caches with different settings.
+			
+	
+
+Spring Boot Caching Dependency:
+-------------------------------
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-cache</artifactId>
+		<version>2.5.0</version>
+	</dependency>
+		
+	
+	
+Spring Boot Caching Annotations:
+--------------------------------
+	@Cacheable: 	Triggers cache population.
+	@CacheEvict: 	Triggers cache eviction.
+	@CachePut: 		Updates the cache without interfering with the method execution.
+	@Caching: 		Regroups multiple cache operations to be applied on a method.
+	@CacheConfig: 	Shares some common cache-related settings at class-level.
+	@EnableCaching:	Activates caching support
+
+	
+Use Caching With Annotations:
+-----------------------------
+	This gives three levels of customizations:
+	------------------------------------------
+		1. Method level configuration: 		using @Cacheable, @CachePut, @CacheEvict and @Caching.
+		2. Class level configuration: 		using @CacheConfig.
+		3. Globally configuration: 			using CachingConfigurer.
+		
+		Note:
+		-----
+			An operation-level customization always overrides a customization set on @CacheConfig.
+
+	1. Method level configuration:
+	------------------------------
+		@Cacheable
+		----------
+			parameterize it with the name of the cache where the results would be stored:
+			
+			1) Way-1:
+			---------
+				@Cacheable("addresses")
+				public String getAddress(Customer customer) {...}
+			
+					The getAddress() call will first check the cache addresses before actually invoking the method and then caching the result.
+			
+			
+			2)Way-2:
+			-------
+				The Spring framework also supports multiple caches to be passed as parameters:
+
+				@Cacheable({"addresses", "directory"})
+				public String getAddress(Customer customer) {...}
+		
+					In this case, if any of the caches contain the required result, the result is returned and the method is not invoked.
+					
+					
+		@CacheEvict:
+		------------
+			use for removal of one or more/all values so that fresh values can be loaded into the cache again:
+				
+				@CacheEvict(value="addresses", allEntries=true)
+				public String getAddress(Customer customer) {...}
+				
+				
+		@CachePut:
+		----------
+			the method will always be executed and the result cached:
+			
+			@CachePut(value="addresses")
+			public String getAddress(Customer customer) {...}
+			
+			Note: 
+				the framework ignores any key specified in this scenario as it does not apply (the entire cache is evicted, not only one entry.
+				
+				You can also indicate whether the eviction should occur after (the default) or before the method is invoked by using the beforeInvocation attribute.
+				
+				@CachePut(value="addresses", beforeInvocation = true)
+				public String getAddress(Customer customer) {...}
+		
+		Note:	
+			you should "update" "stale data" with @CachePut and 
+			you should "remove" "unused data" with @CacheEvict.
+			
+		@Caching:
+		---------
+			Used for multiple nested @Cacheable, @CachePut, and @CacheEvict annotations on the same method. 
+			
+			@Caching(evict = { 
+				@CacheEvict("addresses"), 
+				@CacheEvict(value="directory", key="#customer.name") })
+			public String getAddress(Customer customer) {...}
+			
+			
+			Note:
+				As Java doesn’t allow multiple annotations of the same type to be declared for a method, doing so will generate a compilation error. We can group different annotations into Caching, as shown above.
+	
+	
+	2. Class level configuration:	
+	-----------------------------	
+	
+		@CacheConfig:
+		-------------
+			Is used for centralized configuration.
+				we can streamline some of the cache configuration into a single place at the class level, so that we don’t have to declare things multiple times:
+			
+					@CacheConfig(cacheNames={"addresses"})
+					public class CustomerDataService {
+
+						@Cacheable
+						public String getAddress(Customer customer) {...}				
+					}
+				
+			
+	3. Globally configuration:
+	--------------------------
+	
+		CachingConfigurer:
+		------------------
+			Centralized configuration for all caching behavior.
+			Cleaner and more maintainable codebase
+
+			You can implement the CachingConfigurer interface or extend its adapter class CachingConfigurerSupport. 
+				
+				@Configuration
+				@EnableCaching
+				public class AppCacheConfig extends CachingConfigurerSupport {
+
+					@Bean
+					@Override
+					public CacheManager cacheManager() {
+						RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+							.entryTtl(Duration.ofMinutes(30))
+							.disableCachingNullValues();
+
+						return RedisCacheManager.builder(redisConnectionFactory())
+							.cacheDefaults(config)
+							.build();
+					}
+
+					@Bean
+					public RedisConnectionFactory redisConnectionFactory() {
+						return new LettuceConnectionFactory("localhost", 6379);
+					}
+				}
+				
+		
+Redis Caching Code Example (Distributed, In-Memory):
+----------------------------------------------------
+	
+	1. Add Dependencies:
+	--------------------
+		<dependency>
+		  <groupId>org.springframework.boot</groupId>
+		  <artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+		<dependency>
+		  <groupId>org.springframework.boot</groupId>
+		  <artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+
+
+	2. Enable Caching:
+	------------------
+		@SpringBootApplication
+		@EnableCaching
+		public class RedisCachingApp {
+			public static void main(String[] args) {
+				SpringApplication.run(RedisCachingApp.class, args);
+			}
+		}
+
+
+	3. Configure Redis in application.properties:
+	---------------------------------------------
+		spring.cache.type=redis
+		spring.redis.host=localhost
+		spring.redis.port=6379
+
+
+	4. Use Caching in Service:
+	--------------------------
+		@Service
+		public class ProductService {
+		
+			@Cacheable("products")
+			public Product getProductById(Long id) {
+				return new Product(id, "Redis-powered Laptop");
+			}
+		}
+
+	What Happens When You Call getProductById(1L):
+	----------------------------------------------
+		Spring intercepts the method call due to @Cacheable.
+		It asks the CacheManager for the "products" cache.
+		The cache is backed by Redis.
+		If the key 1L is found, it returns the cached result.
+		If not, it executes the method and stores the result.
+		
+
+Why You Don’t Need to Manually Configure RedisCacheManager:
+-----------------------------------------------------------
+	When you add the required dependencies and annotate your application with @EnableCaching, Spring Boot automatically configures a RedisCacheManager for you. 
+	
+	Here's why:
+		Spring Boot detects Redis via the spring-boot-starter-data-redis dependency.
+		It sees that caching is enabled (@EnableCaching).
+		It auto-configures a RedisCacheManager using sensible defaults:
+			Host: localhost
+			Port: 6379
+			Default TTL: none (unless customized)
+			Serialization: typically uses GenericJackson2JsonRedisSerializer
+	
+	This means you can start using caching annotations like @Cacheable("users") right away—no need to define a CacheManager bean manually.
+
+	
+	When You Would Configure It Yourself:
+	-------------------------------------
+		You only need to manually configure RedisCacheManager if you want to:
+			Set custom TTLs for different caches
+			Change serialization strategy
+			Disable caching of null values
+			Use key prefixes or fine-tune cache behavior
+		
+		Example:
+		--------
+			@Bean
+			public RedisCacheConfiguration cacheConfiguration() {
+				return RedisCacheConfiguration.defaultCacheConfig()
+					.entryTtl(Duration.ofMinutes(30))
+					.disableCachingNullValues()
+					.serializeValuesWith(
+						SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+			}
+
+
+		So in short: Spring Boot handles the setup for you, but gives you full control if you want to customize.
+
+
+	
+Conditional Caching:
+--------------------
+	Spring’s cache annotations supports two key attributes for conditional logic:
+		1. condition	(Pre-execution check)	(store result, if cond true)
+		2. unless		(Post-execution veto)	(store result, if unless false)
+		
+	Method execution will always occure in both the case, the only thing is: 
+		whether cache storage should occure or not.
+		whether cache updation should occure or not.
+		whether cache eviction should occure or not.
+		
+		
+	1. condition : Pre-execution check:
+	-----------------------------------
+		Evaluated before the method runs.
+		"If false", the result is not cached, even though the method executed.
+
+			@Cacheable(value = "books", condition = "#book.type == 'paperback'")
+			public Book getBook(Book book) {
+				return bookService.find(book);
+			}
+
+
+	2. unless : Post-execution veto:
+	--------------------------------
+		Evaluated after the method runs.
+		"If true", the result is not cached, even though the method executed.
+			
+			@Cacheable(value = "prices", unless = "#result == null")
+			public Price getPrice(String productId) {
+				return priceService.fetch(productId);
+			}
+			
+		You can use Spring Expression Language (SpEL) to write these conditions dynamically.
+
+	3. condition + unless :
+	-----------------------
+		You can combine condition and unless for even more control:
+
+			@Cacheable(value = "data", condition = "#id != null", unless = "#result == null")
+			public Data fetchData(String id) {
+				return externalService.getData(id);
+			}
+
+			This ensures caching only happens when id is present and the result is non-null.
+
+
+		Similarly, you can use conditional caching with both @CachePut and @CacheEvict in Spring:
+			@CachePut:		control when cache updates should occur based on runtime logic.
+			@CacheEvict:	control when cache evictions should occur based on runtime logic.
+			@Cachable:		control when cache store should occur based on runtime logic.
+		
+	
+	Real-World Use Cases:
+	---------------------
+		Cache only successful API responses (unless = "#result.status != 200")
+		Skip caching for large payloads (unless = "#result.size() > 1000")
+		Cache only for specific user roles (condition = "#user.role == 'ADMIN'")
+
+
+->Useful Stuff:
+---------------		
+	What would be the problem with making all methods @Cacheable?
+		The problem is size. 
+			We don’t want to populate the cache with values that we don’t need often. Caches can grow quite large, quite fast, and we could be holding on to a lot of stale or unused data.
+				In fact, since caches can become large very quickly, 
+					you should "update" "stale data" with @CachePut and 
+					you should "remove" "unused data" with @CacheEvict.
+
+	We can use the @CacheEvict annotation to indicate the 'removal' of one or more/all values so that fresh values can be loaded into the cache again.
+
+	While @CacheEvict reduces the overhead of looking up entries in a large cache by removing stale and unused entries, we want to avoid evicting too much data out of the cache.
+		Instead, we selectively update the entries whenever we alter them.
+
+	With the @CachePut annotation, we can 'update' the content of the cache without interfering with the method execution. That is, the method will 'always' be executed and the result cached.
+
+	The difference between @Cacheable and @CachePut is that: 
+		@Cacheable will skip running the method, whereas 
+		@CachePut will actually run the method and then put its results in the cache.
+		
+	Since they have different behaviors, annotating the same method with both @CachePut and @Cacheable should be avoided.
+	
+	
+-Synchronized Caching:
+----------------------
+	In a multi-threaded environment, certain operations might be concurrently invoked for the same argument (typically on startup). 
+	*By default, the cache abstraction does not lock anything, and the same value may be computed several times, defeating the purpose of caching.
+
+	For those particular cases, you can use the "sync" attribute to instruct the underlying cache provider to lock the cache entry while the value is being computed. As a result, only one thread is busy computing the value, while the others are blocked until the entry is updated in the cache. 
+	
+	The following example shows how to use the sync attribute:
+		
+		@Cacheable(cacheNames="foos", sync=true) 
+		public Foo executeExpensiveOperation(String id) {...}		
+		
+		
+-Caching with CompletableFuture:
+--------------------------------
+	For a method returning a CompletableFuture, the object produced by that future will be cached whenever it is complete, and the cache lookup for a cache hit will be retrieved via a CompletableFuture:
+	
+		@Cacheable("books")
+		public CompletableFuture<Book> findBook(ISBN isbn) {...}
+	
+		
+-Default Key and Custom KeyGenerator:
+------------------------------------
+	In Spring Cache, keys are crucial for identifying cached data. 
+	When you cache a method, Spring needs a way to generate a unique key for each invocation so it can store and retrieve the result efficiently.
+
+	Why Keys Matter in Spring Cache:
+	--------------------------------
+		Uniqueness: 
+			Each method call can have different parameters. The key ensures that each unique combination maps to its own cached result.
+		
+		Efficiency: 
+			Keys allow Spring to quickly check if a result is already cached, avoiding unnecessary computation.
+		
+		Consistency: 
+			Proper key generation ensures that repeated calls with the same inputs return the same cached result.
+
+
+	How Spring Generates Keys:
+	--------------------------
+		Let’s break down how default keys work and how you can create a custom KeyGenerator if you need more control.
+
+		1. Default Key Generation:
+		--------------------------
+			By default, Spring uses SimpleKeyGenerator, here's how it behaves::
+			
+				Method Parameters 	Generated Key
+				-----------------	-------------
+				None 				SimpleKey.EMPTY
+				One 				The parameter itself
+				Multiple 			SimpleKey wrapping all parameters
+
+			So if you have:
+			---------------
+				@Cacheable("users")
+				public User getUser(String username, int age)
+			
+			The key would be something like: SimpleKey [username, age]
+
+
+		2. Custom KeyGenerator:
+		-----------------------
+			If the default behavior doesn’t suit your needs—say, you want to hash the parameters, ignore some of them, or use a specific format—you can define your own KeyGenerator
+
+
+			Step-1. Create the Custom KeyGenerator:
+			---------------------------------------
+			
+				@Component("customKeyGenerator")
+				public class CustomKeyGenerator implements KeyGenerator {
+				
+					@Override
+					public Object generate(Object target, Method method, Object... params) {
+						return method.getName() + "_" + Arrays.hashCode(params);
+					}
+				}
+
+
+			Step-2. Use It in Your Cache Annotation:
+			----------------------------------------
+				@Cacheable(value = "books", keyGenerator = "customKeyGenerator")
+				public Book findBook(String title, String author)
+
+
+				Note:
+				-----
+					The keyGenerator attribute tells Spring to use your custom logic instead of the default SimpleKeyGenerator.
+			
+			Pro Tip:
+			--------	
+				If your method parameters include complex objects, make sure their equals() and hashCode() methods are properly overridden—otherwise, your cache keys might not behave as expected.
+
+
+			How to register customkeygenerator in cache:
+			--------------------------------------------
+				Way-1:
+				------
+					To register a custom KeyGenerator in Spring Cache, you just need to define it as a Spring-managed bean and reference it in your caching annotations like above in step-2.
+
+				Way-2: Register via Configuration (Optional):
+				---------------------------------------------
+					You can also register it in a @Configuration class:
+
+						@Configuration
+						public class CacheConfig {
+							@Bean("customKeyGenerator")
+							public KeyGenerator keyGenerator() {
+								return new CustomKeyGenerator();
+							}
+						}
+	
+			
+		
+Spring Cache Vs JCache:
+-----------------------
+	Spring Cache and JCache (JSR-107) are both caching abstractions in Java, but they serve slightly different purposes and have distinct characteristics. 
+	
+	Use Spring Cache: 
+		if you're building a Spring Boot or Spring Framework app and want tight integration, simplicity, and flexibility.
+	
+	Use JCache: 
+		if you need a vendor-neutral, standardized caching API that can work across different Java environments.
+
+	Note:
+		Depending on your use case, the choice is basically yours. You can even mix and match services by using the JSR-107 API on some and using Spring’s own annotations on others.
+
+	differences between the Spring annotations and their JSR-107 counterparts:
+	--------------------------------------------------------------------------
+		Spring							JSR-107
+		-------------					------------
+		@Cacheable						@CacheResult
+		@CachePut						@CachePut
+		@CacheEvict						@CacheRemove
+		@CacheConfig					@CacheDefaults
+		@CacheEvict(allEntries=true)	@CacheRemoveAll
+		
+	Note:
+		Spring’s caching abstraction fully supports the JCache standard (JSR-107) annotations.
+		
+		If you are already using Spring’s caching abstraction, you can switch to these "standard annotations" without changing your cache storage or configuration.
+	
+
+	Feature 			Spring Cache 								JCache (JSR-107)
+	-------				------------								----------------
+	Origin 				Part of the Spring Framework 				Java standard specification (JSR-107)
+	API Type 			Spring-specific abstraction 				Vendor-neutral Java API
+	Configuration 		Via annotations and Spring config 			Via annotations or programmatic configuration
+	Caching Provider	Requires integration with a provider  		Requires a JCache-compliant provider (e.g., Hazelcast, 
+						(e.g., EhCache, Caffeine)					Infinispan) 
+	Annotations 		@Cacheable, @CachePut, @CacheEvict 			@CacheResult, @CachePut, @CacheRemove
+	Key Generation 		Uses KeyGenerator interface 				Uses CacheKeyGenerator interface
+	Integration 		Deeply integrated with Spring ecosystem 	Standardized across Java EE/SE environments
+	Flexibility 		Highly customizable with Spring features 	More rigid but portable across platforms
+
+
+Use Weak References for Caching:
+-----------------------------------
+	Why?
+		Strong references prevent garbage collection. Weak references allow GC to collect objects when no strong references exist.
+
+	Best Practices:
+		✔ Use WeakReference for caching large objects.
+		✔ Use WeakHashMap for temporary caching.
+
+	Example: Using WeakReference for Caching		
+	---------
+		Map<Integer, WeakReference<String>> cache = new HashMap<>();
+		cache.put(1, new WeakReference<>("Cached Data"));
+			
+		🔹 Benefit: Prevents caches from growing indefinitely.
+
+
+		
+Avoid Large Objects in Session & HTTP Requests:
+--------------------------------------------------
+	Why?
+		Storing large objects in sessions leads to high memory usage.
+
+	Best Practices:
+		✔ Store only minimal session data.
+		✔ Use database or cache (Redis) for storing large objects.
+
+	Example: Avoid Storing Large Objects in HTTP Sessions
+	--------
+		HttpSession session = request.getSession();
+		session.setAttribute("largeData", largeObject); // Avoid this!
+		
+	🔹 Benefit: Improves application scalability.		
+
+		
+		
+		
+
+	
+	

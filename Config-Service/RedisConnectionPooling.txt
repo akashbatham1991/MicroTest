@@ -1,0 +1,106 @@
+Why Connection Pooling Matters:
+-------------------------------
+	Redis connections are TCP-based, and creating/destroying them repeatedly is expensive. 
+	
+	Without pooling, each request would:
+		Open a new connection
+		Execute the command
+		Close the connection
+	
+		This leads to:
+			Increased latency
+			Higher resource usage
+			Risk of hitting connection limits
+			Potential failures under load
+	
+	With a connection pool:
+		Connections are reused
+		You avoid the overhead of frequent connection setup
+		You can limit and manage concurrent connections
+		Performance and stability improve dramatically
+
+	When Pooling Is Essential:
+	--------------------------
+		Using Jedis: 				Jedis is not thread-safe, so pooling is mandatory in multi-threaded apps.
+		High-throughput systems: 	Apps with lots of Redis operations benefit from pooling.
+		Blocking clients: 			If your Redis client uses blocking I/O, pooling helps avoid thread contention.
+
+	When Pooling Is Optional:
+	-------------------------
+		Using Lettuce: 
+			Lettuce is thread-safe and supports non-blocking I/O. You can share a single connection across threads, making pooling optional unless you need advanced control.
+		
+		Low-traffic apps: For simple scripts or low-volume services, pooling might be overkill.
+
+	Summary:
+	--------
+		Scenario 						Pooling Needed?
+		--------						---------------
+		Jedis in multi-threaded app 	Yes
+		Lettuce in reactive app 		Optional
+		High-load production system 	Yes
+		Simple CLI or dev script 		Not required
+
+
+Type of connection pool:
+------------------------
+	When working with Redis as a cache, the type of connection pool you use depends on the Redis client library you're using in your application. 
+
+	Connection Pool Options by Redis Client:
+	----------------------------------------
+		Redis Client 	Connection Pool Used 		
+		------------	---------------------
+		Jedis (Java) 	Apache Commons Pool 2 				
+		Lettuce (Java) 	Optional Pooling or Multiplexing 	
+
+		
+		Lettuce: Pooling vs. Multiplexing:
+		----------------------------------
+			Multiplexing: 	One connection shared across threads (efficient for async/reactive apps).
+			Pooling: 		Multiple connections managed in a pool (useful for blocking operations).
+
+		
+	What Is JedisPool?:
+	-------------------
+		It manages a pool of reusable Redis connections.
+		
+		Why it matters: 
+			Creating a new Redis connection for every operation is expensive. JedisPool avoids this by reusing connections, improving performance and scalability.
+
+		Internally, it uses Apache Commons Pool 2 to manage the lifecycle of connections.
+		
+			When your app needs to interact with Redis, it borrows a Jedis instance from the pool.
+			If no idle connections are available, it waits (or fails, based on config).
+			You perform Redis operations like set, get, del, etc., using the borrowed Jedis object.
+			After use, the connection is returned to the pool for reuse.
+			If the connection is broken, it’s discarded and replaced.
+
+	Example Code:
+	-------------
+		JedisPoolConfig poolConfig = new JedisPoolConfig();
+		poolConfig.setMaxTotal(128);
+		poolConfig.setMaxIdle(64);
+		poolConfig.setMinIdle(16);
+		poolConfig.setTestOnBorrow(true);
+
+		try (JedisPool jedisPool = new JedisPool(poolConfig, "localhost", 6379)) {
+			try (Jedis jedis = jedisPool.getResource()) {
+				jedis.set("key", "value");
+				String value = jedis.get("key");
+				System.out.println("Retrieved: " + value);
+			}
+		}
+
+	Key Configuration Parameters:
+	-----------------------------
+		maxTotal: 		Max number of active connections.
+		maxIdle: 		Max number of idle connections.
+		minIdle: 		Minimum number of idle connections to maintain.
+		testOnBorrow: 	Validates connection before use.
+
+	Benefits of Using JedisPool:
+	----------------------------
+		Thread-safe connection management
+		Improved performance under load
+		Reduced latency from connection reuse
+		Automatic handling of broken connections

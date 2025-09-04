@@ -1,0 +1,252 @@
+https://github.com/in28minutes/spring-master-class/tree/master/03-spring-aop
+
+https://medium.com/@gudise.ashok/centralized-logging-using-aop-for-your-spring-boot-app-the-ancient-ones-way-logging-with-power-5a0089809505
+
+
+	AOP is the best approach for implementing "cross cutting concerns (logging, security,...)".
+	Spring AOP is one of the popular implementation of AOP but it's not as powerful as AspectJ. 
+	
+	Add this dependency into your pom.xml.		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+		
+	
+	The format for defining something to intercept is:	 (* PACKAGE.*.*(..))
+	-------------------------------------------------------------------------
+		first * means: 		any return type
+		second * means: 	any class in that PACKAGE,
+		third * means: 		intercept all methods calls.
+		.. means: 			irrespective of their arguments.
+	
+	
+	Aspect = Pointcut + Advice 
+
+	Pointcut: 
+		it defines what kind of methods I would want to intercept, is called pointcut.
+		is this expression: (* PACKAGE.*.*(..))
+		
+	Advice: 
+		What should I do when I do the interception. The logic here is called advice.
+
+	Aspect: 
+		The combination of pointcut and advice is called an Aspect. What kind of methods to intercept and What to do is called Aspect.
+	
+	->
+	@Aspect
+	Public Class UserAccessAspect {
+	
+		@Before("execution(* com.inmin.spring.ao.dao.impl.*.*(..))")
+		public void before(JointPoint joinPoint) {
+			logger.info("Check for user access");	
+			...
+		}
+	}
+
+		1) "execution(* com.inmin.spring.ao.dao.impl.*.*(..))"   	://pointcut
+		2) logger.info("Check for user access"); 					://Advice (what we want to do)
+		3) @Aspect = pointcut + Advice
+		4) JointPoint :specific interception instance is called joinPoint.
+
+
+	@Before, 
+	@After, @AfterReturning, @AfterThrowing
+	@Around
+	
+	
+	@Pointcut("execution(* com.inmin.spring.ao.dao.impl.*.*(..))")
+	@pointcut("within(com.krg.co.dao..*"))							
+	@Pointcut("@annotation(com.kgr.cro.TrackTime)")						
+	
+
+	Have a speparate file where you'll define all pointcuts:
+
+		public class CommonJoinPointConfig{
+			@Pointcut("execution(* com.inmin.spring.ao.dao.impl.*.*(..))")
+			public void dataLayerExecution(){}
+
+		}
+
+		now use this method name "dataLayerExecution" wherever you want this joinpoint.
+
+
+
+---------------------------------------START-----------------------------------------------------
+AOP:
+----
+	AOP is the best approach for implementing "cross cutting concerns (logging, security,...)".
+	Spring AOP is one of the popular implementation of AOP, this is provided by spring by default but it's not as powerful as AspectJ. 
+	It intercept any call to beans and do something around.
+	
+
+Note: AOP dependency is not available on the Spring Initializr website anymore.
+
+
+Recommendation:
+---------------
+STEP I: Create a project without adding AOP.
+
+STEP II: Add this dependency into your pom.xml.
+	
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-aop</artifactId>
+	</dependency>
+
+
+Create Spring Boot AOP (Aspect Oriented Programming) project:
+-------------------------------------------------------------
+	Create project using spring initializer and generate the project and import it into eclipse.
+
+	Spring AOP is one of the popular implementation of AOP, this is provided by spring by default but it's not as powerful as AspectJ. 
+	You can use spring AOP to "intercept any call to beans", so any beans which are managed by spring framework,you can intercept the method call and do something around, however AspectJ is much more powerful, you can even intercept change on values on a field.
+
+
+	When we talking about application, it has web layer, business layer and data layer, each layer has it's own concern however there are things called cross cutting concerns, one of them is logging,security,  these are not which are related to specific layer, "AOP is best approach for implementing cross cutting concerns". 
+
+
+
+-We got the application context from here. @SpringBootApplication class. We'll use this application context to retrieve the beans. 
+
+-CommandLineRunner: 
+	would invoked as soon as the application is launched. We can override run method to do something here on application startup.
+
+in next step, we would write AOP code to intercept this method, whatever calls coming to this method we would intercept them and log them.
+
+
+Step 03:
+Defining @Before Advice:
+-------------------------
+
+	The format for defining something to intercept is:	 (* PACKAGE.*.*(..))
+	-------------------------------------------------------------------------
+		first * means: 		any return type, I want to intercept all methods errespective of their return type in a specific PACKAGE.
+		second * means: 	any class in that PACKAGE,
+		third * means: 		intercept all methods calls.
+		.. means: 			irrespective of their arguments.
+
+
+	replace <PACKAGE> by the package of the things from which we would want to intercept all the calls.
+
+
+	"@Before" will intercept all method calls, if you also want to get the details, use "JointPoint": it will show you the entire method calls which were intercepted.
+
+	@Before: 
+		intercept before a call is happened. So this is invoked before actual method is invoked. Typically we use before for things to check 'access'. For example: 
+			if user has right access or not before accessing the method. So you don't need to implement access check in every method. So here security things are defining in one place.
+			
+	Like: similar in spring boot, we can define all exception in one class using @ControllerAdvice.
+
+
+
+Step 04:
+AOP Termonology:
+----------------
+	Aspect = Pointcut + Advice 
+
+	pointcut is this expression: (* PACKAGE.*.*(..))
+		it defines what kind of methods I would want to intercept, is called pointcut.
+
+	Advice: What should I do when I do the interception. The logic here is called advice.
+
+	Aspect: The combination of pointcut and advice is called an Aspect. What kind of methods to intercept and What to do is called Aspect.
+
+	JointPoint: is specific interception of a method call, is a "specific execution instance", if this is intercepting 100 method calls, then there would be 100 join points.
+
+
+	Whenever I'm defining this aspect, the AOP framework ensuring that this is getting executed at the right moment, this process is called "Weaving" and framework which does this is called "Weaver".
+
+	@Aspect
+	Public Class UserAccessAspect {
+	
+		@Before("execution(* com.inmin.spring.ao.dao.impl.*.*(..))")
+		public void before(JointPoint joinPoint) {
+			logger.info("Check for user access");	
+			...
+		}
+	}
+
+1) "execution(* com.inmin.spring.ao.dao.impl.*.*(..))"   	://pointcut
+2) logger.info("Check for user access"); 					://Advice (what we want to do)
+3) @Aspect = pointcut + Advice
+4) JointPoint :specific interception instance is called joinPoint.
+
+
+
+Step 05:
+@After, @AfterReturning, @AfterThrowing:
+----------------------------------------
+
+@AfterReturning:
+	If you want to do something after a value is return: use @AfterReturning, 
+	we're intercepting the call after it has been completed. It will return only when execution is completed successfully.
+
+
+@AfterThrowing:
+	If you want to intercept an exception, use @AfterThrowing, this would intercept any exception that are thrown.
+
+
+@After: 
+	It can be used in both the scenarios. Whether it's throwing an exception or returning a value, you can use @After to intercept that. 
+
+
+Step 06:
+@Around advice to implement performance tracing:
+-----------------------------------------------
+
+ProceedingJoinPoint: 
+	allow you to continue in the execution of the method, so I would intercept it, I would allow the method to proceed, and then find the time taken, to find out the method execution time. Doing something before it and after it.
+
+
+Step 07:
+Use common pointcut configuration:	(@Pointcut)
+----------------------------------
+
+	Here we need to repeate the pointcut multiple times, in big projects, these pointcuts repeat again and again, we don't want this. Have a speparate file where you'll define all pointcuts.
+
+	public class CommonJoinPointConfig{
+
+		@Pointcut("execution(* com.inmin.spring.ao.dao.impl.*.*(..))")
+		public void dataLayerExecution(){}
+
+	}
+
+	now use this method name "dataLayerExecution" wherever you want this joinpoint.
+
+
+Step 08:
+Pointcut:
+-----------
+
+	You can also combine the joinPoints using && symobl.
+
+	We can also define joinPoint as to intercept any bean like: @pointcut("bean(*dao*)"): this would look for any bean which has the name dao in between it's name.
+
+
+	@pointcut("within(com.krg.co.dao..*"))		://intercept all calls within this package.
+
+	***All these joinpoints define by AspectJ and implemented by Spring AOP.
+
+
+
+Step 09:
+Creating Custome Annotation and an Aspect for tracking time:
+------------------------------------------------------------
+
+@Target(ElementType.Method)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface TrackTime{}
+
+
+@Pointcut("@annotation(com.kgr.cro.TrackTime)")			//it means wherever it find TrackTime annotion, it will intercept those only.
+
+
+
+==================
+
+	@Pointcut("execution(* com.inmin.spring.ao.dao.impl.*.*(..))")
+	@pointcut("within(com.krg.co.dao..*"))							
+	@Pointcut("@annotation(com.kgr.cro.TrackTime)")						
+	
+	

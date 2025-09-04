@@ -1,0 +1,280 @@
+JPA:
+----
+	JPA is a Java Specification hence, we need to use an Implementation of JPA like: 
+		Hibernate, 
+		EclipseLink, 
+		Spring Data JPA, etc.
+		
+	JPA Automatically generates the APIs for performing operations on the Database.
+
+Spring Data JPA:
+----------------
+	Spring Data JPA uses Hibernate as its default ORM provider and provides a repository abstraction layer that reduces boilerplate code for common database operations. 
+	
+	It supports: 
+	------------
+		query creation, 
+		paging and sorting of data, and 
+		auditing capabilities out of the box. 
+		transaction management and 
+		integrates seamlessly with other Spring frameworks for building enterprise-grade applications.
+	
+
+	Dependency Needed:
+	-----------------
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		
+	Spring Data JPA:	(JpaRepository)
+	Spring Data: 		(CrudRepository, PagingAndSortingRepository, Repository)
+	
+	
+Enable/Activate Spring Data JPA:
+--------------------------------
+	@Configuration
+	@EnableJpaRepositories
+	@EnableTransactionManagement
+
+
+Entity state detection strategies:
+-----------------------------------
+	Spring Data JPA offers the following strategies to detect whether an entity is new or not:
+		
+	Id-Property inspection (default):	
+	---------------------------------
+		By default Spring Data JPA inspects the Id-Property of the given Entity. If the Id-Property is null, then the entity will be assumed as new, otherwise as not new.
+		
+	Implementing Persistable:	
+	-------------------------
+		If an entity implements the Persistable interface, Spring Data JPA will delegate the new-detection to the isNew - Method of the Entity.
+
+	
+Query methods:
+--------------
+	1 Query lookup strategies
+	2 Query creation
+	3 Using JPA NamedQueries
+	4 Using @Query
+	5 Using named parameters
+	6 Using SpEL expressions
+	7 Modifying queries
+	8 Applying query hints
+	
+
+@Query:
+-------
+	The @Query annotation in Spring Data JPA allows you to:		
+		write custom queries for your specific use case, 
+		optimize performance, 
+		handle complex queries, and 
+		construct dynamic queries based on user input. 
+			
+	It provides a lot of flexibility and control over how data is retrieved from the database in Spring Data JPA.
+
+		
+		Native SQL Queries:
+		-------------------
+				@Query("", nativeQuery=true)
+			
+			
+		Modifiable Queries:
+		-------------------	
+			@Modifying
+			@Query
+		
+		Named Query:
+		------------
+			@NamedQuery(
+				name=""
+				query=""
+			)
+					
+			
+Define Order in a Query:
+------------------------
+	we get out of the box such as findAll(Sort).
+
+		userRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+		
+
+Pass method parameters to our query:
+-----------------------------------
+	There are two possible ways: 
+		indexed and 
+		named parameters.
+
+What is JPQL?:
+--------------
+	It offers a high-level, object-oriented approach by allowing developers to work with entities and their attributes instead of directly dealing with database tables and columns.
+	
+Native SQL Query?:
+------------------
+	Native SQL queries in the context of Spring Data JPA involve using standard SQL statements for more specific or advanced database querying needs.
+	Native SQL queries offer greater flexibility and control, allowing developers to leverage database-specific functions, complex joins, subqueries, and other SQL features.
+			
+			
+JPA Query Update:
+-----------------
+		
+		@Transactional
+		@Modifying
+		@Query("UPDATE Tutorial t SET t.published=true WHERE t.id=?1")
+		int publishTutorial(Long id);
+	
+
+Understanding Different Query Types in Spring Data Repositories:
+----------------------------------------------------------------
+		1. Simple Queries:
+		------------------
+			List<Product> findByCategory(String category);
+			
+		2. Query Methods:
+		-----------------
+			List<Product> findByNameAndPrice(String name, double price);
+			
+		3. JPQL Queries:
+		----------------
+			@Query("SELECT o FROM Order o WHERE o.status = :status")
+			List<Order> findOrdersByStatus(@Param("status") String status);
+			
+		4. Native Queries:
+		------------------
+			@Query(value = "SELECT * FROM orders WHERE customer_id = :customerId", nativeQuery = true)
+			List<Order> findOrdersByCustomerId(@Param("customerId") Long customerId);
+			
+		5. Specifications:
+		------------------
+		
+		
+		6. Query DSL:
+		-------------
+	
+	
+PagingAndSortingRepository:
+---------------------------		
+		Iterable<T> findAll(Sort sort)
+		Page<T> findAll(Pageable pageable)
+		
+		
+Auditing Support:
+-----------------
+		To enable auditing in Spring Data JPA, you need to do the following:
+			
+			Enable auditing in your Spring Boot application:
+				@Configuration
+				@EnableJpaAuditing
+				
+			Add auditing annotations to your entity classes:
+				@CreatedDate
+				@CreatedBy
+				@LastModifiedDate
+				@LastModifiedBy		
+
+
+Locking:
+-------
+	Locking prevents data from being overwritten when multiple users concurrently access and modify it. 
+		
+		JPA has two lock types:
+		-----------------------
+			Optimistic and 
+			Pessimistic.
+		
+		
+Need of Hibernate, Criteria API, Specification and Querydsl:
+-------------------------------------------------------------
+	Hibernate:
+	----------
+		The obvious drawbacks of this approach are: 
+			the lack of type safety and 
+			the absence of static query checking.
+		
+		Also, in more complex cases (for instance, when the query needs to be constructed at runtime depending on some conditions), building an HQL query typically involves the concatenation of strings which is usually very unsafe and error-prone.
+	
+
+	Typical Repository Interface:
+	-----------------------------
+		it has two drawbacks: 
+			first, the number of query methods might grow for larger applications because of - and that's 
+			the second point - the queries define a fixed set of criterias. 
+
+	Criteria API:
+	-------------
+		To avoid these two drawbacks, wouldn't it be cool if you could come up with a set of atomic predicates that you could combine dynamically to build your query?
+		
+		The main problem with this code is: 
+			that the predicates are not easy to externalize and reuse because you need to set up the CriteriaBuilder, CriteriaQuery and Root first. Also, readability of the code is poor as it is hard to quickly infer the intent of the code upon first glance.
+		
+	Specification:		(JpaSpecificationExecutor)
+	--------------
+		To be able to define reusable Predicates we introduced the Specification interface.
+		
+		The basic repository implementation will prepare the CriteriaQuery, Root and CriteriaBuilder for you, apply the Predicate created by the given Specification and execute the query.	
+		
+		This reads fluently, improving readability as well as providing additional flexibility as compared to the use of the JPA Criteria API alone. 
+			
+		The only caveat here is that coming up with the Specification implementation requires quite some coding effort.	
+		
+		
+	Querydsl:	(QueryDslPredicateExecutor)
+	---------	
+		To cure that pain an open-source project called Querydsl has come up with a quite similar but also different approach. 
+		Consequently, querydsl gets transforms into JPQL!
+		It creates Q-type classes that is used instead of entities.		
+		The querydsl package contains a special data type called Tuple
+		One of the strengths of querydsl is that it excels when building dynamic queries. There are 2 ways: Using BooleanBuilder or the Where Clause.
+		By combining Querydsl’s Q-type classes with appropriate result handling methods and employing the Where Clause for dynamic queries, developers can achieve a more efficient and maintainable codebase.
+		
+		
+	Summary:
+	--------
+		Spring Data JPA repository abstraction allows executing predicates either via JPA Criteria API predicates wrapped into a Specification object or via Querydsl predicates. To enable this functionality you simply let your repository extend JpaSpecificationExecutor or QueryDslPredicateExecutor		
+			
+		
+->		
+	Hibernate:
+	----------
+		The obvious drawbacks of this approach are the lack of type safety and the absence of static query checking.
+		
+		Also, in more complex cases (for instance, when the query needs to be constructed at runtime depending on some conditions), building an HQL query typically involves the concatenation of strings which is usually very unsafe and error-prone.
+		
+		
+	Criteria API:
+	-------------
+		Starting with JPA 2.0 standard brought an improvement in the form of Criteria Query API - a new and type-safe method of building queries.
+		But Criteria Query API ended up very verbose and practically unreadable.	
+		
+	QueryDSL:
+	----------
+		No wonder that a more adequate Querydsl library soon emerged - implemented with a fluent and readable API.
+		
+		
+->		
+	JpaRepository
+		CrudRepository
+			PagingAndSortingRepository
+			
+	JpaSpecificationExecutor
+	
+	QueryDslPredicateExecutor		
+		
+	
+	
+->			
+				<dependency>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-data-jpa</artifactId>
+				</dependency>
+				
+				
+				<dependency> 
+					<groupId>com.querydsl</groupId> 
+					<artifactId>querydsl-jpa</artifactId> 
+					<version>4.2.2</version> 
+				</dependency>
+				
+				
+	
+			
