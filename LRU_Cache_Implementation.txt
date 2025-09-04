@@ -1,0 +1,130 @@
+Design a LRU(Least Recently Used) cache with get(key) and put(key, value) in java. The cache should remove the least recently used item when it reaches capacity.
+---------------------------------------------
+	Here’s a clean and efficient design of an LRU (Least Recently Used) Cache in Java using a combination of HashMap and a Doubly Linked List.
+
+	Key Components:
+	---------------
+		HashMap provides fast access to cache entries by key.
+		
+		Doubly Linked List keeps track of usage order:
+			Most recently used item stays at the tail.
+			Least recently used item is at the head.
+
+	
+	Java Code Implementation:
+	-------------------------
+		import java.util.HashMap;
+
+		class LRUCache {
+			class Node {
+				int key, value;
+				Node prev, next;
+				Node(int key, int value) {
+					this.key = key;
+					this.value = value;
+				}
+			}
+
+			private final int capacity;
+			private final HashMap<Integer, Node> map;
+			private final Node head, tail;
+
+			public LRUCache(int capacity) {
+				this.capacity = capacity;
+				this.map = new HashMap<>();
+				head = new Node(0, 0); // Dummy head
+				tail = new Node(0, 0); // Dummy tail
+				head.next = tail;
+				tail.prev = head;
+			}
+
+			public int get(int key) {
+				if (!map.containsKey(key)) return -1;
+				Node node = map.get(key);
+				remove(node);
+				insertToTail(node);
+				return node.value;
+			}
+
+			public void put(int key, int value) {
+				if (map.containsKey(key)) {
+					remove(map.get(key));
+				}
+				if (map.size() == capacity) {
+					Node lru = head.next;
+					remove(lru);
+				}
+				Node newNode = new Node(key, value);
+				insertToTail(newNode);
+			}
+
+			private void remove(Node node) {
+				map.remove(node.key);
+				node.prev.next = node.next;
+				node.next.prev = node.prev;
+			}
+
+			private void insertToTail(Node node) {
+				map.put(node.key, node);
+				Node prevTail = tail.prev;
+				prevTail.next = node;
+				node.prev = prevTail;
+				node.next = tail;
+				tail.prev = node;
+			}
+		}
+
+
+	How It Works:
+	-------------
+		get(key) retrieves the value and marks the item as recently used.
+		put(key, value) inserts or updates and ensures the size limit is maintained.
+		Internal methods remove() and insertToTail() manage the node positions to preserve usage order.
+
+
+	Let’s take a walk through an example to see how the Java LRU cache behaves step-by-step.
+	Example Setup:
+	--------------
+		Suppose we create a cache with capacity = 2:
+		
+			LRUCache cache = new LRUCache(2);
+
+
+		Then we run this sequence of operations:
+		
+			cache.put(1, 1);      // Cache: [1]
+			cache.put(2, 2);      // Cache: [1, 2]
+			cache.get(1);         // Access 1 → Cache: [2, 1]
+			cache.put(3, 3);      // Evicts 2 → Cache: [1, 3]
+			cache.get(2);         // Miss → returns -1
+			cache.put(4, 4);      // Evicts 1 → Cache: [3, 4]
+			cache.get(1);         // Miss → returns -1
+			cache.get(3);         // Hit → returns 3 → Cache: [4, 3]
+			cache.get(4);         // Hit → returns 4 → Cache: [3, 4]
+
+
+
+		Step-by-Step Behavior Breakdown:
+		--------------------------------
+		
+			Operation 	Action 							Result 		Cache State (LRU ➡️ MRU)
+			---------	------							------		------------------------
+			put(1, 1) 	Insert key 1 			 		— 			[1]
+			put(2, 2) 	Insert key 2 			 		— 			[1, 2]
+			get(1) 		Access key 1 → move to MRU 		returns 1 	[2, 1] 
+			put(3, 3) 	Insert key 3 → evict LRU 2 		— 			[1, 3] 
+			get(2) 		2 not in cache 					returns -1 	[1, 3] 
+			put(4, 4) 	Insert key 4 → evict LRU 1 		— 			[3, 4] 
+			get(1) 		1 was evicted 					returns -1 	[3, 4] 
+			get(3) 		Access key 3 → move to MRU 		returns 3 	[4, 3] 
+			get(4) 		Access key 4 → move to MRU 		returns 4 	[3, 4] 
+
+
+
+		LRU Logic Recap:
+		----------------
+			New keys are added at the tail (most recently used).
+			When full, the head is evicted (least recently used).
+			get(key) promotes the item to the most recently used.
+
+	

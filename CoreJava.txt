@@ -1,0 +1,145 @@
+https://www.tutorialspoint.com/java/java_interfaces.htm
+
+Java Interfaces:
+---------------
+	Java interface is a collection of abstract methods. The interface is used to achieve abstraction in which you can define methods without their implementations (without having the body of the methods). An interface is a reference type and is similar to the class.
+
+	Along with abstract methods, an interface may also contain constants, default methods, static methods, and nested types. Method bodies exist only for default methods and static methods.
+
+	Writing an interface is similar to writing a class. However, a class describes the attributes and behaviors of an object. An interface contains behaviors that a class implements. Unless the class that implements the interface is abstract, all the methods of the interface need to be defined in the class.
+	
+	Propeties of Java Interface:
+	----------------------------
+		You cannot instantiate an interface.
+		An interface does not contain any constructors.
+		All of the methods in an interface are abstract.
+		An interface cannot contain instance fields. The only fields that can appear in an interface must be declared both static and final.
+		An interface is not extended by a class; it is implemented by a class.
+		An interface can extend multiple interfaces.		
+		An interface is implicitly abstract. You do not need to use the abstract keyword while declaring an interface.
+		Each method in an interface is also implicitly abstract, so the abstract keyword is not needed.
+		Methods in an interface are implicitly public.
+		
+	Implementing Interfaces in Java:
+	--------------------------------
+		When a class implements an interface, you can think of the class as signing a contract, agreeing to perform the specific behaviors of the interface. If a class does not perform all the behaviors of the interface, the class must declare itself as abstract.
+		
+	Rules for defining overriding methods in Java Interfaces:
+	---------------------------------------------------------
+		When overriding methods defined in interfaces, there are several rules to be followed −
+
+		Checked exceptions should not be declared on implementation methods other than the ones declared by the interface method or subclasses of those declared by the interface method.
+
+		The signature of the interface method and the same return type or subtype should be maintained when overriding the methods.
+
+		An implementation class itself can be abstract and if so, interface methods need not be implemented.	
+		
+	Rules for implementing Java Interfaces:
+	---------------------------------------
+		A class can implement more than one interface at a time.
+		A class can extend only one class, but implement many interfaces.
+		An interface can extend another interface, in a similar way as a class can extend another class.	
+		
+	Tagging Java Interfaces:
+	------------------------
+		An interface with no methods in it is referred to as a tagging interface. 
+		For example:
+			package java.util;
+			public interface EventListener
+			{}
+		
+		There are two basic design purposes of tagging interfaces:
+		----------------------------------------------------------
+			Creates a common parent:
+				you can use a tagging interface to create a common parent among a group of interfaces.
+				
+			Adds a data type to a class:
+				A class that implements a tagging interface does not need to define any methods (since the interface does not have any), but the class becomes an interface type through polymorphism.
+				
+				
+Key Differences:
+----------------
+Feature				Default Method												Static Method
+-------------	---------------------------									----------------------------------
+Scope			Instance method, available through objects			Interface-level method, invoked through interface name
+Overriding		Can be overridden by implementing classes			Cannot be overridden by implementing classes
+Purpose			Provide default implementations for interface 		Define utility functions or methods that relate to the
+				methods												interface but don't require an object instance
+Accessibility	Accessed through an instance of the implementing 	Accessed through the interface name (e.g.,
+				class (e.g., object.defaultMethod())				MyInterface.staticMethod())
+ 
+				
+				
+Polymorphism:
+------------
+	Types of Java Polymorphism
+	--------------------------
+		Compile Time Polymorphism
+		Run Time Polymorphism
+		
+		Compile Time Polymorphism in Java:
+			Compile-time polymorphism is also known as static polymorphism and it is implemented by method overloading.
+			
+		Run Time Polymorphism in Java:
+			Run time polymorphism is also known as dynamic method dispatch and it is implemented by the method overriding.	
+			
+			
+	Note:
+		We already have discussed method overriding, where a child class can override a method in its parent. An overridden method is essentially hidden in the parent class, and is not invoked unless the child class uses the super keyword within the overriding method.
+		
+		
+401: authentication		(when username/password are not correct.)
+403: authorization		(you don't have permission to perform this action.)			
+
+400: BadRequest	
+---------------
+	Common Causes of 400 Bad Request Errors:
+	----------------------------------------
+
+Incorrect URL or Endpoint:
+	One of the primary reasons for a 400 error is an incorrect URL or API endpoint. Ensuring that the URL is accurate and points to a valid resource is crucial.
+	
+Incorrect Request Headers:
+	Headers must be set correctly, including content type and any required custom headers. Incorrect headers can lead to the server rejecting the request.	
+
+Invalid Data Format:
+	If the request includes data, it must be formatted according to the server’s expectations. Sending improperly structured data can lead to a 400 error, as the server cannot parse it correctly.
+
+Missing Required Parameters:
+	Servers may require specific parameters in requests. If these parameters are missing or incorrectly formatted, it can trigger a 400 Bad Request response
+
+Server-Side Validation Failures:
+	Some servers implement additional validation checks on incoming requests. If a request does not meet these validation criteria, it may be rejected with a 400 status code.
+ 
+Corrupted Browser Cache
+	If any locally stored website files have been corrupted, this can cause a 400 Bad Request error to be returned instead of the expected website content.
+	To fix this, the browser cache needs to be cleared.
+	
+	In Chrome, click on the three-dotted icon in the right-hand corner and select More Tools > Clear Browsing Data from the popup menu.
+	
+Clear Browser Cookies:
+	If clearing your browser cache doesn’t work, then it’s time to delete the cookies, too.  single website can use dozens of different cookies. If just one of them expires or becomes corrupted, it can be enough to trigger a 400 Bad Request.
+
+Check if File Upload Exceeds the Server Limit:
+	If you try to upload a file to a website that exceeds the server file size limit, you’ll encounter a 400 Bad Request error.	
+	
+	
+	
+	
+can we use @Component with jpa in place of @Repository:
+-------------------------------------------------------
+	Yes, you can use @Component instead of @Repository in a Spring Data JPA context—but it’s not recommended. 
+	Here’s why:
+	
+	Why @Repository Is Preferred:
+	----------------------------
+		Exception Translation:	
+			Spring applies automatic exception translation to classes annotated with @Repository. This converts low-level persistence exceptions into Spring’s DataAccessException hierarchy.
+		
+		Semantic Clarity: 
+			Using @Repository clearly communicates the role of the class in the persistence layer, making your architecture easier to understand and maintain.
+		
+		Tooling & Future Enhancements: 
+			Spring modules may treat @Repository differently in future versions. Using the correct stereotype ensures compatibility.
+
+		So yes, it works—but if you're writing a JPA repository, stick with @Repository for better exception handling and clearer intent. 	

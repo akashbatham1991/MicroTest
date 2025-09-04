@@ -1,0 +1,1564 @@
+https://kafka.apache.org/quickstart
+
+https://www.youtube.com/watch?v=QkdkLdMBuL0
+https://www.youtube.com/watch?v=7n72snj0rqs
+https://www.youtube.com/watch?v=SqVfCyfCJqw
+https://www.youtube.com/watch?v=jY02MB-sz8I
+https://www.youtube.com/watch?v=-SxtMWxBW1Q
+
+https://github.com/axel-sirota/getting-started-kafka
+https://docs.confluent.io/platform/current/installation/versions-interoperability.html
+
+https://docs.confluent.io/platform/current/kafka-rest/index.html
+
+
+Summary:
+--------
+	RabbitMQ is a general-purpose message broker that supports multiple protocols and excels at complex routing and reliability.
+	
+	Kafka is optimized for high-throughput, distributed event streaming and is ideal for real-time analytics and data pipelines.
+
+
+	Note:
+	-----
+		RabbitMQ and Apache Kafka implement or rely on specific protocols to enable messaging.
+		
+		What They Really Are:
+		---------------------
+			Tool		Type									Protocol Used
+			----		-----									-------------
+			RabbitMQ	Message broker / framework				Implements AMQP, supports STOMP, MQTT
+			Kafka		Distributed event streaming platform	Uses its own Kafka protocol (not AMQP)
+============================================================================================================================
+Apache Kafka:
+-------------
+	A messaging system lets you send messages between processes, applications, and servers. 
+	It handle massive volumes of data with speed and reliability.
+	It is known for its high throughput, low latency, fault tolerance, and scalability. 
+
+	Kafka is a distributed system, which means it can scale up as needed. All you have to do now is add new Kafka nodes (servers) to the cluster.
+	
+	Apache Kafka is an open-source distributed system used for:
+		Real-time data streaming
+		High-throughput messaging
+		Event-driven architecture
+		
+Basics:	
+-------
+	Producers: 			Applications that send data to Kafka topics.
+	Consumers: 			Applications that subscribe to topics and process the data.
+	Consumer Groups: 	Groups of consumers that share the load of reading from topics.
+	Topics: 			Logical channels to which producers send data and from which consumers read data.
+	Sink Topics: 		Topics where processed data is stored for further use.
+	Stream Processors: 	Applications or frameworks that consume raw data, process it, and produce transformed data.
+	Brokers: 			Are Kafka servers that store data.
+	Partitions: 		Allow parallel processing.
+	ZooKeeper (used in old version): manages kafka cluster coordination.	(newer version used KRaft mode)
+	
+		
+Key Features of Kafka Architecture:
+-----------------------------------
+	High Throughput and Low Latency: 
+	--------------------------------
+		Kafka is designed to handle high volumes of data with low latency. It can process millions of messages per second with latencies as low as 10 milliseconds.
+	
+	Fault Tolerance: 
+	----------------
+		Kafka achieves fault tolerance through data replication. Each partition can have multiple replicas, and Kafka ensures that data is replicated across multiple brokers. This allows the system to continue operating even if some brokers fail.
+	
+	Durability: 
+	-----------
+		Kafka ensures data durability by persisting data to disk. Data is stored in a log-structured format, which allows for efficient sequential reads and writes.
+	
+	Scalability: 
+	------------
+		Kafka's distributed architecture allows it to scale horizontally by adding more brokers to the cluster. This enables Kafka to handle increasing amounts of data without downtime.
+	
+	Real-Time Processing: 
+	---------------------
+		Kafka supports real-time data processing through its Streams API and ksqlDB, a streaming database that allows for SQL-like queries on streaming data.		
+
+
+How Kafka Integrates Different Data Processing Models	
+What is Apache Kafka used for?
+------------------------------ 
+	High-throughput and low-latency message processing, making it suitable for a wide range of use cases.
+
+		1. Message queuing
+		2. Real-time data streaming
+		3. Log aggregation
+		4. Event sourcing
+		5. Data integration and ETL
+		6. Microservices communication
+		7. Batch Processing.
+		8. Although Kafka can be used as a database, it lacks a data schema and indexes.
+
+
+Kafka topic naming convention:	
+------------------------------	
+	<env>.<domain>.<entity>.<action>.<version>
+		
+		1.2.3.4.5
+		
+		
+Partitioning: The Engine Behind Parallelism:
+--------------------------------------------
+	Kafka splits each topic into partitions, which are like individual lanes in a highway. 
+	
+	Here’s why that’s powerful:
+	---------------------------
+		Parallel Processing:Multiple consumers can read from different partitions simultaneously, boosting throughput.
+		Load Distribution: 	Kafka spreads partitions across brokers in the cluster, balancing traffic and storage.
+		Ordering Guarantees:Within a partition, messages are strictly ordered—great for event sequencing.
+		Scalability: 		More partitions = more parallelism. You can scale consumers independently by partition count.
+	
+	
+	Real-World Analogy: 
+	-------------------
+		Imagine checkout counters at a grocery store. One counter (no partitioning) means slow lines. But ten counters (ten partitions)? Everyone’s done shopping faster.
+		
+
+Message Retention: Durable & Replayable Data:
+---------------------------------------------
+	Kafka retains messages even after they’re consumed—based on time or space:
+
+	Retention Type 		Config 					Purpose
+	--------------		------					-------
+	Time-based 			log.retention.hours 	Keep messages for a set duration
+	Size-based 			log.retention.bytes 	Limit disk usage
+	Compacted topics 	cleanup.policy=compact 	Keep only the latest record per key		
+		
+
+Kafka can also write the message in batch mode, that can reduces the network round trip for each message. Batches are compressed while transportation over the network.
+	Batch mode increases the throughput but decreases the latency, hence there is a trade-off between latency and throughput.
+	
+	
+Kafka APIs:
+-----------
+	Kafka provides several APIs to interact with the system:
+
+		Producer API	
+		Consumer API
+		Streams API			(filter, map, flatmap, forEach)
+		Connector API		(Source:from and Sink:to)
+	
+Interactions in the Kafka Architecture:
+---------------------------------------
+	Producers to Kafka Cluster: 
+	---------------------------
+		Producers send data to the Kafka cluster.This data can be anything:	logs, transactions, user activities, or events.
+		The data is published to specific topics, which are then divided into partitions and distributed across the brokers.
+	
+	Kafka Cluster to Consumers: 
+	---------------------------
+		Consumers read data from the Kafka cluster. They subscribe to topics and consume data from the partitions assigned to them. The consumer group ensures that the load is balanced and that each partition is processed by only one consumer in the group.
+	
+	ZooKeeper to Kafka Cluster: 
+	---------------------------
+		ZooKeeper coordinates and manages the Kafka cluster. It keeps track of the cluster's metadata, manages broker configurations, and handles leader elections for partitions.	
+
+
+Examples of relationships between Kafka components:
+---------------------------------------------------
+	1. Kafka clusters may include one or more brokers.
+	2. Kafka brokers are able to host multiple partitions.
+	3. Topics are able to include 1 or more partitions.
+	4. Brokers are able to host either 1 or zero replicas for each partition.
+	5. Each partition includes 1 leader replica, and zero or greater follower replicas.
+	6. Each of a partition’s replicas has to be on a different broker.
+	7. Each partition replica has to fit completely on a broker, and cannot be split onto more than one broker.
+	8. Each broker can be the leader for zero or more topic/partition pairs.	
+
+
+Push vs Pull:
+-------------
+	Messaging system can have pull(recommended) or push.
+	
+		
+Sending Message to Kafka Using Java:
+------------------------------------			
+	1)
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+			<version>3.7.0</version>
+		</dependency>
+			
+	2)			
+		Producer<String, String> producer = new KafkaProducer<>(props);
+		ProducerRecord<String, String> record = new ProducerRecord<>("Messages", "key", "Hello, Kafka!");
+		producer.send(record);	
+
+	3)		
+		Consumer<String, String> consumer = new KafkaConsumer<>(props);
+											
+		consumer.subscribe(Collections.singletonList("Messages")); 			//1- Subscribe to the single topic
+		consumer.subscribe(Arrays.asList("Messages", "Alerts", "Logs")); 	//2- Subscribe to the multiple topics
+		consumer.subscribe(Pattern.compile(".*-events"));		//3-use regular expressions to match topic names dynamically
+					
+		ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+
+
+Java Implementations in microservices:
+--------------------------------------
+	1. @EnableKafka + @Configuration	
+	2. @KafkaListener(topics = "my-topic", groupId = "my-group")		//Consumer side changes
+	3. kafkaTemplate.send(topic, message);								//Producer side changes
+		
+	@EnableKafka is a class-level annotation that activates Kafka support.
+	@KafkaListener is a method-level annotation that defines a message consumer.
+	@KafkaHandler is a method-level annotation used within a @KafkaListener class to handle different message types based on their payload.	
+
+	Consumer side configurations:
+	-----------------------------
+		props.setProperty("fetch.min.bytes", "5");
+		props.setProperty("fetch.max.wait.ms", "3000");
+		props.setProperty("auto.offset.reset", "earliest"); or
+		props.setProperty("auto.offset.reset", "latest");
+		
+	Producer side configurations:
+	-----------------------------	
+		props.put("batch.size", "10");
+		props.put("linger.ms", "2000");
+		Required Acknowledgements:	(-1: All, 0: None, 1: One)
+	
+		
+	Common Stateless Operations:
+	----------------------------
+		filter(): 	Remove records based on a condition
+		map(): 		Transform each record
+		flatMap(): 	Split one record into many
+		foreach(): 	Perform side effects (e.g., logging
+			
+			
+	Common Stateful Operations:
+	---------------------------
+		aggregate(): 	Summarize data over time
+		count(): 		Count occurrences
+		join(): 		Combine multiple streams
+		windowedBy(): 	Group records by time windows
+		reduce():		applies an aggregation function such as min, max, or avg to the stream of data.	
+		
+	StreamsBuilder
+	KStream
+	KTable	
+	
+
+How kafka ensures that no message is processed twice:
+-----------------------------------------------------
+	1. Consumer Group Partition Assignment
+	2. Offset Management
+	3. Idempotent Producers
+	4. Idempotent Consumers
+	5. Transactional Messaging
+
+
+Traditional message queues, like RabbitMQ, are not the same as Kafka: 
+---------------------------------------------------------------------
+	RabbitMQ eliminates messages immediately after the consumer confirms them, whereas Kafka keeps them for a period of time (default is 7 days) after they've been received. 
+	
+	RabbitMQ also sends messages to consumers and monitors their load. It determines how many messages each consumer should be processing at any one time. On the other hand, Consumers can retrieve messages from Kafka by pulling.
+
+	Guarantee of delivering the messages :
+		Atomicity is not guaranteed in RabbitMQ, even when the transaction involves a single queue.
+		In Kafka, it is guaranteed that the whole batch of messages in a partition is either sent successfully or failed.
+	
+	With limited resources, Kafka can achieve high throughput (millions of messages per second), which is essential for large data use cases.
+	RabbitMQ can also handle a million messages per second, but it does so at the expense of more resources (around 30 nodes). 
+	
+	
+Diff b/w Redis and Kafka:
+-------------------------
+	Redis can not manage vast amounts of data because it's an in-memory database.
+	Kafka can handle massive amounts of data since it uses disc space as its primary storage.
+	
+	Parallel processing is not supported by Redis.
+	Multiple consumers in a consumer group can consume partitions of the topic concurrently because of the Kafka's partitioning feature.
+	
+	Because Redis is an in-memory store, it is much faster than Kafka.
+	Because Kafka stores data on disc, it is slower than Redis.
+	
+
+Following are the benefits of using Kafka over the traditional messaging transfer techniques:
+---------------------------------------------------------------------------------------------
+	Scalable: 
+		A cluster of devices is used to partition and streamline the data thereby, scaling up the storage capacity.
+	
+	Faster: 
+		Thousands of clients can be served by a single Kafka broker as it can manage megabytes of reads and writes per second.
+	
+	Durability and Fault-Tolerant: 
+		The data is kept persistent and tolerant to any hardware failures by copying the data in the clusters.	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+====================================================START===================================================================
+Apache Kafka:
+-------------
+	Apache Kafka is a publish-subscribe messaging system.
+	A messaging system lets you send messages between processes, applications, and servers.
+	It's built to handle large amounts of data in real time, making it perfect for creating systems that respond to events as they happen.
+	
+	Kafka organizes data into categories called "topics." 
+	Producers put messages into these topics, and consumers receive them. 
+	
+	Kafka ensures that the system is reliable and can keep working even if some parts fail.
+	
+	Apache Kafka is an open-source distributed system used for:
+		Real-time data streaming
+		High-throughput messaging
+		Event-driven architecture
+	
+	It’s widely used by companies like Netflix, Uber, and LinkedIn to "handle massive volumes of data with speed and reliability".
+	
+	It is known for its high throughput, low latency, fault tolerance, and scalability. 
+
+Use Cases:
+----------
+	Real-time analytics
+	Log aggregation
+	Fraud detection
+	Microservices communication
+	
+
+Understand the Basics:
+----------------------
+	Before installing anything, get familiar with Kafka’s architecture:
+		Producers: 	send data to Kafka topics.
+		Consumers: 	read data from topics.
+		Topics: 	are categories for messages.
+		Brokers: 	are Kafka servers that store data.
+		Partitions: allow parallel processing.
+		ZooKeeper (used in old version): manages cluster coordination.	(newer version used KRaft mode)
+
+
+Important Concepts of Apache Kafka:
+-----------------------------------
+	Topic partition: 
+		Kafka topics are divided into a number of partitions, which allows you to split data across multiple brokers.
+	
+	Consumer Group: 
+		A consumer group includes the set of consumer processes that are subscribing to a specific topic.
+	
+	Node: 
+		A node is a single computer in the Apache Kafka cluster.
+	
+	Replicas: 
+		A replica of a partition is a "backup" of a partition. Replicas never read or write data. They are used to prevent data loss.	
+		
+	
+Kafka’s Secret Sauce:
+---------------------
+	Distributed Architecture: 	Kafka runs as a cluster of brokers, allowing horizontal scaling.
+	Durable Storage: 			Messages are written to disk in append-only logs.
+	Replayability: 				Consumers can re-read messages by specifying offsets.
+	Decoupling: 				Producers and consumers don’t need to know about each other.
+	High Throughput: 			Kafka handles millions of messages per second with low latency.
+	
+
+Real-World Analogy:
+-------------------
+	Example Use Case:
+	
+	1. Think of Kafka as a supercharged post office:
+		- Producers = people sending letters
+		- Topics = mailboxes labeled by category
+		- Brokers = postal workers sorting and storing mail
+		- Consumers = recipients checking their mail
+		- Partitions = multiple lanes for sorting mail faster
+		- Offset = the number on each letter to track order
+
+	2. Imagine a food delivery app:
+		- You place an order → Kafka receives the event.
+		- The delivery system reads it to assign a driver.
+		- The payment system reads the same event to process payment.
+		- Kafka retains the event for analytics or audits later.
+
+What Is a Kafka Topic?:
+-----------------------
+	A topic is a named feed to which messages are published by producers and from which consumers read.
+	It’s essentially a logical category for streamlining data—like a channel or a folder.
+	
+	It is a structure similar to the queues found in Kafka’s databases or message queues, which is accessible to all brokers as soon as the data is written. They are named by the user. There can be thousands of topics in a Kafka cluster.
+
+	How Topics Work in Kafka:
+	-------------------------
+		Messages are written to topics, not directly to brokers.
+		Each topic is split into partitions, which allow for parallel processing.
+		Kafka stores these partitions across multiple brokers in a cluster.	
+		
+		
+	Kafka topic naming convention:
+	------------------------------
+		Sample Naming Pattern:
+	
+			<env>.<domain>.<entity>.<action>.<version>
+
+		Components Breakdown:
+		---------------------
+			env: 		Environment → dev, stg, prod
+			domain: 	Business or service domain → order, user, payment
+			entity: 	Specific data entity → invoice, profile, transaction
+			action: 	What happened → created, updated, failed, deleted
+			version: 	Optional → v1, v2 (useful for schema changes)
+
+		Examples:
+		---------
+			prod.order.invoice.created.v1
+			stg.user.profile.updated
+			dev.analytics.clickstream.v2
+	
+		Optional Enhancements:
+		----------------------
+			Use plural nouns for topics: e.g. users.created instead of user.created
+			Consider suffixes for compaction: e.g. user.profile.compacted
+			Standardize formats (e.g. Avro, JSON): add .avro or .json if needed
+
+
+Zookeper for Kafka:
+-------------------
+	Adding and removing brokers to the cluster, determining the leader/controller broker, keeping topic configurations, etc. Responsible for cluster management issues. Nowadays, Kafka has ended the use of zookeeper in its new versions. But it is also available in systems that currently use it.
+
+
+Partition:
+----------
+	Topics are divided into partitions. Partitions start from 0 and continue in increasing numbers. In Topic, a single partition can be created, or a thousand partitions can be created depending on the scenario. Once data is written to a partition, it cannot be changed again.
+	
+	Partitions are sequential within themselves. However, there is no order between the partitions. 
+	For example, 
+		there are 2 partitions: partition0 and partition1. 
+		First message0 was written to partition0, then message1 was written to partition1, and then message2 was written to partition0. 
+		In this scenario, message0 is always read before message2. However, Kafka does not guarantee that message1 will be read before or after message0. 
+	
+	If you do not care in which order the messages you produce are read, you can produce the messages with different keys. 
+	
+	However, if it is important for you to have 2 or more messages in their own order, you should produce these messages with the same key. Because Kafka writes the messages produced with the same key to the same partition, so that the order is observed. 
+	
+	However, if the order is not important to you, sending all messages with the same key will have a disadvantage. Because Kafka will write all of these to a single partition and the load will not be distributed.
+
+
+Replication:
+------------
+	One of the advantages of distributed systems is that the system can be maintained even if one of the servers is offline. Thanks to replicas in Kafka, the system continues and data loss is prevented. With replication, each partition of the topics is stored on more than one server. 
+	One of these servers is the leader, the others are copies called ISR (in-sync replica). ISRs are passive servers that synchronize the data and keep its copy. Data exchange is provided through the leader. Leader and ISRs are determined by the zookeeper. 
+	Replications are specified with the replication-factor parameter when creating the topic. If the server where the leader is located goes down, zookeper appoints one of the ISRs as the leader and the system continues without any interruption.
+
+
+Offset: (Indexing concept):
+------- -------------------
+	Offsets are partition specific, and an identity number is assigned when data is written to each partition. In this way, data can be read in the order in which it is written to the partition, and consumers can remember which message they are in when reading in a partition. The offset number starts from 0 and can continue forever, each time a message is written, the next number is assigned to the new message. Kafka messages do not disappear after being read. It continues to be retained during the given retention time. After a message is read by the consumer, the offset is advanced by one and continues from the next message. Since it is kept for a certain period of time, if you want to read a previously read message again, the reading process can be repeated by resetting the offset.
+
+
+Why is Apache Kafka Needed?:
+----------------------------
+	With businesses collecting massive volumes of data in real time, there is a need for tools that can handle this data efficiently. Kafka solves several key problems:
+
+	Real-Time Processing: 
+		Kafka is optimized for handling real-time data streams, allowing businesses to process and act on data as it happens.
+	
+	Fault-Tolerant: 
+		Kafka ensures that even if parts of the system fail, data won’t be lost, making it a highly reliable messaging system.
+	
+	Scalable: 
+		Kafka scales horizontally by adding more brokers, allowing it to handle growing data loads and increasing numbers of producers and consumers.
+	
+	Event-Driven Architecture: 
+		Kafka powers event-driven architectures, enabling systems to respond to events in real-time without having to constantly poll for changes.		
+		
+	
+Benefits of Apache Kafka:
+-------------------------
+	The following are some of the benefits of using Apache Kafka:
+
+	1. Handles Large Data Easily
+		Kafka is designed to handle large volumes of data, making it ideal for businesses with massive data streams.
+
+	2. Reliable & Fault-Tolerant
+		Even if some servers fail, Kafka keeps data safe by making copies.
+
+	3. Real-Time Data Processing
+		Perfect for applications that need instant data updates.
+
+	4. Easy System Integration
+		Producers and consumers work independently, making it flexible.
+
+	5. Works with Any Data Type
+		Can handle structured, semi-structured, and unstructured data.
+
+	6. Strong Community Support
+		With many companies using Kafka, there is a large and active community supporting it, along with integrations with tools like Apache Spark and Flink.			
+
+			
+		
+		
+Partitioning: The Engine Behind Parallelism:
+--------------------------------------------
+	Kafka splits each topic into partitions, which are like individual lanes in a highway. 
+	
+	Here’s why that’s powerful:
+	---------------------------
+		Parallel Processing:Multiple consumers can read from different partitions simultaneously, boosting throughput.
+		Load Distribution: 	Kafka spreads partitions across brokers in the cluster, balancing traffic and storage.
+		Ordering Guarantees:Within a partition, messages are strictly ordered—great for event sequencing.
+		Scalability: 		More partitions = more parallelism. You can scale consumers independently by partition count.
+	
+	
+	Real-World Analogy: 
+	-------------------
+		Imagine checkout counters at a grocery store. One counter (no partitioning) means slow lines. But ten counters (ten partitions)? Everyone’s done shopping faster.
+
+		
+Message Retention: Durable & Replayable Data:
+---------------------------------------------
+	Kafka retains messages even after they’re consumed—based on time or space:
+
+	Retention Type 		Config 					Purpose
+	--------------		------					-------
+	Time-based 			log.retention.hours 	Keep messages for a set duration
+	Size-based 			log.retention.bytes 	Limit disk usage
+	Compacted topics 	cleanup.policy=compact 	Keep only the latest record per key
+
+	Why this matters:
+	-----------------
+		Replayability: 		Consumers can re-read messages anytime using offsets
+		Recovery: 			Services can recover from crashes and reprocess data
+		Audit & Compliance: Retained data is available for analysis or regulation
+		
+	Kafka’s retention is decoupled from consumption—so messages aren’t deleted when read. It’s like a DVR for your data streams.
+	
+		
+How Kafka Integrates Different Data Processing Models:
+------------------------------------------------------
+	Apache Kafka is highly versatile and can seamlessly integrate various data processing models, including event streaming, message queuing, and batch processing.
+
+	1. Event Streaming (Publish-Subscribe Model):
+	---------------------------------------------
+		Kafka’s primary function is event streaming, where:
+			Producers (applications sending data) publish messages to Kafka topics.
+			Consumers (applications reading data) subscribe to topics and receive messages as soon as they arrive.
+			Multiple consumers can read the same message, allowing for real-time data distribution.
+
+		Example: 
+			A stock trading platform can use Kafka to stream live market data to multiple dashboards.
+
+
+	2. Message Queue (Point-to-Point Processing):
+	---------------------------------------------
+		Kafka can also act like a message queue by using consumer groups:
+
+			When multiple consumers are in the same group, Kafka distributes messages among them, ensuring each message is processed only once.
+			This setup helps in load balancing, making sure no single consumer is overwhelmed.
+
+		Example: 
+			A ride-hailing app like Uber can use Kafka to assign incoming ride requests to available drivers efficiently.
+
+	3. Batch Processing:
+	--------------------
+		Even though Kafka is designed for real-time data, it can also handle batch processing:
+
+		Messages can be stored in Kafka topics and processed later.
+		Tools like Apache Spark or Hadoop can read data from Kafka in batches and perform analytics.
+		
+		Example: 
+			An e-commerce company can collect website visitor data in Kafka and analyze it later to improve product recommendations.
+
+	4. Hybrid Model (Real-Time + Batch Processing):
+	-----------------------------------------------
+		Kafka is flexible enough to support a mix of real-time and batch processing:
+
+		It can send data immediately for real-time analytics while also storing it for batch processing later.
+		This is often done using Kafka Streams, Spark Streaming, or Flink.
+		
+		Example: 
+			A fraud detection system can process transactions in real time to flag suspicious activity while also running deeper batch analysis at the end of the day.		
+			
+		
+	
+Difference between Kafka and the rest of the solutions:
+-------------------------------------------------------
+	RabbitMQ: 
+		As Kafka uses topics in a unidirectional log without handshakes, the difference in performance is brutal, easily 1000x. 	
+	
+	Mulesoft:
+		Kafka makes it very simple to create a channel of communication simply by producing a message to the topic, which will be autocreated. This is, of course, completely different with Mulesoft that you need to create a Mule app to expose an API.
+	
+	Redis:
+		Redis does not handle streaming data nor does it have a history of past messages.
+	
+	Amazon SQS:
+		it is based on queues. So although it is way better than RabbitMQ, still there is an order of magnitude in throughput and speed between Kafka and SQS. Plus SQS is not exactly cheap.
+	
+	Amazon SNS:
+		Very, very similar to Kafka, but very way pricier.
+	
+	Azure Streaming Services:
+		This one in particular is not exactly meant for pub/sub in general, but a particular part of pub/sub, which are how to handle streams to manipulate data. And this service is very similar to a subcomponent of Kafka called Kafka Streams. So very similar on one functionality, but it doesn't cover all
+	
+	Google Pub/Sub:
+		similar to Amazon SNS and very similar in price. Therefore, it is quite costly. 
+		
+		
+After this course, not only:
+----------------------------
+	you will be able to create applications that produce and consume messages from a topic in Kafka, that's basic.
+	you will be fully equipped to create an event‑driven application with full governance over how messages flow. 
+	you will also be able to expose these messages as an API to perform queries over it or even create tables to understand how streams of data behave.
+
+
+kafka Architecture:
+-------------------
+	https://medium.com/@cobch7/kafka-architecture-43333849e0f4
+	https://www.geeksforgeeks.org/apache-kafka/kafka-architecture/
+	https://www.instaclustr.com/education/apache-kafka/apache-kafka-architecture-a-complete-guide-2025/
+	https://mail-narayank.medium.com/kafka-architecture-internal-d0b3334d1df
+
+	Kafka architecture is based on producer-subscriber model and follows distributed architecture, runs as cluster.
+	
+	Kafka Cluster: 
+	--------------
+		A Kafka cluster is a distributed system composed of multiple Kafka brokers working together to handle the storage and processing of real-time streaming data. It provides fault tolerance, scalability, and high availability for efficient data streaming and messaging in large-scale applications.
+		
+		
+	Brokers: 
+	--------
+		Brokers are the servers that form the Kafka cluster. Each broker is responsible for receiving, storing, and serving data. They handle the read and write operations from producers and consumers. Brokers also manage the replication of data to ensure fault tolerance.	
+		
+		
+	Topics and Partitions: 
+	----------------------
+		Data in Kafka is organized into topics, which are logical channels to which producers send data and from which consumers read data. Each topic is divided into partitions, which are the basic unit of parallelism in Kafka. Partitions allow Kafka to scale horizontally by distributing data across multiple brokers.	
+		
+		
+	Producers: 
+	----------
+		Producers are client applications that publish (write) data to Kafka topics. They send records to the appropriate topic and partition based on the partitioning strategy, which can be key-based or round-robin.	
+		
+		
+	Consumers: 
+	----------
+		Consumers are client applications that subscribe to Kafka topics and process the data. They read records from the topics and can be part of a consumer group, which allows for load balancing and fault tolerance. Each consumer in a group reads data from a unique set of partitions.	
+		
+		
+	Offsets: 
+	--------
+		Offsets are unique identifiers assigned to each message in a partition. Consumers will use these offsets to track their progress in consuming messages from a topic.	
+		
+		
+	Zookeper:
+	---------
+		Adding and removing brokers to the cluster, determining the leader/controller broker, keeping topic configurations, etc. Responsible for cluster management issues. Nowadays, Kafka has ended the use of zookeeper in its new versions. But it is also available in systems that currently use it.	
+		
+		
+	Disaster recovery:
+	------------------
+		Beyond Kafka’s use of replication to provide failover, the Kafka utility MirrorMaker delivers a full-featured disaster recovery solution. MirrorMaker is designed to replicate your entire Kafka cluster, such as into another region of your cloud provider’s network or within another data center.	
+	
+	
+	Kafka can also write the message in batch mode, that can reduces the network round trip for each message. Batches are compressed while transportation over the network.
+	Batch mode increases the throughput but decreases the latency, hence there is a trade-off between latency and throughput.
+	
+	
+Kafka APIs:
+-----------
+	Kafka provides several APIs to interact with the system:
+
+	Producer API: 
+	-------------
+		Allows applications to send streams of data to topics in the Kafka cluster. It handles the serialization of data and the partitioning logic.
+		
+	Consumer API: 
+	-------------
+		Allows applications to read streams of data from topics. It manages the offset of the data read, ensuring that each record is processed exactly once.
+	
+	Streams API: 
+	------------
+		A Java library for building applications that process data in real-time. 
+		It allows for powerful transformations and aggregations of event data.
+	
+	Connector API: 
+	--------------
+		Provides a framework for connecting Kafka with external systems. 
+			Source connectors import data from external systems into Kafka topics, while 
+			Sink connectors export data from Kafka topics to external systems.	
+		
+
+Apache Kafka Frameworks:
+------------------------
+	Some of the key frameworks in Kafka ecosystem include:
+
+	1. Kafka Connect: 
+	-----------------
+		Kafka Connect is a tool, plugin for reliable and scalable streaming data integration between Apache Kafka and other systems. It is a part of Apache Kafka ecosystem and provides a framework to connect Kafka with external systems like databases, file systems etc. 
+		Kafka Connect provides built-in connectors for common data sources and sinks making a simplified integration process.
+	
+	2. Kafka Streams: 
+	-----------------
+		Kafka Streams is a client library for building applications and microservices that process and analyze the data stored in Kafka topics. It provides a high-level API for performing streaming processing tasks such as filtering, joining data streams, aggregating.
+	
+	3. Schema Registry: 
+	-------------------
+		The Schema Registry is a component of Confluent Platform (a distribution of Kakfa) that provides a centralized repository for storing and managing Avro schemas used in Kafka messages. 
+		It ensures that the serialization and deserialization in Producers and Consumers for using compatible schemas.
+
+		
+Interactions in the Kafka Architecture:
+---------------------------------------
+	Producers to Kafka Cluster: 
+	---------------------------
+		Producers send data to the Kafka cluster.This data can be anything:	logs, transactions, user activities, or events.
+		The data is published to specific topics, which are then divided into partitions and distributed across the brokers.
+	
+	Kafka Cluster to Consumers: 
+	---------------------------
+		Consumers read data from the Kafka cluster. They subscribe to topics and consume data from the partitions assigned to them. The consumer group ensures that the load is balanced and that each partition is processed by only one consumer in the group.
+	
+	ZooKeeper to Kafka Cluster: 
+	---------------------------
+		ZooKeeper coordinates and manages the Kafka cluster. It keeps track of the cluster's metadata, manages broker configurations, and handles leader elections for partitions.		
+	
+	
+Key Features of Kafka Architecture:
+-----------------------------------
+	High Throughput and Low Latency: 
+	--------------------------------
+		Kafka is designed to handle high volumes of data with low latency. It can process millions of messages per second with latencies as low as 10 milliseconds.
+	
+	Fault Tolerance: 
+	----------------
+		Kafka achieves fault tolerance through data replication. Each partition can have multiple replicas, and Kafka ensures that data is replicated across multiple brokers. This allows the system to continue operating even if some brokers fail.
+	
+	Durability: 
+	-----------
+		Kafka ensures data durability by persisting data to disk. Data is stored in a log-structured format, which allows for efficient sequential reads and writes.
+	
+	Scalability: 
+	------------
+		Kafka's distributed architecture allows it to scale horizontally by adding more brokers to the cluster. This enables Kafka to handle increasing amounts of data without downtime.
+	
+	Real-Time Processing: 
+	---------------------
+		Kafka supports real-time data processing through its Streams API and ksqlDB, a streaming database that allows for SQL-like queries on streaming data.	
+		
+		
+		
+Kafka Topic Management:
+-----------------------
+	1. Creating Topics:
+	-------------------
+		To create a topic in Kafka, you can use the kafka-topics.sh script, which is included in the Kafka distribution. Here is an example command to create a Kafka topic:
+
+			./bin/kafka-topics.sh --create --topic topic_name --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1
+		
+		Command Explanation:
+		--------------------
+		--create: 			This flag is used to create a new topic.
+		
+		--topic topic_name: Specifies the name of the topic that needs to be created.
+		
+		--bootstrap-server localhost:9092: 
+			Specifies the Kafka broker to connect to. You can replace localhost:9092 with your actual broker address.
+		
+		--replication-factor 1: 
+			Specifies the replication factor for the topic, which indicates how many copies of each partition should be maintained. In this example, it is set to 1.
+		
+		--partitions 1: Specifies the number of partitions for the topic. In this example, it is set to 1.		
+		
+		
+	2. Topic Configurations:
+	------------------------
+		Creating a Topic with Configurations:
+
+			./bin/kafka-topics.sh --create --topic topic_name --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --config retention.ms=604800000
+			
+		Modifying Topic Configurations:
+
+			./bin/kafka-configs.sh --alter --entity-type topics --entity-name topic_name --add-config retention.ms=259200000
+			
+			
+			
+Real-World Kafka Architectures:
+-------------------------------
+	Apache Kafka is a versatile platform used in various real-world applications due to its high throughput, fault tolerance, and scalability. Here, we will explore three common Kafka architectures: Pub-Sub Systems, Stream Processing Pipelines, and Log Aggregation Architectures.			
+	
+	1. Pub-Sub Systems:
+	-------------------
+		In a publish-subscribe (pub-sub) system, producers publish messages to topics, and consumers subscribe to those topics to receive the messages. Kafka's architecture is well-suited for pub-sub systems due to its ability to handle high volumes of data and provide reliable message delivery.
+
+		Key Components:
+		---------------
+			Producers: 			Applications that send data to Kafka topics.
+			Topics: 			Logical channels to which producers send data and from which consumers read data.
+			Consumers: 			Applications that subscribe to topics and process the data.
+			Consumer Groups: 	Groups of consumers that share the load of reading from topics.
+	
+	
+		A real-world example of a pub-sub system using Kafka could be a news feed application where multiple news sources (producers) publish articles to a topic, and various user applications (consumers) subscribe to receive updates in real-time.
+		
+		
+	2. Stream Processing Pipelines:
+	-------------------------------
+		Stream processing pipelines involve continuously ingesting, processing, and transforming data in real-time. Kafka's ability to handle high-throughput data streams and its integration with stream processing frameworks like Apache Flink and Apache Spark make it ideal for building such pipelines.
+
+		Key Components:
+		---------------
+			Producers: 			Applications that send raw data streams to Kafka topics.
+			Topics: 			Channels where raw data is stored before processing.
+			Stream Processors: 	Applications or frameworks that consume raw data, process it, and produce transformed data.
+			Sink Topics: 		Topics where processed data is stored for further use.
+		
+		
+		A real-world example of a stream processing pipeline using Kafka could be a financial trading platform where market data (producers) is ingested in real-time, processed to detect trading signals (stream processors), and the results are stored in sink topics for further analysis.	
+		
+		
+	3. Log Aggregation Architectures:
+	---------------------------------
+		Log aggregation involves collecting log data from various sources, centralizing it, and making it available for analysis. Kafka's durability and scalability make it an excellent choice for log aggregation systems.
+
+		Key Components:
+		---------------
+			Log Producers: 	Applications or services that generate log data.
+			Log Topics: 	Kafka topics where log data is stored.
+			Log Consumers: 	Applications that read log data for analysis or storage in a centralized system.
+		
+		
+		A real-world example of a log aggregation architecture using Kafka could be a microservices-based application where each microservice produces logs. These logs are sent to Kafka topics, and a centralized logging system (like ELK Stack) consumes the logs for analysis and monitoring.	
+		
+		
+Advantages of Kafka Architecture:
+---------------------------------
+	Decoupling of Producers and Consumers: 
+	--------------------------------------
+		Kafka decouples producers and consumers, allowing them to operate independently. This makes it easier to scale and manage the system.
+	
+	Ordered and Immutable Logs: 
+	---------------------------
+		Kafka maintains the order of records within a partition and ensures that records are immutable. This guarantees the integrity and consistency of the data.
+	
+	High Availability: 
+	------------------
+		Kafka's replication and fault tolerance mechanisms ensure high availability and reliability of the data.		
+		
+		
+What is Apache Kafka used for?
+------------------------------
+	Apache Kafka is primarily used for building real-time data pipelines and streaming applications. It enables high-throughput, low-latency message processing, making it suitable for a wide range of use cases.
+
+	1. Message queuing: 
+	-------------------
+		Kafka can act as a traditional message broker, where producers send messages and consumers process them. Its ability to handle high volumes of messages with low latency makes it a superior choice compared to traditional messaging systems.
+	
+	2. Real-time data streaming: 
+	----------------------------
+		Kafka is often used to stream data in real time, enabling applications to react to data as it is generated. Common examples include monitoring data, sensor feeds, and clickstream analytics for user behavior tracking.
+	
+	3. Log aggregation: 
+	-------------------
+		Kafka consolidates logs from multiple services into a centralized location. This is useful for analysis, monitoring, and alerting on event data across distributed systems.
+	
+	4. Event sourcing: 
+	------------------
+		Kafka can store a full history of changes to system states, enabling event-driven architectures. This allows applications to rebuild states or reprocess events by replaying logs.
+	
+	5. Data integration and ETL: 
+	----------------------------
+		Kafka Connect simplifies integrating Kafka with other systems such as databases or Hadoop. It serves as a backbone for ETL (Extract, Transform, Load) processes by moving data between various sources and destinations in real-time.
+	
+	6. Microservices communication: 
+	-------------------------------
+		Kafka is widely adopted in microservices architectures, allowing loosely coupled services to communicate asynchronously. This reduces dependencies and enhances system resilience.		
+		
+		
+Examples of relationships between Kafka components:
+---------------------------------------------------
+	Let’s look at the relationships among the key components within Kafka architecture. Note the following when it comes to brokers, replicas, and partitions:
+
+	1. Kafka clusters may include one or more brokers.
+	2. Kafka brokers are able to host multiple partitions.
+	3. Topics are able to include 1 or more partitions.
+	4. Brokers are able to host either 1 or zero replicas for each partition.
+	5. Each partition includes 1 leader replica, and zero or greater follower replicas.
+	6. Each of a partition’s replicas has to be on a different broker.
+	7. Each partition replica has to fit completely on a broker, and cannot be split onto more than one broker.
+	8. Each broker can be the leader for zero or more topic/partition pairs.		
+	
+	
+1. A producer sending a message to a topic, and a consumer that is subscribed to that topic reading the message.	
+2. Consumers can subscribe to multiple topics at once and receive messages from them in a single poll. The messages that consumers receive can be checked and filtered by topic when needed.
+3. Technically, a producer may only be able send messages to a single topic at once. However, by sending messages asynchronously, producers can functionally deliver multiple messages to multiple topics as needed.
+
+
+
+Push vs Pull:
+-------------
+	Messaging system can have pull or push
+	
+	Push:
+	-----
+		Consumer can be overwhelmed by flooded message by producer.
+		Difficulties dealing with diverse consumers.
+	
+	Pull:	(by default and recommended)
+	-----		
+		Consumer can pull the record as per capacity from broker.
+		Batching is created for pulling the data as per consumer.
+		Kafka can pull the batch on interval of time fix or the required byte size.
+		
+		
+https://mail-narayank.medium.com/kafka-architecture-internal-d0b3334d1df		
+Testing Kafka:		
+--------------
+	
+	1. Creating Topics:
+	-------------------
+		Open a new command prompt in the location C:\kafka_2.11–0.9.0.0\bin\windows and type following command and hit enter:
+		
+			kafka-topics.bat -- create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test.topic
+			
+	2. Creating a Producer:
+	-----------------------
+		Open a new command prompt in the location C:\kafka_2.11–0.9.0.0\bin\windows.
+		To start a producer type the following command:
+		
+			kafka-console-producer.bat — broker-list localhost:9092 --topic test.topic
+			
+	3. Start Consumer:
+	------------------
+		Again open a new command prompt in the same location as C:\kafka_2.11–0.9.0.0\bin\windows
+		Now start a consumer by typing the following command:
+		
+			kafka-console-consumer.bat — zookeeper localhost:2181 — topic test.topic		
+			
+	
+		Now you run the producer and consumer on two command window.
+	
+	4. Type anything in the producer command prompt and press Enter, and you should be able to see the message in the other consumer command prompt.
+
+
+https://www.geeksforgeeks.org/java/sending-message-to-kafka-using-java/
+Sending Message to Kafka Using Java:
+------------------------------------
+	In this setup, Kafka acts as an intermediary, meaning the Producer sends the message to Kafka, and then Kafka sends the message to the Consumer, or the Consumer polls the message from the server. 
+
+	1) Dependency needed:
+	---------------------
+		<dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>3.7.0</version>
+        </dependency>
+		
+		
+	2) Create a Producer:
+	---------------------
+		We will add three properties:
+			Config: 						This will be used to specify the port and the location of the kafka server.
+			Key-Serializer-Class Config: 	This will be used specify the class type of Key.
+			Value-Serializer-Class Config: 	This will be used specify the class type of Value.
+	
+		Then create a instance of Kafka producer with this props. 
+		Now with this we can send the message. For that, we will create a record and then send it using send() function.
+		
+			import org.apache.kafka.clients.producer.*;
+			import org.apache.kafka.common.serialization.StringSerializer;
+
+			import java.util.Properties;
+
+			public class Main {
+				public static void main(String[] args) {
+				
+					// Set up the producer properties
+					Properties props = new Properties();
+					
+					props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+					props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+					props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+
+					// Create the producer
+					Producer<String, String> producer = new KafkaProducer<>(props);
+
+					// Create a producer record
+					ProducerRecord<String, String> record = new ProducerRecord<>("Messages", "key", "Hello, Kafka!");
+
+					// Send the record
+					producer.send(record);
+
+					// Close the producer
+					producer.close();
+				}
+			}
+			
+https://codingharbour.com/apache-kafka/how-to-create-kafka-producer-in-java/			
+		First, 
+			the producer needs to know how to reach the Kafka broker. We specify the broker’s address by using the ProducerConfig.BOOTSTRAP_SERVERS_CONFIG property.
+			In cases when you have more than one broker (which is always the case in production), you would specify them in a comma-separated string, e.g: "serverA:9092,serverB:9092,serverC:9092"	
+			
+		Second, 
+			the producer needs to know how to serialize the records to a byte array. Kafka brokers are agnostic of the data types we’re sending and are treating every record as an array of bytes. This means that producers need to know how to serialize data into byte arrays and consumers need to know how to deserialize it back.	
+		
+		Third,
+			Each Kafka record consists of a key and a value. These can potentially be of different types, so the producer needs to know which serializer to use for key and which one to use for value. That’s where KEY_SERIALIZER_CLASS_CONFIG and VALUE_SERIALIZER_CLASS_CONFIG come into play.
+		
+		Fourth,
+			The first parameter we need to set when creating the ProducerRecord is the topic to which we’re writing the record. Then we set the key and the value of the record.
+			
+		StringSerializer:
+		-----------------	
+			The StringSerializer is a built-in class in Apache Kafka used to convert Java String objects into byte arrays so they can be transmitted over the Kafka network. 
+			If you try to send a non-string object (like a custom class or JSON object) using StringSerializer, you’ll get a SerializationException. In that case, you need a custom serializer or use something like Avro, Protobuf, or JSON.
+
+	
+			
+	3) Create a Consumer:
+	---------------------
+		We will add four properties:
+			Config: 							This will be used to specify the port and the location of the kafka server.
+			Group Id Config: 					This will be used to set the group ID from which we can fetch the messages.
+			Key-DeSerializer-Class Config: 		This will be used specify the class type of Key.
+			Value-DeSerializer-Class Config: 	This will be used specify the class type of Value.
+			
+		Then create a instance of Kafka Consumer with this props. 
+		Now with this we can receive the message. 
+		For receiving message, we will call loop and Poll the server for new Messages. And as soon as msg receives it will be given to the consumers.	
+		
+			import org.apache.kafka.clients.consumer.*;
+			import org.apache.kafka.common.serialization.StringDeserializer;
+
+			import java.time.Duration;
+			import java.util.Collections;
+			import java.util.Properties;
+
+			public class Main {
+				public static void main(String[] args) {
+				
+					// Set up the consumer properties
+					Properties props = new Properties();
+					props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+					props.put(ConsumerConfig.GROUP_ID_CONFIG, "my-group-id");
+					props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+					props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+
+					// Create the consumer
+					Consumer<String, String> consumer = new KafkaConsumer<>(props);
+
+					// Subscribe to the topic											//Way-1
+					consumer.subscribe(Collections.singletonList("Messages"));
+
+					//OR You can also subscribe to multiple topics like this			//Way-2
+					consumer.subscribe(Arrays.asList("Messages", "Alerts", "Logs"));	
+					
+					//Or use regular expressions to match topic names dynamically		//Way-3
+					consumer.subscribe(Pattern.compile(".*-events"));	
+					
+					// Continuously poll for new messages
+					try {
+						while (true) {
+							ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+							for (ConsumerRecord<String, String> record : records) {
+								System.out.printf("offset=%d, key=%s, value=%s%n", record.offset(), record.key(), record.value());
+							}
+						}
+					} finally {
+						// Close the consumer
+						consumer.close();
+					}
+				}
+			}
+			
+			
+https://www.sohamkamani.com/java/kafka/			
+Tuning Kafka Client Configuration:
+----------------------------------
+	
+	1) Minimum Buffered Bytes:
+	-------------------------
+		this means that if the consumer polls the cluster to check if there is any new data on the topic for the my-group-id consumer ID, the cluster will only respond if there are at least 5 new bytes of information to send.
+		
+		// We can set the minimum buffered bytes using the "fetch.min.bytes" property
+		props.setProperty("fetch.min.bytes", "5");
+		
+		Setting fetch.min.bytes "would help to receive the data in batches", which would reduce the overall throughput and load on your system.
+		
+		Problem:
+			However, if there is a long period of time that elapses before the amount of new data crosses the fetch.min.bytes value, it would result in the previous data getting stuck for that amount of time.
+		
+		
+	2) 	Max Wait Time:
+	------------------
+		The fetch.max.wait.ms setting helps mitigate the problem discussed above. It sets the maximum time to wait between receiving messages from the Kafka cluster, regardless of the fetch.min.bytes setting.
+		
+			Properties props = new Properties();
+			props.setProperty("fetch.min.bytes", "5");
+			
+			// Here, we can set the maximum wait time along with the minimum bytes. 
+			props.setProperty("fetch.max.wait.ms", "3000");
+
+			try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props)) {
+				...
+			}
+			
+		that would mean that the consumer would have to wait at the most 3 seconds before receiving any new messages, even if the new messages did not cross the min bytes setting that we set previously. If 3 seconds elapse and the batch doesn't reach the minimum size, the messages are received anyways.
+		
+		
+	3) Start Offset:
+	----------------
+		Offset tell the consumer where to start consuming messages from.
+		When a new consumer is added to a topic, it has two options for where it wants to start consuming data from:
+
+		1. Earliest:
+			The consumer will start consuming data for a topic starting from the earliest message that is available.
+		
+		2. Latest: 
+			Only consume new messages that appear after the consumer has joined the cluster. This is the default setting.
+
+			props.setProperty("auto.offset.reset", "earliest"); or
+			props.setProperty("auto.offset.reset", "latest");
+		
+
+		
+	
+So far we’ve looked at configuration on the consumer side. 
+Let’s take a look at some producer/writer side configuration options:
+---------------------------------------------------------------------
+	
+	1) Message Batching:
+	--------------------
+		Similar to the consumer, the producer also tries to send messages in batches. This is to reduce the total number of network round trips and improve efficiency in writing messages, but comes at the cost of increased overall latency.
+
+		When batching messages, we can set:
+			
+			Batch Size: 
+			-----------
+				The total number of messages that should be buffered before writing to the Kafka brokers.
+		
+			Batch Timeout (Linger): 
+			-----------------------
+				The maximum time before which messages are written to the brokers. That means that even if the message batch is not full, they will still be written onto the Kafka cluster once this time period has elapsed.	
+				
+				
+			props.put("batch.size", "10");
+
+			// no matter what happens, write all pending messages in every 2 seconds
+			props.put("linger.ms", "2000");	
+			
+		If you want your writer to immediately send every message it gets, set the batch size to 1	
+		
+
+	2) Required Acknowledgements:	(-1, 0, 1)
+	-----------------------------	----------
+		Required acknowledgements determines when your producer will consider the message as written.
+		
+		When we call the producer.send method in our example, it returns a future that resolves once the message is confirmed to be written. However, the definition of what “confirmed” means can be different based on your settings.
+
+		Remember, the Kafka cluster (and your topic partitions) is distributed between multiple brokers. Of these, one of the brokers is the designated leader and the rest are followers.
+
+		Keeping this in mind, there are three modes of acknowledgement (represented by integers) when writing messages to the cluster:
+		
+			1. All brokers acknowledge that they have received the message (represented as -1)
+			
+			2. Only the leading broker acknowledges that it has received the messages (represented as 1). The remaining brokers can still eventually receive the message, but we won’t wait for them to do so.
+			
+			3. No one acknowledges receiving the message (represented as 0). This is basically a fire-and-forget mode, where we don’t care if our message is received or not. This should only be used for data that you are ok with losing a bit of, but require high throughput for.
+			
+				props.put("acks", "1");
+				
+				
+	
+Logging Options:
+----------------
+	The Kafka client library uses the slf4j logging interface to produce logs, for which we can provide an implementation at deployment time.
+
+	The default binding is a NOPLogger, which means that nothing is logged and all logs are silently discarded. We can add another implementation as a dependency in our pom.xml file, and the Kafka client library will use it as its slf4j binding.
+
+	Although detailed logging can be helpful in a non-production environment, you should be careful before using it in production, to prevent your logs from being polluted with too much information.
+	
+	
+	
+https://www.geeksforgeeks.org/advance-java/microservices-communication-with-apache-kafka-in-spring-boot/
+https://www.sourcecodeexamples.net/2024/05/spring-boot-microservices-with-apache-kafka-example.html
+	
+Microservices Communication with Apache Kafka in Spring Boot:
+-------------------------------------------------------------
+	Combined with Spring Boot, Kafka can provide a powerful solution for microservice communication and ensure scalability and fault tolerance.
+
+	In a microservice architecture, services need to communicate with each other to exchange data and orchestrate workflows. 
+	There are two primary communication patterns:
+		Synchronous Communication: 	It can direct calls between the services using HTTP/REST or gRPC.
+		Asynchronous Communication: It can service communication via messages using a message system like Apache Kafka.	
+		
+	Asynchronous communication offers several advantages:
+		Decoupling: The service can operate independently, improving the scalability and fault tolerance of the application.
+		Resilience: If the service is down then the messages can be stored and processed later when the service is back up.
+		Scalability: Kafka can handle the throughput, allowing the service to scale independently.	
+		
+	In the microservice architecture, Kafka can be used to:
+		Publish events: 		Services can publish the events or messages to the Kafka topics of the application.
+		Subscribe to events: 	Services can subscribe to the relevant Kafka topics to receive and process events.	
+		
+		
+		
+	Implementation of Microservices Communication with Apache Kafka in Spring Boot:	
+	--------------
+	
+		1. Create the KafkaConsumerService:
+		-----------------------------------
+		
+			package org.example.kafkasubscribe.service;
+
+			import org.springframework.kafka.annotation.KafkaListener;
+			import org.springframework.stereotype.Service;
+
+			@Service
+			public class KafkaConsumerService {
+
+				@KafkaListener(topics = "my-topic", groupId = "my-group")
+				public void listen(String message) {
+					System.out.println("Received Message: " + message);
+				}
+			}
+			
+		2. Create the KafkaProducerService:
+		-----------------------------------
+			
+			package org.example.kafkasubscribe.service;
+
+			import org.springframework.beans.factory.annotation.Autowired;
+			import org.springframework.kafka.core.KafkaTemplate;
+			import org.springframework.stereotype.Service;
+
+			@Service
+			public class KafkaProducerService {
+
+				private final KafkaTemplate<String, String> kafkaTemplate;
+
+				@Autowired
+				public KafkaProducerService(KafkaTemplate<String, String> kafkaTemplate) {
+					this.kafkaTemplate = kafkaTemplate;
+				}
+
+				public void sendMessage(String topic, String message) 
+				{
+					kafkaTemplate.send(topic, message);
+				}
+			}
+			
+			
+		3. Create the KafkaController class:
+		------------------------------------
+			
+			package org.example.kafkasubscribe.controller;
+
+			import org.example.kafkasubscribe.service.KafkaProducerService;
+			import org.springframework.beans.factory.annotation.Autowired;
+			import org.springframework.http.ResponseEntity;
+			import org.springframework.web.bind.annotation.PostMapping;
+			import org.springframework.web.bind.annotation.RequestParam;
+			import org.springframework.web.bind.annotation.RestController;
+
+			@RestController
+			public class KafkaController {
+
+				private final KafkaProducerService producerService;
+
+				@Autowired
+				public KafkaController(KafkaProducerService producerService) {
+					this.producerService = producerService;
+				}
+
+				@PostMapping("/publish")
+				public ResponseEntity<String> publishMessage(@RequestParam("message") String message) {
+					producerService.sendMessage("my-topic", message);
+					return ResponseEntity.ok("Message published to Kafka topic");
+				}
+			}
+			
+		4. Endpoint Testing:
+		--------------------
+			
+			POST http://localhost:8080/publish?message=HelloKafka
+
+
+
+https://www.codefro.com/2023/10/03/stateful-and-stateless-processing-in-kafka-streams/
+https://www.redpanda.com/guides/kafka-use-cases-stream-processing
+https://www.slingacademy.com/article/understanding-stateful-and-stateless-processing-in-kafka-streams/
+
+Why use Kafka Streams?:
+-----------------------
+	Kafka itself is an open-source distributed event streaming platform, and Kafka Streams is a framework for building stream-processing applications that work on top of Kafka. It offers a declarative approach to create pipelines that process messages and apply transformations such as filtering, aggregations, and joins. 
+
+Use cases for Kafka Streams:
+----------------------------
+	Kafka Streams offers powerful event stream processing capabilities that make it ideal for a wide range of use cases, including fraud detection, data cleansing, workflow automation, event-driven communication, enriching data streams, and real-time analytics.
+
+Understanding Stateful and Stateless Processing in Kafka Streams:
+-----------------------------------------------------------------
+	In Kafka Streams, stateless and stateful processing are two distinct paradigms for handling streaming data. 
+	
+	1. Stateless Processing:
+	------------------------
+		In stateless processing, each record is processed independently—no memory of past records, no stored state.
+
+		Characteristics:
+		----------------
+			Fast and lightweight
+			Easy to scale horizontally
+			No need for local state stores
+
+		Common Stateless Operations:
+		----------------------------
+			filter(): 	Remove records based on a condition
+			map(): 		Transform each record
+			flatMap(): 	Split one record into many
+			foreach(): 	Perform side effects (e.g., logging
+
+		Example 1: Filter Operation:
+		----------------------------
+			Filtering records in Kafka Streams could be for a specific condition, like records with value greater than a threshold.
+			
+				StreamsBuilder builder = new StreamsBuilder();
+				KStream<String, Integer> initialStream = builder.stream("numbers-topic");
+				KStream<String, Integer> filteredStream = initialStream.filter((key, value) -> value > 10);
+				filteredStream.to("filtered-numbers-topic");
+
+				//Here, we applied a filter operation on the KStream which contains String as key and Integer as value, forwarding only those records with values greater than 10.
+
+	
+	2. Stateful Processing:
+	-----------------------
+		In stateful processing, the processing of a record can depend on the state calculated from previous records or some external systems.
+		
+		Characteristics:
+		----------------
+			Requires state stores
+			Enables complex analytics and joins
+			Slightly more resource-intensive
+
+		Common Stateful Operations:
+		---------------------------
+			aggregate(): 	Summarize data over time
+			count(): 		Count occurrences
+			join(): 		Combine multiple streams
+			windowedBy(): 	Group records by time windows
+			reduce():		applies an aggregation function such as min, max, or avg to the stream of data.
+
+		Example:
+		--------
+			StreamsBuilder builder = new StreamsBuilder();
+			KStream<String, String> sourceStream = builder.stream("numbers-topic");
+			KGroupedStream<String, String> groupedStream = sourceStream.groupByKey();
+			KTable<String, Long> aggregatedStream = groupedStream.count();
+			aggregatedStream.toStream().to("aggregated-numbers-topic");
+			
+			//This code example essentially counts the number of occurrences for each key and outputs a KTable, a changelog stream that represents updates to a table.
+
+
+	3. When to Use Each:
+	--------------------
+		Use Case 					Processing Type
+		--------					---------------
+		Filtering spam messages 	Stateless
+		Counting user clicks 		Stateful 
+		Enriching records 			Stateless 
+		Joining user data streams 	Stateful
+		Logging events 				Stateless 
+		Time-windowed analytics 	Stateful
+
+
+	4. State Store Considerations:
+	------------------------------
+		Stateful processing often involves state stores which are customizable and can be persistent or in-memory, depending on the fault-tolerance requirement.
+
+
+
+How kafka ensures that no message is processed twice:
+-----------------------------------------------------
+	Here's how Kafka helps ensure that messages are not processed twice, especially within a consumer group:
+
+	1. Consumer Group Partition Assignment:
+	---------------------------------------
+		Kafka ensures that:
+			Each partition is assigned to only one consumer in a group.
+			No two consumers in the same group read the same partition simultaneously.
+		This guarantees that each message is processed once per consumer group, not by multiple consumers.
+
+	2. Offset Management:
+	---------------------
+		Offsets track the position of a consumer in a partition. 
+		
+		Kafka offers:
+			Automatic offset commits (enable.auto.commit=true)
+			Manual offset commits (commitSync() or commitAsync())
+		
+		To avoid duplicates:
+			Commit offsets after successful message processing.
+			Use external offset storage for resilience during failures.
+
+	3. Idempotent Producers:
+	------------------------
+		Kafka producers can be configured to avoid sending duplicate messages:
+			
+			enable.idempotence=true
+
+		This ensures:
+			Messages are delivered exactly once to a partition
+			Retries don’t result in duplicates
+
+	4. Idempotent Consumers:
+	------------------------
+		Even with Kafka’s guarantees, consumers should be idempotent:
+			Use unique message IDs to detect duplicates
+			Maintain a processed message log or database
+			Avoid side effects (e.g., duplicate database inserts)
+
+	5. Transactional Messaging:
+	---------------------------
+		Kafka supports end-to-end exactly-once semantics using transactions:
+			Producers use beginTransaction(), commitTransaction()
+			Consumers use isolation.level=read_committed
+		
+		This ensures:
+			Messages and offset commits are atomic
+			Consumers only read committed messages
+
+
+What Is a Consumer Group?:
+--------------------------
+	A consumer group is a set of consumers that work together to read data from a Kafka topic. 
+	To manage the load, consumers are divided into consumer groups, so no message is processed twice.
+
+	Kafka ensures that:
+		Each partition of a topic is assigned to only one consumer in the group.
+		Messages are not duplicated within the group.
+		Parallelism is achieved by distributing partitions across consumers.
+
+	How It Works:
+	-------------
+		A topic has multiple partitions.
+		Consumers in a group are assigned partitions.
+		Each consumer reads from its assigned partition.
+		Kafka tracks offsets per consumer group to know where each consumer left off.
+
+	Why It’s Powerful:
+	------------------
+		Feature 			Benefit 
+		-------				-------
+		Scalability 		Add more consumers to handle more data
+		Fault Tolerance 	If one consumer fails, another takes over its partition
+		Isolation 			Multiple groups can consume the same topic independently
+		Replayability 		Consumers can reset offsets to reprocess data if needed
+
+
+	Real-World Analogy:
+	-------------------
+		Think of a warehouse with multiple loading docks (partitions). A team of workers (consumer group) splits up—each worker handles one dock. No dock is handled by two workers, and every package (message) gets processed once.
+
+	
+Diff b/w topic and group-id:
+----------------------------
+	In Apache Kafka, topics and group IDs serve very different but complementary roles in the messaging ecosystem. 
+	
+	The topic defines what data is being streamed.
+	The group ID defines who is consuming it—and how they coordinate.
+
+	How They Work Together:
+	-----------------------
+		A producer sends messages to a topic.
+		Multiple consumer groups can subscribe to the same topic independently.
+		Kafka ensures that each partition of a topic is read by only one consumer within a group.
+		Different groups can read the same messages without interfering with each other.
+	
+	Example:
+		Topic: payments
+		Group ID: payment-processor-group
+		Consumers in this group will divide the partitions of payments among themselves.
+
+	Kafka Topic vs. Group ID:
+	-------------------------
+		Concept 	Kafka Topic 									Group ID (Consumer Group)
+		-------		-----------										-------------------------
+		Definition 	A named category where messages are published 	A unique identifier for a group of consumers
+		Purpose 	Organizes messages by type or domain 			Enables coordinated consumption of topic data
+		Used By 	Producers and consumers 						Consumers only
+		Scope 		Global across the Kafka cluster 				Local to consumer coordination
+		Behavior 	Messages are written to and read from topics 	Consumers in the same group share partitions
+		Example 	"orders.created", "user.signup" 				"order-service-group", "analytics-consumers"
+
+===========================================================================================================================
+
+	
+	
+	
+https://www.interviewbit.com/kafka-interview-questions/	
+	
+Extra Intv Stuff:
+=================
+
+Can we use Kafka without Zookeeper?
+-----------------------------------
+	Kafka can now be used without ZooKeeper as of version 2.8. The release of Kafka 2.8.0 in April 2021 gave us all the opportunity to try it out without ZooKeeper. However, this version is not yet ready for production and lacks some key features.
+	In the previous versions, bypassing Zookeeper and connecting directly to the Kafka broker was not possible. This is because when the Zookeeper is down, it is unable to fulfill client requests.
+
+Explain the concept of Leader and Follower in Kafka.
+----------------------------------------------------
+	In Kafka, each partition has one server that acts as a Leader and one or more servers that operate as Followers. The Leader is in charge of all read and writes requests for the partition, while the Followers are responsible for passively replicating the leader. In the case that the Leader fails, one of the Followers will assume leadership. The server's load is balanced as a result of this.
+
+Topic replication:
+------------------
+	Topic replication is critical for constructing Kafka deployments that are both durable and highly available. When one broker fails, topic replicas on other brokers remain available to ensure that data is not lost and that the Kafka deployment is not disrupted.
+	
+What do you mean by geo-replication in Kafka?
+---------------------------------------------
+	Geo-Replication is a Kafka feature that allows messages in one cluster to be copied across many data centers or cloud regions.  
+	Geo-replication can be accomplished with Kafka's MirrorMaker Tool. Geo-replication is a technique for ensuring data backup.
+	
+	
+What is the maximum size of a message that Kafka can receive?
+--------------------------------------------------------------
+	By default, the maximum size of a Kafka message is 1MB (megabyte). 
+	The broker settings allow you to modify the size. Kafka, on the other hand, is designed to handle 1KB messages as well.
+
+How do you start a Kafka server?
+--------------------------------
+	The following commands must be done in order to start the Kafka server and ensure that all services are started in the correct order:
+
+	Start the ZooKeeper service by doing the following:
+		
+		$bin/zookeeper-server-start.sh config/zookeeper.properties
+	
+	To start the Kafka broker service, open a new terminal and type the following commands:
+		
+		$ bin/kafka-server-start.sh config/server.properties
+
+
+What are some of the disadvantages of Kafka?
+--------------------------------------------
+	Kafka performance degrades if there is message tweaking. When the message does not need to be updated, Kafka works well.
+	Wildcard topic selection is not supported by Kafka. It is necessary to match the exact topic name.
+	Brokers and consumers reduce Kafka's performance when dealing with huge messages by compressing and decompressing the messages. This has an impact on Kafka's throughput and performance.
+	Certain message paradigms, including point-to-point queues and request/reply, are not supported by Kafka.
+	Kafka does not have a complete set of monitoring tools.
+	
+
+What do you mean by Kafka schema registry?
+------------------------------------------
+	A Schema Registry is present for both producers and consumers in a Kafka cluster, and it holds Avro schemas. For easy serialization and de-serialization, Avro schemas enable the configuration of compatibility parameters between producers and consumers. The Kafka Schema Registry is used to ensure that the schema used by the consumer and the schema used by the producer are identical. The producers just need to submit the schema ID and not the whole schema when using the Confluent schema registry in Kafka. The consumer looks up the matching schema in the Schema Registry using the schema ID.
+
+How will you expand a cluster in Kafka?
+	To add a server to a Kafka cluster, it only needs to be given a unique broker id and Kafka must be started on that server.
+	
+Can the number of partitions for a topic be changed in Kafka?
+	Currently, Kafka does not allow you to reduce the number of partitions for a topic. The partitions can be expanded but not shrunk. 	
+	
+What do you mean by BufferExhaustedException and OutOfMemoryException in Kafka?
+-------------------------------------------------------------------------------
+	When the producer can't assign memory to a record because the buffer is full, a BufferExhaustedException is thrown. If the producer is in non-blocking mode, and the rate of production exceeds the rate at which data is transferred from the buffer for long enough, the allocated buffer will be depleted, the exception will be thrown.
+
+	If the consumers are sending huge messages or if there is a spike in the number of messages sent at a rate quicker than the rate of downstream processing, an OutOfMemoryException may arise. As a result, the message queue fills up, consuming memory space.

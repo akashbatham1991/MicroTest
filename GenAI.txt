@@ -1,0 +1,55 @@
+Artificial intelligence is a vast area of computer science, of which generative AI is a small piece. 
+
+GenAI, short for Generative Artificial Intelligence, is a type of AI that can "create new content and ideas", such as text, images, videos, and music, "based on learned patterns from existing data". 
+
+It leverages techniques like natural language processing, machine learning, and image recognition to produce new content. 
+
+Examples of GenAI applications:
+-------------------------------
+	Text generation: 			Creating articles, stories, poems, and other written content.
+	Image generation: 			Creating images based on text descriptions or other inputs.
+	Video generation: 			Creating videos from text scripts or other data.
+	Music generation: 			Composing new music based on existing styles or patterns.
+	Code generation: 			Automatically generating code for various programming tasks.
+	Product design: 			Creating designs for products or services.
+	Solving complex problems: 	Assisting in research and problem-solving.	
+
+
+How GenAI works:
+----------------
+	1. Data ingestion:
+		GenAI is trained on vast amounts of data, such as text, images, or other forms of information. 
+
+	2. Pattern learning:
+		It learns patterns and relationships within the data to understand how different elements are connected. 
+
+	3. Content generation:
+		When prompted with an input, GenAI uses its learned patterns to generate new content that is similar to the training data. 
+		
+		
+Input to GenAI tools like GitHub copilot to new generate content or ideas:
+--------------------------------------------------------------------------	
+	->Create a requirement document for below use case.
+	->Create the database design for above use case.
+	->Create a logging framework to log all errors and issues with all levels.
+	->Create a get api which will calculate the total energy consumption and total export of the current month.
+	->Integrate an api in the angular application using useeffect to show the values of energy consumption.
+	->Create release notes for the application stating the current feature has only the provision of current week, month and year and not for previous weak, month and year. Also there are few bugs that also needs to fixed.
+	->Build script for angular application.
+	->Created unit test cases for controller.	
+	->EnergyData class is:  copilot will explain the class.
+	->I want to deploy this application in Azure K8s service. give me all steps and the scripts to do it.
+	->Optimize the selected code.
+	->Calculate the cognitive complexity of the selected code.
+	
+	
+Giants in the GenAI market:
+---------------------------
+	Microsoft 	(GitHub Copilot)
+	Amazon 		(AWS Code Whisperer)
+	Google 		(Duet AI)
+	
+	
+General-Purpose AI with Coding Capabilities:
+-------------------------------------------
+	ChatGPT:	ChatGPT is a specific example of Generative AI (GenAI).

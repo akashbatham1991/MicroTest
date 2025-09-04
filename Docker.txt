@@ -1,0 +1,212 @@
+https://www.geeksforgeeks.org/devops/build-and-deploy-java-application-with-docker/
+https://www.jetbrains.com/help/idea/dockerize-java-app.html#create_new_project
+
+
+Docker:
+-------
+	Docker is a very optimized way to build a application and deploy on the server.
+
+Dockerize a Java application:
+-----------------------------
+	You can use Docker to pack your compiled Java application into an image along with a specific runtime environment and any other necessary dependencies. 
+	You can then run a container from that image to see how the application will run in this environment. This is called dockerizing an application.
+	
+	You can share the image with others, for example, to demonstrate exactly how your application is expected to run, without the need to install the necessary runtime (only Docker is required).
+
+
+->This tutorial describes how to create a Dockerfile to build a Docker image with OpenJDK 17 and a compiled Java application. 
+
+	If you want to run the java application in the form of containers then you need to first build an image of the application, to build an image you need dockerfile.
+	
+->Building your own customized docker image requires a dockerfile. 
+
+	Think of it as:
+	---------------
+		Docker image = the cake
+		Dockerfile = the recipe
+
+
+Dockerfile:
+-----------
+	A Dockerfile is a plain text file that contains a set of instructions used to build a Docker image. 
+	It defines the environment, dependencies, and commands needed to run your application inside a container.
+
+	Common Dockerfile Instructions:
+	------------------------------
+		Instruction		Purpose 
+		-----------		-------
+		FROM 			Sets the base image (e.g., ubuntu, node, python)
+		WORKDIR 		Sets the working directory inside the container 
+		COPY 			Copies files from host to container
+		RUN 			Executes commands during image build (e.g., install packages)
+		EXPOSE 			Declares the port the container will listen on
+		CMD 			Sets the default command to run when the container starts
+		ENV 			Sets environment variables
+		USER 			Specifies the user to run the container as
+
+
+	Dockerfile:
+	-----------
+		A sample Dockerfile for a Java application, assuming you have a runnable JAR file (e.g., myapp.jar) located in a target directory after building your project, is provided below:
+		
+			# Use an official OpenJDK runtime as a base image
+			FROM openjdk:17-jdk-alpine
+
+			# Set the working directory inside the container
+			WORKDIR /app
+
+			# Copy the built JAR file into the container
+			COPY target/myapp.jar app.jar
+
+			# Expose the port your app runs on (optional)
+			EXPOSE 8080
+
+			# Run the JAR file
+			ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+
+
+How to Use It:
+--------------
+	1) Build your JAR (e.g., with Maven):
+		
+		mvn clean package
+		
+	
+	2) Build the Docker image:
+		
+		docker build -t <image-name>:<tag> <path-to-dockerfile>
+		
+		docker build -t my-java-app:1.0 .	
+		
+		Note:
+			-t assigns a name and optional tag to the image (my-java-app:1.0)
+			. refers to the current directory as the build context (where your Dockerfile and app code are)
+			my-java-app : any name given to docker image.
+			
+		
+	3) Run the container:
+		
+		docker run -p 8080:8080 my-java-app
+		
+		
+	4) Now, you can access the application in your browser:
+		
+		127.0.0.1:8000
+
+
+
+
+->
+For listing the all docker images:
+	docker images 
+
+To list all the running containers:
+	docker ps
+			
+			
+			
+Create a .dockerignore File:
+----------------------------
+	.dockerignore file will help us to ignore all the file which not required for the docker image.
+
+	While creating an docker image there will be some files which not required to include in the docker image and also if u include all this file in the docker image than the size of the image will get increased which will increase the latancey of the application.
+
+	To exclude the files:
+		logs/*
+		*.png
+		
+		
+======================
+Another example of Dockerfile:
+------------------------------
+		
+	# Stage 1: Build the application (if necessary, using a multi-stage build)
+	FROM maven:3.8.6-openjdk-17 AS build
+	WORKDIR /app
+	COPY pom.xml .
+	COPY src ./src
+	RUN mvn clean package -DskipTests
+
+	# Stage 2: Create the final image
+	FROM openjdk:17-jre-slim
+	WORKDIR /app
+	COPY --from=build /app/target/your-app.jar your-app.jar
+	EXPOSE 8080 # Expose the port your application listens on
+	CMD ["java", "-jar", "your-app.jar"]	
+	
+	
+	Explanation:
+	------------
+	FROM maven:3.8.6-openjdk-17 AS build:
+		This line initiates a multi-stage build. The first stage, named build, uses a Maven image with OpenJDK 17, which is suitable for building Java applications.
+	
+	WORKDIR /app:
+		Sets the working directory inside the container for the build stage to /app.
+	
+	COPY pom.xml .:
+		Copies the pom.xml file (for Maven projects) to the working directory.
+	
+	COPY src ./src:
+		Copies your application's source code from the src directory into the image.
+	
+	RUN mvn clean package -DskipTests:
+		Executes the Maven command to clean, compile, and package your application into a JAR file, skipping tests.
+	
+	FROM openjdk:17-jre-slim:
+		This starts the second stage, which creates the final, smaller image. It uses a JRE-only image for a reduced footprint, as the build tools are no longer needed.
+	
+	WORKDIR /app:
+		Sets the working directory inside the container for the final image to /app.
+	
+	COPY --from=build /app/target/your-app.jar your-app.jar:
+		This crucial line copies the generated your-app.jar from the build stage's /app/target directory to the final image's /app directory.
+	
+	EXPOSE 8080:
+		Informs Docker that the container will listen on port 8080. This is a common practice for web applications.
+	
+	CMD ["java", "-jar", "your-app.jar"]:
+		Specifies the command to run when the container starts, which executes your Java application's JAR file.
+		
+		
+		
+->
+	- Dockerfile is a plain text file with no file extension.
+	- Docker Compose files (e.g., docker-compose.yml) are written in YAML, a human-readable data serialization format.
+
+		
+Docker Compose:
+---------------
+	It can start multiple services (containers), define networks, volumes, and dependencies between them.
+
+		Example:
+		--------
+		version: '3.8'
+		services:
+		  app:
+			build: .
+			ports:
+			  - "8080:8080"
+			depends_on:
+			  - mongo
+		  mongo:
+			image: mongo
+			ports:
+			  - "27017:27017"
+
+
+	- Purpose: Orchestrate multiple containers
+	- File type: YAML file named docker-compose.yml
+	- Used with: docker compose up
+
+Summary Table:
+--------------
+	Feature 		Dockerfile 						Docker Compose File (docker-compose.yml)
+	-------			----------						----------------------------------------	
+	Purpose 		Build a Docker image 			Run and manage multi-container apps
+	File Format 	Plain text with Docker commands YAML configuration
+	Command Used 	docker build 					docker compose up 
+	Scope 			Single image 					Multiple services/containers
+	Networking 		Basic (bridge by default) 		Custom networks and service linking
+	Volumes 		Defined per image 				Easily shared across services
+	Scaling 		Not supported 					Supports scaling with --scale 
+

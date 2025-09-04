@@ -1,0 +1,94 @@
+Rexel account: b2b application
+-------------
+https://rexelde-eu.dif-uat.rexel.com/
+
+	Abhijeet Maiskar
+	
+	french company, leader in distributor of electrical product supplies in euro, little bit in asia, mainly in canada, dealor for lot of retailier. like philips. 
+	
+	own digital platform, b2b, e-commerece platform, developed by CG.
+	
+	across in 18 contries, could be 18 websites. where retails can come and buy from these of brnacs.
+	
+	give me 5k rockwell electrical equipments.
+	
+	the tack is, SAP commere server, hybris, java, spring, or complete java stack.
+	
+	SAP commere server (outdated) need to upgrade it to build new platform from scratch.
+	
+	backedn as spring boot microservicews.
+	fronedn as angular.
+	
+	complete platform is Azure cloud, Aks k8s, CG also provide DevOps support.
+	
+	looking to build AI tool,  Gen AI, 
+	
+	backend systems are erp system, 
+	 integration b/w tipco implemetion 
+	 
+	 tipco and erp are not changes
+	 
+	 e-commerece db is trancastional data, hold data for temperory period.
+	 
+	 there are two other ways to sell electrical equipments:
+		edi system,
+		physical branchs
+	 
+	 erp as a master db.
+	 
+	 empliance, content mgmt system.
+	 solar search engine,
+	 tipco, enterpirse cg layer
+	 
+	 beyond,we don't have any scope.
+	 
+	 
+	 UI -> tipco -> backend 
+	
+	https://rexelde-eu.dif-uat.rexel.com
+	
+	competitors: 
+	hybris
+	
+	
+	oAuth is used for identity management. 
+	SSO
+	
+	github copilot
+	
+	spring boot skill
+	reengineer the exiting 
+	
+	how to reengineer and try to build new application ?
+	
+	how to managing microservicews in cloud?
+	
+	how to monitor and see performance
+	
+	10 to 16% is already written in microservicews desing patterns.
+	
+	
+	->Basics of GenAI - https://degreed.com/pathway/49e60k6195/pathway
+Basics of Prompt Engineering  - https://degreed.com/videos/skill-a-thon-webinar-on-introduction-to-prompt-engineering?d=38249680&inputtype=video&hosted=true&hosted=true&contentSource=Search
+Github Copilot Training  - https://degreed.com/pathway/v9rj2vw0pj/pathway  - Few modules of this trainings are for hands on practice of the tool, these modules you can do when license is made available to you, until then complete the remaining modules.
+ 
+Degreed
+Degreed connects learning, talent development, and internal mobility opportunities in one place - so you can reinvent yourself one skill at a time.
+ https://teams.microsoft.com/l/message/19:meeting_MjJjZjQxYzctMWFmZi00ODI5LWFiZTgtMjNkZmRlNmYxZmRh@thread.v2/1747393603789?context=%7B%22contextType%22%3A%22chat%22%7D
+ 
+ 
+  
+1	fundamental of JAVA & Spring - mandatory
+2	spring - dev
+3	spring batch - dev
+4	re-engineering - arch
+5	how to resolve performance issues- arch
+6	GitHub CoPilot knowledge will help..speak about GenAI - big plus
+7	speak about how you deal with cloud issues/operational challenges - senior
+8	logging of microservices - dev
+9	observability  - dev
+10	BFF, Strangler, Circuit Breaker patterns being used - arch
+11	speak about IAM exposure like OKTA, SSO architecture for third party integration based on JWT
+12	Currently, 16/20 is passing.
+ 
+ 

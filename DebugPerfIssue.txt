@@ -1,0 +1,208 @@
+debug performance issue java code in prod:
+------------------------------------------
+	1. Identify Symptoms of Performance Issues:
+	-------------------------------------------
+	Start by pinpointing what’s going wrong:
+	- Slow response times
+	- Increased latency or timeouts
+	- High CPU or memory usage
+	- Thread contention or deadlocks
+	- Frequent garbage collection pauses
+	
+	2. Use Production-Safe Profiling Tools:
+	---------------------------------------
+		Avoid traditional debuggers in production. Instead, use lightweight profilers and monitoring tools:
+		- VisualVM, JProfiler, or YourKit (with remote profiling capabilities)
+		- Java Flight Recorder (JFR) and Mission Control (built into the JDK)
+		- Application Performance Monitoring (APM) tools like New Relic, AppDynamics, or Dynatrace
+
+		These tools help you analyze:
+		- CPU and memory usage
+		- Thread states and deadlocks
+		- Garbage collection behavior
+		- Method-level execution times
+
+	3. Enable Detailed Logging:
+	---------------------------
+		Use structured and contextual logging:
+		- Use frameworks like SLF4J with Logback or Log4j2
+		- Include timestamps, thread IDs, and correlation IDs
+		- Log execution times for key operations
+		- Avoid excessive logging in hot paths
+
+	4. Analyze Thread Dumps:
+	------------------------
+	When the app hangs or slows down:
+	- Use jstack <pid> to capture thread dumps
+	- Look for blocked or waiting threads
+	- Identify deadlocks or thread starvation
+
+	5. Heap and GC Analysis:
+	------------------------
+	Memory leaks or inefficient GC can cripple performance:
+	- Use jmap and jhat or VisualVM to analyze heap dumps
+	- Monitor GC logs (-Xlog:gc* in Java 11+)
+	- Tune heap size and GC algorithm (G1GC, ZGC, etc.)
+
+	6. Load and Stress Testing:
+	---------------------------
+	Simulate production load using tools like:
+	- Apache JMeter
+	- Gatling
+	- Locust
+	
+	This helps reproduce issues and validate fixes before deploying.
+
+	7. Best Practices for Debugging in Production:
+	----------------------------------------------
+	According to DZone’s guide:
+	- Keep your tech stack simple
+	- Use feature flags to isolate problematic code
+	- Implement health checks and metrics (via Micrometer + Prometheus/Grafana)
+	- Avoid hotfixes without RCA (root cause analysis)
+
+
+https://reflectoring.io/create-analyze-heapdump/
+Heap Dump Analysis:
+-------------------
+	A heap dump is a snapshot of all objects in memory at a given time.
+	
+	It's useful for identifying: 
+		memory leaks, 
+		large object retention, and 
+		inefficient memory usage.
+	
+	Tools to Use:
+	-------------
+		Eclipse Memory Analyzer Tool (MAT) – 	Most popular and powerful
+		VisualVM – 								Lightweight and easy to use
+		JProfiler / YourKit – 					Commercial tools with advanced features
+		JMap - 							jmap is packaged with the JDK and extracts a heap dump to a specified file location.
+
+	Steps to Capture heap dump:
+	---------------------------
+	- Capture the Heap Dump, Using jmap:
+		
+		jmap -dump:live,format=b,file=heapdump.hprof <pid>
+	
+	- Or automatically on OOM:
+		
+		-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/path/to/dump
+
+	- Open heapdump.hprof file:
+	---------------------------
+		- Use the Leak Suspects Report to identify memory leaks
+		- Explore Dominator Tree to find objects retaining the most memory
+		- Look for Red Flags
+		- Large number of instances of the same class
+		- High retained heap size
+		- Long reference chains
+
+
+https://www.baeldung.com/java-analyze-thread-dumps
+Thread Dump Analysis:
+---------------------
+	A thread dump shows the state of all threads in the JVM. It's essential for diagnosing deadlocks, high CPU usage, and application hangs.
+	
+	Tools to Use:
+	-------------
+	- jstack (CLI)
+	- VisualVM
+	- FastThread.io – Web-based analyzer
+	- TDA (Thread Dump Analyzer)
+	
+	Steps to Analyze:
+	-----------------
+	- Capture the Thread Dump, Using jstack:
+		
+		jstack -l <pid> > threaddump.txt
+	
+	- Or use VisualVM to capture it graphically
+
+	Analyze the Dump:
+	----------------
+	- Look for:
+		- Threads in BLOCKED or WAITING state
+		- Deadlocks (explicitly mentioned at the top)
+		- Threads consuming high CPU (RUNNABLE with long stack traces)
+	
+	- Use FastThread.io to visualize and categorize threads
+	
+	- Interpret Key Fields
+		- tid: JVM thread ID
+		- nid: Native OS thread ID
+		- locked / waiting on: Indicates monitor locks and contention
+
+
+How to Identify Deadlocks in a Thread Dump:
+-------------------------------------------
+
+	1. Look for “Found one Java-level deadlock”:
+	--------------------------------------------
+		Most JVMs (like HotSpot) will explicitly state this in the thread dump:
+
+		Found one Java-level deadlock:
+		=============================
+		"Thread-1":
+		  waiting to lock monitor 0x000000000ebc1a00 (object A),
+		  which is held by "Thread-2"
+		"Thread-2":
+		  waiting to lock monitor 0x000000000ebc1b00 (object B),
+		  which is held by "Thread-1"
+
+		This message clearly indicates a cyclic dependency between threads.
+
+	2. Check Thread States:
+	-----------------------
+		Look for threads in the BLOCKED or WAITING state:
+		"Thread-1" #12 prio=5 tid=0x00007f8b9c001000 nid=0x3e03 BLOCKED on object monitor
+
+
+	3. Trace Lock Ownership:
+	------------------------
+		Each thread stack trace will show:
+			- Which lock it’s trying to acquire
+			- Which lock it currently holds
+
+		Example:
+		- waiting to lock <0x00000000d5f4c2a8> (a java.lang.Object)
+		- locked <0x00000000d5f4c2b0> (a java.lang.Object)
+
+		If two or more threads are waiting on each other’s locks, that’s a deadlock.
+
+
+	4. Use Tools for Easier Analysis:
+	---------------------------------
+		Instead of manually parsing dumps, use tools like:
+		
+		- fastThread.io – 				Upload your dump and it highlights deadlocks, blocked threads, and more.
+		- Java Thread Dump Analyzer – 	Detects deadlocks, performance bottlenecks, and lock contention.
+		- VisualVM – 					A GUI tool that can detect and visualize deadlocks in real time.
+
+
+How to Analyze a Heap Dump for Memory Leaks:
+--------------------------------------------
+
+	Look for Signs of a Memory Leak:
+	--------------------------------
+		- Large retained size: 			Objects that retain a lot of memory.
+		- Unreachable but not GC’d: 	Objects that are no longer needed but still referenced.
+		- Dominators: 					Objects that prevent others from being garbage collected.
+		- Class histograms: 			Classes with unusually high instance counts.
+
+	Trace Reference Chains:
+	-----------------------
+		- Find the GC root of a suspicious object.
+		- Follow the reference path to see why it’s not being collected.
+
+		- Look for:
+			- Static references
+			- Collections (e.g., HashMap, List) that keep growing
+			- Caches or listeners that aren’t cleaned up
+	
+	Use Tools for Easier Analysis:
+	------------------------------
+		Instead of manually parsing dumps, use tools like:
+		
+		- Eclipse Memory Analyzer Tool (MAT)
+		- VisualVM

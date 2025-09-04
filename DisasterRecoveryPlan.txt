@@ -1,0 +1,82 @@
+Disaster Recovery Plan (DRP):
+-----------------------------
+	A Disaster Recovery Plan (DRP) is a structured strategy that helps organizations bounce back from unexpected disruptions—whether it's a cyberattack, natural disaster, or system failure. It’s like a business’s emergency playbook for restoring operations and minimizing damage.
+
+	Key Components of a Disaster Recovery Plan:
+	-------------------------------------------
+		Risk Assessment: Identify potential threats (e.g., ransomware, floods, hardware failure) and their impact.
+		
+		Business Impact Analysis (BIA): Determine which systems and processes are critical and how long they can be down.
+		
+		Recovery Objectives:
+			RTO (Recovery Time Objective): How quickly systems must be restored.
+			RPO (Recovery Point Objective): How much data loss is acceptable.
+		
+		Backup Strategy: Define how and where data is backed up—cloud, offsite, or hybrid.
+		
+		Failover Systems: Set up alternate infrastructure (hot/warm/cold sites) to take over during outages.
+		
+		Communication Plan: Outline how to notify employees, customers, and stakeholders.
+		
+		Roles & Responsibilities: Assign tasks to specific team members during a disaster.
+		
+		Testing & Maintenance: Regularly simulate disasters to ensure the plan works and stays up to date.
+
+	
+	Types of Disaster Recovery Plans:
+	---------------------------------
+		Type 									Description
+		----									-----------
+		Virtualized DRP 						Uses virtual machines for rapid recovery
+		Network DRP 							Focuses on restoring network connectivity 
+		Cloud DRP 								Leverages cloud services for backup and recovery
+		Data Center DRP 						Restores physical infrastructure and systems
+		DRaaS (Disaster Recovery as a Service) 	Outsources recovery to a third-party provider 
+
+
+	Benefits:
+	---------
+		Minimizes downtime and data loss
+		Reduces financial and reputational damage
+		Ensures compliance with regulations
+		Builds trust with customers and stakeholders.
+		
+		
+			
+	Key Components of the Plan:
+	---------------------------
+		Component 				Strategy
+		---------				--------
+		Backup & Restore 		Use versioned backups for each service’s data store; test restores regularly.
+		Failover Mechanisms 	Deploy services across multiple zones/regions; use load balancers and health checks.
+		Configuration Sync 		Store configs in version-controlled repositories; use tools like Consul or etcd.
+		Traffic Routing 		Use DNS failover, global load balancers, and service mesh for dynamic routing. 
+		Session Management 		Externalize session state (e.g., Redis) with cross-region replication.
+		Dependency Mapping 		Maintain a map of service dependencies to prevent cascading failures.
+		Testing & Simulation 	Run chaos engineering drills and game days to validate recovery procedures.
+
+
+	Recovery Strategies:
+	--------------------
+		Active-Active Deployment: 	Run services in multiple regions simultaneously for instant failover.
+		Hot Standby: 				Keep backup services running but idle, ready to take over instantly.
+		Warm Standby: 				Services are partially synced and can be activated quickly.
+		Cold Standby: 				Services are offline but can be spun up manually—slower but cost-effective.
+
+
+	Tools & Technologies:
+	---------------------
+		Kubernetes: 			For orchestrating containerized services with built-in self-healing and scaling.
+		Istio / Linkerd: 		Service mesh for traffic control, observability, and security.
+		Velero: 				Backup and restore for Kubernetes clusters.
+		Prometheus + Grafana: 	Monitoring and alerting.
+		Terraform / Pulumi: 	Infrastructure as Code for consistent environment setup.
+
+
+
+
+
+		
+		
+
+

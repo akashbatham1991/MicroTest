@@ -1,0 +1,264 @@
+“Swagger” was the original name of the OpenAPI specification, but the specification was later changed to “OpenAPI”.
+
+What is Contract First API Development?
+---------------------------------------	
+	Before building any code, Contract First API developers focus on creating a clear and thorough contract. This contract serves as a blueprint or agreement between frontend (client) and backend (server) developers, specifying how they will communicate.
+
+
+1) 		
+Use below annotations to describe endpoints, parameters, and responses:
+	@ApiResponses	(responseCode, description)
+	@Operation		(summary, description)
+	@Parameter
+	@Schema
+	
+Tools for Generating Documentation:
+-----------------------------------
+	We can use tools like "Swagger UI and ReDoc" to generate interactive API documentation.
+		
+		1) Swagger UI:
+		--------------
+			To generate Swagger UI documentation, we can use the Swagger Codegen tool. 
+			Here's an example of how we can generate Swagger UI documentation:
+			
+				swagger-codegen generate -i path/to/openapi/spec.yaml -l html -o path/to/output/folder
+			
+			This command generates an HTML file that contains our API documentation. We can then serve this file using a web server, allowing API consumers to access our documentation.
+
+		2) ReDoc:
+		---------
+			To generate ReDoc documentation, we can use the ReDoc CLI tool. Here's an example of how we can generate ReDoc documentation:
+			
+				redoc-cli bundle path/to/openapi/spec.yaml --output path/to/output/folder
+			
+			This command generates an HTML file that contains our API documentation. We can then serve this file using a web server, allowing API consumers to access our documentation.
+
+	
+2) 
+
+OpenAPI Specification	(Yaml or json file to describe HTTP APIs): 
+------------------------------------------------------------------
+	allows specifying HTTP resources, verbs, response codes, data models, media types, security schemes, and other API components.	
+
+	Endpoints, request/response formats, data types, and other parameters can be defined in an organised manner using tools such as OpenAPI, RAML, and Swagger.	
+
+OpenAPI generator or RestAssured:
+--------------------------------
+	As the name suggests, the OpenAPI Generator generates code from an OpenAPI specification. It can create code for client libraries, server stubs, documentation, and configuration.
+
+
+
+What is the difference between Swagger Codegen and OpenAPI Generator?
+	Swagger Codegen and OpenAPI Generator are both code generators for APIs defined by the OpenAPI specification (formerly known as Swagger). 
+	However, they differ in their development, extensibility, and community support. 
+	OpenAPI Generator is community-driven and more active, while Swagger Codegen is maintained by SmartBear. 
+	
+	Both tools can simplify API development by generating server stubs and client libraries from OpenAPI definitions.
+	
+	https://openhub.net/p/openapi-generator
+	https://openhub.net/p/swagger-codegen
+	
+	https://openapi-generator.tech/docs/generators
+		Client Generator
+		Server Generator
+		Documentation Generator
+		Schema Generator
+		Config Generator
+	
+==================================================( Start )=================================================================
+
+ “Swagger” was the original name of the OpenAPI specification, but the specification was later changed to “OpenAPI” to reinforce the open, non-proprietary nature of this standard. Now, “Swagger” refers to API tooling that supports the OpenAPI spec, not the spec itself.
+ The “OpenAPI specification document” or “OpenAPI document” is the Swagger YAML file that you create to describe your API. 
+	
+note that you can render the OpenAPI spec using many different tools outside of Swagger UI (e.g., using Stoplight or Redoc). However, Swagger UI tends to be popular because it’s free and was one of the first in this space.
+
+The OpenAPI Specification (OAS) defines a standard, programming language-agnostic interface description for HTTP APIs. This allows both humans and computers to discover and understand the capabilities of a service without requiring access to source code, additional documentation, or inspection of network traffic. 		
+
+Contract-First API Development with OpenAPI Generator:
+------------------------------------------------------
+	The Contract First approach uses API documentation, like the OpenAPI Specification, to define the API contract before any code is written. This approach ensures clear communication and alignment between different teams, facilitates easy documentation, and promotes API consistency. 
+	
+	According to the specification, a contract can be written in YAML or JSON file, and it is both human and machine readable.
+	
+	It is a language-independent YAML-based format to describe the endpoints, content types, request and response payloads of an API. 
+	From a SOAP perspective, you can think about the OpenAPI file as an equivalent of a WSDL document.
+	
+	
+	What Is OpenAPI?:
+	-----------------
+		OpenAPI Specification (formerly Swagger Specification) is an API description format for REST APIs. 
+		
+		An OpenAPI file allows you to describe your entire API, including:
+		
+			Available endpoints (/users) and operations on each endpoint (GET /users, POST /users)
+			Operation parameters Input and output for each operation
+			Authentication methods
+			Contact information, 
+			license, 
+			terms of use, and 
+			other information.
+
+		API specifications can be written in YAML or JSON. 
+		The format is easy to learn and readable to both humans and machines. 
+		The complete OpenAPI Specification can be found on GitHub: OpenAPI 3.0 Specification.
+		
+	
+	What Is the Open API Specification:
+	-----------------------------------
+		The OpenAPI Specification (OAS) standardizes how to create an API design document. 
+		
+		The typical workflow in an API-First approach using OAS is as follows:
+			The team creates a design document and shares it with the involved people for feedback and iterative change.
+			When the team and stakeholders agree on the API design, a developer uses the document to generate a server-side skeleton code using a document generator tool.
+			Finally, the developer starts working on the API’s business logic using the previously generated code.
+
+		OAS 3.1 allows specifying HTTP resources, verbs, response codes, data models, media types, security schemes, and other API components.	
+		
+	
+	Benefits of Contract First:
+	--------------------------
+		Improved Communication: A shared, well-defined contract reduces misunderstandings and errors between teams. 
+		Easy Documentation: 	The OpenAPI specification itself can be used as a comprehensive API documentation. 
+		Reduced Errors: 		Using a defined contract helps catch errors early in the development process. 
+		Consistent API: 		The contract ensures that all implementations adhere to the same standard. 
+		Parallel Development: 	Teams can work on different parts of the API implementation (front-end, back-end) based on 
+								the contract. 
+		
+		
+	Tools for Contract First:
+	-------------------------
+		Various tools and libraries, like "OpenAPI Generator and RestAssured", can help in creating and validating OpenAPI specifications and generating code based on them. 	
+		
+	
+	What is Contract First API Development?
+	---------------------------------------	
+		Before building any code, Contract First API developers focus on creating a clear and thorough contract. This contract serves as a "blueprint or agreement" between frontend (client) and backend (server) developers, specifying how they will communicate.	
+		
+		
+	Explanation of the API contract concept:
+	----------------------------------------
+		imagine you’re building an API. The API contract would define: 
+			what information the Product (e.g., product details, quantity, name, price, description), 
+			what actions the product system can perform (e.g., add products, update product), and 
+			how it will respond to the FE app (e.g., success message, error codes).
+		
+		
+	Advantages of Using the Contract First Approach:
+	-----------------------------------------------		
+		Starting with a well-defined contract ensures that both front-end and back-end developers understand how the API should behave.	
+	
+	
+	This has various advantages:
+	----------------------------
+		It increases communication and collaboration across teams because everyone is on the same page about the API’s requirements and capabilities.
+		It promotes uniformity and clarity in API design and documentation, making it easier for developers to use and understand the API.
+		It facilitates integration with various client apps because the contract serves as a standard language on which both parties can rely.
+		It lowers the likelihood of errors and misunderstandings during development by allowing developers to use the contract as a reference point and check their work against it.
+		It encourages better API maintenance and evolution since changes may be made to the contract first, ensuring that all stakeholders are informed of the changes and can update their implementations accordingly.
+		
+		
+	How does OAS help with documentation?
+	-------------------------------------
+		you can convert your OAS contract into an interactive API console that consumers can use to interact with the API and quickly learn how the API is supposed to behave.
+		
+		
+	
+		
+		
+Open API Server Implementation Using OpenAPI Generator:
+------------------------------------------------------
+		
+	The Process of Contract First API Development:
+	----------------------------------------------
+		Step 1: Defining the API contract
+		Step 2: Generating code from the contract
+		Step 3: Implementing the API endpoints
+		Step 4: Testing the API against the contract
+
+	By following the above steps, we saw how to generate a Spring-based server stub from a YAML specification using the OpenAPI generator’s Maven plugin.
+
+	
+	Step 1: Defining the API contract:
+	---------------------------------	
+		A well-defined contract guarantees that everyone understands the API’s needs and behaviour.
+		
+		we’ll need a YAML file specifying the API. We’ll give it as input to our generator to produce a server stub.
+		
+		Endpoints, request/response formats, data types, and other parameters can be defined in an organised manner using tools such as OpenAPI, RAML, and Swagger.
+
+	Step 2: Generating code from the contract:
+	-----------------------------------------
+		I am going to use the openapi-generator-maven-plugin.
+			Generate clients, servers, and documentation from OpenAPI 2.0/3.x documents.
+			
+		As the name suggests, the OpenAPI Generator generates code from an OpenAPI specification. It can create code for client libraries, server stubs, documentation, and configuration.	
+			
+		link: https://openapi-generator.tech/
+
+	
+	Step 3: Implementing the API endpoints:
+	--------------------------------------
+		The resulting code can be used to begin implementing business logic and handling requests/responses.
+		Backend developers write code to handle API requests and respond appropriately.
+		
+		
+	Step 4: Testing the API against the contract:
+	--------------------------------------------
+		Contract-based testing verifies that the API implementation complies with the terms of the contract.	
+		
+		
+	Code Link:	https://github.com/brighterapi/api-tool/blob/contract-first-approch/pom.xml
+
+	
+
+https://www.baeldung.com/java-openapi-generator-server
+https://www.baeldung.com/spring-boot-rest-client-swagger-codegen
+https://swagger.io/docs/specification/v3_0/about/	
+
+
+https://daily.dev/blog/openapi-automate-api-docs-in-7-steps
+
+OpenAPI: Automate API Docs in 7 Steps:
+======================================
+	1. Understand OpenAPI: A standardized specification for describing REST APIs, enabling automated documentation generation.
+	
+	2. Set Up Environment: Choose the right tools (e.g., Swagger, Stoplight), integrate OpenAPI into your workflow, and configure your project,  which provide easy-to-use interfaces for generating and managing OpenAPI specifications.
+	
+	3. Add Code Annotations: Use annotations like @Operation and @Parameter to describe endpoints, parameters, and responses.
+	
+	4. Generate Documentation: Use tools like Swagger UI or ReDoc to generate interactive API documentation from your annotated code.
+	
+	5. Customize Documentation: Organize endpoints into groups, add descriptive summaries, and specify response models for clarity.
+	
+	6. Integrate into CI/CD: Ensure documentation accuracy by validating generated docs against the committed files in your CI/CD pipeline.
+	
+	7. Review and Publish: Review the generated documentation for accuracy, completeness, and usability, then publish it for API consumers.
+
+->
+	1. By using OpenAPI, you can create a machine-readable description of your API that can be used to generate documentation, test cases, and client code.
+	
+	2. Annotating Endpoints and Parameters:
+	   For example, 
+		we can use the @Operation annotation to describe a single API operation on a path. 
+		We can also use the @Parameter annotation to describe a single operation parameter.
+		we can use the @Schema annotation to describe a POJO.
+		We can organize our endpoints into groups by adding a tags field to our OpenAPI specification.
+		We can add descriptive summaries to our endpoints by adding a summary field to our OpenAPI specification. 
+		We can specify response models for each endpoint by adding a responses field to our OpenAPI specification.
+		
+		
+		
+	3. Tools for Generating Documentation:
+		We can use tools like Swagger UI and ReDoc to generate interactive API documentation.
+		
+		1) 
+		To generate Swagger UI documentation, we can use the Swagger Codegen tool. 
+		Here's an example of how we can generate Swagger UI documentation:
+			swagger-codegen generate -i path/to/openapi/spec.yaml -l html -o path/to/output/folder
+		
+		This command generates an HTML file that contains our API documentation. We can then serve this file using a web server, allowing API consumers to access our documentation.
+
+		2)
+		To generate ReDoc documentation, we can use the ReDoc CLI tool. Here's an example of how we can generate ReDoc documentation:
+			redoc-cli bundle path/to/openapi/spec.yaml --output path/to/output/folder
+		This command generates an HTML file that contains our API documentation. We can then serve this file using a web server, allowing API consumers to access our documentation.

@@ -1,0 +1,427 @@
+https://medium.com/@himani.prasad016/validations-in-spring-boot-e9948aa6286b
+
+@Valid annotation validates the entire object graph or object or nested objects. 
+@Validated annotation validates only specific parts or groups.
+
+@Valid is typically applied to: 
+	method parameters, 
+	constructor parameters or
+	fields.
+
+Spring Boot automatically triggers validation.
+The validation framework (such as "Hibernate Validator", the default implementation in Spring Boot) internally used in validation.
+
+Hibernate Validator: implementation of "JSR 380" (Bean Validation API). 
+
+If any constraints are violated, a "MethodArgumentNotValidException" exception is thrown.
+
+Exception handling for Validators Errors:
+	@ControllerAdvice	(throw exceptions for handling)
+	BindingResult		(immediate error handling, without throwing exceptions is preferred)
+	
+	@Valid		(throw MethodArgumentNotValidException)
+	@Validated	(throw ConstraintViolationException)
+	
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+
+Note : You can use hibernate-validator instead of spring-boot-starter-validation.	
+
+Custom Validation:
+	implements the "ConstraintValidator" interface and override isValid method.
+	
+Common Hibernate Validator Annotation:
+--------------------------------------
+	Hibernate Validator: implementation of "JSR 380" (Bean Validation API). 
+		
+	List of Anntations:
+	-------------------
+		@NotNull: 						Ensures a field is not null.
+		@NotBlank: 						Enforces non-nullity and requires at least one non-whitespace character.
+		@NotEmpty: 						Guarantees that collections or arrays are not empty.
+		@Min(value): 					Checks if a numeric field is greater than or equal to the specified minimum value.
+		@Max(value): 					Checks if a numeric field is less than or equal to the specified maximum value.
+		@Size(min, max): 				Validates if a string or collection size is within a specific range.
+		@Pattern(regex): 				Verifies if a field matches the provided regular expression.
+		@Email: 						Ensures a field contains a valid email address format.
+		@Digits(integer, fraction): Validates that a numeric field has a specified number of integer and fraction digits.
+		@Past and @Future : 			Checks that a date or time field is in the past and future respectively.
+		@AssertTrue and @AssertFalse: 	Ensures that a boolean field is true. and false respectively.
+		@CreditCardNumber: 				Validates that a field contains a valid credit card number.
+		
+		@Valid: 						Triggers validation of nested objects or properties.
+		@Validated: 					Specifies validation groups to be applied at the class or method level.	
+	
+	
+@Validated at the class level of @Controller/@RestController is used to validate the @PathVariable/@RequestParam parameters.
+	While @Valid won't work for @PathVariable/@RequestParam parameters
+	If validation fails for @PathVariable/@RequestParam it throws ConstraintViolationException.	
+
+
+
+===================================================START====================================================================
+@Valid Annotaion:
+-----------------
+	The @Valid annotation in Java is used to trigger validation on an object. 
+	It is part of the Bean Validation API (JSR 380).
+	
+	Purpose:
+	--------
+		The primary purpose of @Valid is to ensure that an object meets certain criteria before it is used. These criteria are defined using "constraint annotations" like @NotNull, @NotBlank, @Min, @Max, etc., which are placed on the fields of the object.
+		
+	How it Works:
+	-------------
+	
+		Annotation Placement:
+		---------------------
+			@Valid is typically applied to: 
+				method parameters, 
+				constructor parameters or
+				fields.
+		
+		Validation Trigger:
+		-------------------
+			When the annotated object is encountered, the validation framework (such as "Hibernate Validator", the default implementation in Spring Boot) automatically checks if the object's fields meet the defined constraints.
+		
+		Error Handling:
+		---------------
+			If any constraints are violated, a "MethodArgumentNotValidException" exception is thrown.
+			
+		
+	Key Use Cases:
+	--------------
+		Validating Request Bodies.
+		Validating Form Inputs.
+		Validating Object Graphs:	used to validate nested objects.	
+			
+			
+	Example-1:
+	--------		
+				
+		@RestController
+			public class UserController {
+
+				@PostMapping("/users")
+				public String createUser(@Valid @RequestBody User user) {		//Validating Request Bodies.
+					// If validation passes, the user object is valid
+					return "User is valid";
+				}
+			}		
+			
+			
+		public class User {
+		
+			@NotBlank(message = "Name cannot be blank")
+			private String name;
+
+			@Min(value = 18, message = "Age must be at least 18")
+			private int age;
+
+			// Constructor, getters, setters
+		}
+			
+			
+			
+		In this example, the @Valid annotation on the User parameter in the createUser method will trigger validation of the User object based on the constraints defined in the User class. If the name is blank or the age is less than 18, a MethodArgumentNotValidException will be thrown.	
+		
+
+	Example-2:
+	---------
+		Validation on Nested Properties:
+			
+			public class Order {
+			
+				@NotNull
+				private String orderId;							//field validation
+				
+				@Valid
+				private ShippingAddress shippingAddress;		//nested properties validation
+				// Other properties, getters, setters...
+			}
+			
+			public class ShippingAddress {
+			
+				@NotNull
+				private String street;
+				
+				@NotNull
+				@Size(min = 2, max = 50)
+				private String city;
+				
+				@NotNull
+				private String zipCode;
+			}
+			
+		Example-3:
+		----------
+			Using Annotation on Container Objects and Type Arguments:
+
+				@Valid 
+				private List<Task> tasks;
+					
+				private List<@Valid Task> tasks;
+				
+			In this case, there is no difference, they both work as we expect them to. 
+
+
+		In cases where we have nested generic containers, to validate the contents of a container we must apply annotation on the type reference of the inner container:
+			
+			private Map<String, List<@Valid Task>> taskByType;
+			
+		
+	Note:
+	-----
+		To use @Valid, you need to have a Bean Validation implementation (like Hibernate Validator) in your project's dependencies. Spring Boot includes it by default.
+		
+		When you apply the @Valid annotation to a method parameter, "Spring Boot automatically triggers validation" for that parameter before the method is invoked. 
+		
+		**The @Valid annotation validates the entire object graph. If you need to validate only specific parts or groups, use @Validated annotation instead.		
+			
+			
+Common Hibernate Validator Annotation:
+--------------------------------------
+	Hibernate Validator: implementation of "JSR 380" (Bean Validation API). 
+		
+	List of Anntations:
+	-------------------
+		@NotNull: 						Ensures a field is not null.
+		@NotBlank: 						Enforces non-nullity and requires at least one non-whitespace character.
+		@NotEmpty: 						Guarantees that collections or arrays are not empty.
+		@Min(value): 					Checks if a numeric field is greater than or equal to the specified minimum value.
+		@Max(value): 					Checks if a numeric field is less than or equal to the specified maximum value.
+		@Size(min, max): 				Validates if a string or collection size is within a specific range.
+		@Pattern(regex): 				Verifies if a field matches the provided regular expression.
+		@Email: 						Ensures a field contains a valid email address format.
+		@Digits(integer, fraction): Validates that a numeric field has a specified number of integer and fraction digits.
+		@Past and @Future : 			Checks that a date or time field is in the past and future respectively.
+		@AssertTrue and @AssertFalse: 	Ensures that a boolean field is true. and false respectively.
+		@CreditCardNumber: 				Validates that a field contains a valid credit card number.
+		
+		@Valid: 						Triggers validation of nested objects or properties.
+		@Validated: 					Specifies validation groups to be applied at the class or method level.
+	
+	
+	You would need to add the below dependency:
+	-------------------------------------------
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		Note : You can use hibernate-validator instead of spring-boot-starter-validation.	
+	
+	
+	Exception handling for Validators Errors:
+	-----------------------------------------
+		When validation fails, Spring Boot throws a MethodArgumentNotValidException. We can handle this exception globally using @ControllerAdvice and return a structured error response.
+
+		GlobalExceptionHandler.java:
+		----------------------------	
+			@ControllerAdvice
+			public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+				@Override
+				protected ResponseEntity<Object> handleMethodArgumentNotValid(
+						MethodArgumentNotValidException ex, HttpHeaders headers,
+						HttpStatus status, WebRequest request) {
+
+					// Create a response body map
+					Map<String, Object> responseBody = new HashMap<>();
+					responseBody.put("timestamp", Instant.now().toString()); // ISO-8601 timestamp
+					responseBody.put("status", status.value());
+					responseBody.put("error", status.getReasonPhrase()); // e.g., "Bad Request"
+
+					// Collect all validation errors
+					List<String> errors = ex.getBindingResult()
+							.getFieldErrors()
+							.stream()
+							.map(fieldError -> fieldError.getDefaultMessage())
+							.collect(Collectors.toList());
+
+					responseBody.put("errors", errors);
+
+					return new ResponseEntity<>(responseBody, headers, status);
+				}
+			}
+			
+->	
+	BindingResult:
+	--------------
+		In another task, I needed to store validation failures in a database. While using @Valid allows us to throw exceptions for handling, there are cases where immediate error handling without throwing exceptions is preferred. In such cases, utilizing BindingResult can help capture and store errors directly after the request. Put it right after your Request body.		
+		
+			@RestController
+			@RequestMapping("/api")
+			public class ValidationController {
+
+				@Autowired
+				private Validator validator; // Autowire the validator
+
+				@PostMapping("/validate")
+				public ResponseEntity<String> validateData(@RequestBody @Valid Data data, BindingResult bindingResult) {
+					if (bindingResult.hasErrors()) {
+						for (ObjectError error : bindingResult.getAllErrors()) {
+							String errorMessage = error.getDefaultMessage();
+						}
+						return ResponseEntity.badRequest().body("Validation failed");
+					}
+					return ResponseEntity.ok("Data validated and processed successfully");
+				}
+			}	
+			
+			
+		
+Custom Validation:
+------------------
+
+	1. Custom Validation Annotation:
+	--------------------------------
+		A custom validation annotation is created by defining a new annotation. This annotation specifies the validation rules that you want to apply to fields or methods in your classes.
+
+		@Target: Defines where the annotation can be applied. In the example, it's specified for fields and methods.
+		
+		@Retention: Specifies how long the annotation should be retained. RUNTIME means it will be available at runtime for validation.
+		
+		@Constraint: Specifies the validator class responsible for implementing the validation logic.		
+		
+		
+			@Target({ElementType.FIELD, ElementType.METHOD})
+			@Retention(RetentionPolicy.RUNTIME)
+			@Constraint(validatedBy = CustomValidator.class)
+			public @interface CustomValidation {
+				String message() default "Invalid value";
+
+				Class<?>[] groups() default {};
+
+				Class<? extends Payload>[] payload() default {};
+			}	
+			
+	2. Custom Validator:
+	--------------------
+		The custom validator is a class that implements the "ConstraintValidator" interface. 
+		
+		In the example, 
+			the validator class is CustomValidator, and it implements ConstraintValidator<CustomValidation, String>. 
+			
+			This means it's responsible for validating a field annotated with @CustomValidation and of type String.		
+			
+		initialize(): 
+			This method initializes the validator. You can use it to access any annotation attributes if needed.
+		
+		isValid(): 
+			This method performs the actual validation logic. You receive the value of the field being validated ( String in this case) and a ConstraintValidatorContext for customizing validation behavior.	
+			
+				
+			public class CustomValidator implements ConstraintValidator<CustomValidation, String> {
+			
+				@Override
+				public void initialize(CustomValidation constraintAnnotation) {
+				}
+
+				@Override
+				public boolean isValid(String value, ConstraintValidatorContext context) {
+					// Implement your validation logic here
+					// Return true if validation passes, false otherwise
+					return value != null && value.startsWith("ABC"); // Example validation condition
+				}
+			}	
+			
+			
+	3. Using the Custom Validation Annotation:
+	------------------------------------------
+		You apply your custom validation annotation to fields in your classes. In the example, the Data class has a field called customField that's annotated with @CustomValidation. This annotation triggers the validation logic defined in the associated validator (CustomValidator).
+
+			public class Data {
+			
+				@CustomValidation
+				private String customField;
+			}		
+			
+			
+			
+https://www.byteplus.com/en/topic/498626?title=understanding-valid-vs-validated-a-comprehensive-spring-validation-guide
+https://stackoverflow.com/questions/36173332/difference-between-valid-and-validated-in-spring	
+		
+@Validated:
+-----------
+	@Validated at the class level of @Controller/@RestController is used to validate the @PathVariable/@RequestParam parameters.
+
+	While @Valid won't work for @PathVariable/@RequestParam parameters
+
+	If validation fails for @PathVariable/@RequestParam it throws ConstraintViolationException.			
+	
+	Key takeaways:
+	--------------
+		@Valid is perfect for:
+			Standard, straightforward validations
+			Nested object validations
+			Compliance with Java Bean Validation standards
+
+		@Validated excels in:
+			Complex validation scenarios
+			Group-specific validations
+			Advanced Spring Framework integrations
+			
+			
+		Example:
+		--------
+			// Using @Valid:
+			----------------
+				@PostMapping("/create")
+				public ResponseEntity<?> createUser(@Valid @RequestBody User user) {
+					// Basic validation triggered
+				}
+
+			// Using @Validated with groups:
+			--------------------------------
+				@PostMapping("/update")
+				public ResponseEntity<?> updateUser(@Validated(UpdateGroup.class) @RequestBody User user) {
+					// Only validations in UpdateGroup are triggered
+				}
+				
+	How to Use Validation Groups:
+	-----------------------------
+		1. Define Group Interfaces:
+		---------------------------
+			These are just marker interfaces—no methods needed.
+
+				public interface CreateGroup {}
+				public interface UpdateGroup {}
+
+
+		2. Annotate Constraints with Groups:
+		------------------------------------
+			public class User {
+
+				@NotNull(groups = UpdateGroup.class)
+				private Long id;
+
+				@NotBlank(groups = {CreateGroup.class, UpdateGroup.class})
+				private String name;
+
+				@Email(groups = CreateGroup.class)
+				private String email;
+			}
+
+			Here:
+			------
+				id is required only during update.
+				name is required for both create and update.
+				email is validated only during creation.
+
+
+		3. Trigger Group-Based Validation:
+		----------------------------------
+			Use @Validated instead of @Valid to specify the group:
+
+				@PostMapping("/create")
+				public ResponseEntity<?> createUser(@Validated(CreateGroup.class) @RequestBody User user) {
+					// Only CreateGroup constraints are applied
+				}
+
+				@PutMapping("/update")
+				public ResponseEntity<?> updateUser(@Validated(UpdateGroup.class) @RequestBody User user) {
+					// Only UpdateGroup constraints are applied
+				}
+			

@@ -1,0 +1,130 @@
+Rest Principals:
+----------------
+	REST (Representational State Transfer) is an architectural style for designing networked applications. 
+	
+	It relies on a set of principles to ensure: 
+		scalability, 
+		maintainability, and 
+		interoperability.
+	
+	
+Here are the core principles of REST:
+-------------------------------------
+	1. Client-Server
+	2. Stateless
+	3. Cacheable
+	4. Layered System
+	5. Code on Demand (Optional)
+	6. Uniform Interface
+	7. Documentation Practices for Java APIs
+	8. Versioning Strategies for Java APIs
+	
+	1. Client-Server:
+	-----------------
+		Separates the user interface (client) from the data storage (server).
+		Clients are not concerned with data storage, and 
+		servers are not concerned with user interfaces.	
+		This allows each to evolve independently.
+		 
+	2. Stateless: 
+	-------------
+		Each request from the client to the server must contain all the information needed to understand and process that request.
+		The server does not store any client-specific state between requests. 
+		This simplifies server implementation and improves scalability.	
+		
+	3. Cacheable: 
+	-------------
+		Responses can be explicitly marked as cacheable or non-cacheable.
+		This improves performance by reducing the number of client-server interactions.	
+		
+	4. Layered System:
+	------------------
+		Allows for intermediaries like load balancers and proxies to be inserted between the client and server.
+		Each layer only interacts with the layers immediately below and above it. 
+	
+	5. Code on Demand (Optional):	
+	-----------------------------
+		Allows the server to temporarily extend the functionality of the client by transferring executable code.
+		This is an optional constraint and is not always used.
+		
+	6. Uniform Interface:
+	---------------------
+		Standardizes the interaction between the client and the server.
+		
+		Key aspects include:
+			Resource Identification: 	Resources are identified using URIs (Uniform Resource Identifiers).
+			Resource Manipulation: 		Resources are manipulated through representations.
+			Self-Descriptive Messages: 	Each message includes enough information to describe how to process it.
+			
+			HATEOAS (Hypermedia as the Engine of Application State): 
+				Responses include links that allow the client to discover other resources and actions.	
+		
+		
+	7. Documentation Practices for Java APIs:
+	-----------------------------------------
+		Effective documentation is pivotal in making an API usable and accessible.
+		several best practices and tools can be used to create high-quality documentation for APIs. Tools like Swagger (now part of the OpenAPI Specification) are widely used.
+			
+			Key Components of API Documentation:
+			------------------------------------
+				Overview and Introduction: 
+					Start with an overview of the API, including its purpose, scope, and high-level functionality. This section sets the context for the rest of the documentation.
+				
+				Authentication and Authorization: 
+					Detail any authentication or authorization mechanisms in place. For instance, if your API uses OAuth 2.0, provide step-by-step instructions on how users can authenticate.
+				
+				Endpoint Descriptions: 
+					Each endpoint should be thoroughly documented. This includes the URI, HTTP method (GET, POST, etc.), required and optional parameters, request and response formats, and status codes.
+				
+				Examples: 
+					Provide practical examples of requests and responses. Examples play a crucial role in illustrating how the API works and are often what developers first look to understand usage patterns
+				
+				Error Handling: 
+					Document common errors, their meanings, and how to resolve them. This helps in debugging and ensuring proper error handling in the client application.
+				
+				Versioning Information: 
+					If your API has multiple versions, document the differences and how users can access specific versions.
+				
+				Rate Limits and Quotas: 
+					If applicable, include information on rate limits and quotas to prevent abuse and ensure fair usage.
+		
+	
+	Key Concepts in Java REST Development:
+	--------------------------------------
+		HTTP Methods: 
+			REST APIs use HTTP methods (GET, POST, PUT, DELETE, PATCH) to define actions on resources.
+		
+		Resource Representation: 
+			Data is exchanged in formats such as JSON or XML.
+		
+		Status Codes: 
+			HTTP status codes are used to communicate the outcome of a request. 	
+			
+			
+	Versioning Strategies for Java APIs:
+	------------------------------------
+		Helps in managing changes and maintaining backward compatibility. 
+		There are several strategies for versioning Java APIs, each with its own merits and use cases.
+		
+		URI Versioning:
+			embedding the version number of the API directly in the URI itself. 
+			It is especially useful when significant changes are made to the API that might break existing clients.
+			However, one downside is that it can lead to URL redundancy if multiple versions of the API have to be maintained simultaneously.
+			Version 1 of the API is accessed via /api/v1/users, and version 2 via /api/v2/users.
+			Example: /v1/users
+
+
+		Parameter Versioning:
+			It uses a request parameter to specify the API version.
+			Is particularly useful when the differences between API versions are minor and do not warrant a change in the base URI. 
+			It allows clients to switch between different API versions simply by changing a parameter in their request. 
+			Example: /users?version=1
+			
+		Header Versioning:
+			Specifying the API version in the HTTP headers, keeping the URI unchanged.
+			This method is often used in situations where API consumers require a stable, unchanging endpoint, and the version changes are managed internally within the headers.
+			However, it can be less transparent and harder to test because the versioning information is not present in the URL. 
+			Example: GET /users with Accept: application/vnd.example.v1+json
+
+	
+	By adhering to these principles, developers can create robust and scalable web services using Java.	

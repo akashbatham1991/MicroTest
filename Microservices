@@ -1,0 +1,981 @@
+https://semaphore.io/blog/deploy-microservices
+	
+Microservices Communication Patterns
+What problem of the monolith application do microservices solve
+Challenges In this microservice architecture
+Mitigation Strategies
+In which cases we should use microservices
+Create a new microservice or extend an existing one
+New database and a shared database
+Common Microservices Deployment Strategies
+Choose a Deployment Architecture
+ways of running microservices
+How our microservices application has interacted with multiple databases?  
+How does it maintain multiple connections with multiple dbs, do we need to close all of them or it opened?
+
+----------------------------------------------------------------------------------------------------------------------------
+	
+	
+Microservices Communication Patterns:
+-------------------------------------
+	Microservices communicate using synchronous and asynchronous methods. 
+	
+	Synchronous calls are used where immediate response is needed (e.g., placing an order).
+	Asynchronous communication ensures loose coupling and resilience (e.g., payment and delivery).
+	Services can scale independently (e.g., Payment Service during peak hours).	
+		
+	
+	1. Synchronous Communication:
+	--------------------------
+		One microservice sends a request to another, and the calling service waits for a response before continuing. 		
+			1. RestAPI 
+			2. RestTemplate
+			
+		Use Cases:
+			User authentication
+			Fetching product details
+			Real-time order placement	
+
+		Challenges:
+			Tight coupling between services
+			Latency and cascading failures
+			Requires retry, timeout, and circuit breaker mechanisms
+			
+		
+	2. Asynchronous Communication:
+	------------------------------
+		Services communicate by sending "messages or events" "without waiting for a response".
+		Asynchronous communication helps in decouple services.
+		
+		Common Tools:
+		-------------
+			"Message" Queues: 		RabbitMQ, Amazon SQS, Azure Service Bus
+			"Event" Streaming: 		Apache Kafka, NATS
+		
+		Message Queues:				Services publish messages to a message queue like RabbitMQ and other services subscribe 
+									to consume those messages. 
+									(Pattern: Point-to-point communication)
+		
+		Event-Driven Architecture:	Services publish events to an event bus, and other services react to those events. 	
+									(Pattern: Reactive, loosely coupled)
+									
+		Pub/Sub:					publishing messages to a topic and having subscribers receive those messages.
+									(Pattern: One-to-many communication)
+									
+		Service Mesh:				handle routing, traffic control, security, and observability.
+									(Pattern: Transparent networking layer)	
+		
+		Examples:
+			One service publishes an order-created "event", and another service subscribes to that event to update its inventory. 
+			A service sends a "message" to a queue to trigger a long-running process on another service.
+			
+		Use Cases:
+			Order processing
+			Sending notifications
+			Logging and analytics	
+
+		 Challenges:
+			Eventual consistency
+			Message duplication and ordering
+			Requires idempotent consumers and dead-letter queues		
+			
+			
+	3. Hybrid Strategy:
+	---------------
+		Many systems use a combination of both:
+
+			Synchronous for real-time user interactions (e.g., placing an order).
+			Asynchronous for background processing (e.g., sending notifications, updating analytics).	
+
+
+		Choosing the Right Strategy:
+		----------------------------
+			Criteria					Synchronous			Asynchronous
+			--------					-----------			------------
+			Real-time response needed	✅					❌
+			Simpler to implement		✅					❌
+			Loose coupling desired		❌					✅
+			High throughput				❌					✅
+			Resilience to failure		❌					✅
+
+
+			High throughput: 
+			----------------
+				handle a large volume of tasks, data, or operations efficiently.
+
+		
+		Best Practices:
+		---------------
+			For Synchronous:
+			----------------
+				Use API Gateway for routing and security.
+				Implement circuit breakers and timeouts.
+				Use service discovery for dynamic routing.
+			
+			For Asynchronous:
+			-----------------
+				Ensure message durability and retry policies.
+				Use schema registry for versioned message formats.
+				Monitor message queues and event logs.
+	
+		For Hybrid Communication:
+		-------------------------
+			1. Clearly Define Communication Boundaries:
+			-------------------------------------------
+				Use synchronous communication for real-time, user-facing operations (e.g., login, order placement).
+				Use asynchronous communication for background tasks (e.g., sending emails, updating analytics).
+			
+			2. Design for Eventual Consistency:
+			-----------------------------------
+				Accept that asynchronous operations may not complete instantly.
+				Use event sourcing or saga patterns to manage distributed workflows.
+			
+			3. Ensure Idempotency:
+			----------------------
+				Make sure asynchronous consumers can safely process duplicate messages.
+				Use unique identifiers for operations to prevent unintended side effects.
+			
+			4. Implement Circuit Breakers and Timeouts:
+			-------------------------------------------
+				Protect synchronous services from cascading failures.
+				Use libraries like Resilience4j or Hystrix.
+
+			5. Use Reliable Messaging Infrastructure:
+			-----------------------------------------
+				Choose robust tools like Kafka, RabbitMQ, or Amazon SQS.
+				Configure dead-letter queues for failed messages.
+			
+			6. Monitor and Trace Across Boundaries:
+			---------------------------------------
+				Use distributed tracing tools (e.g., Jaeger, Zipkin) to follow requests across sync and async flows.
+				Centralize logs and metrics for visibility.
+			
+			7. Use API Gateway and Service Mesh:
+			------------------------------------
+				API Gateway for managing synchronous APIs (routing, auth, rate limiting).
+				Service Mesh (e.g., Istio) for managing service-to-service communication policies.
+			
+			8. Version and Validate Message Schemas:
+			----------------------------------------
+				Use a schema registry to manage message formats and ensure compatibility.
+				Validate messages before processing to avoid runtime errors.
+			
+			9. Graceful Degradation:
+			------------------------
+				Design services to degrade gracefully if async components are delayed or unavailable.
+				Provide fallback responses or retry mechanisms.
+			
+			10. Document Communication Contracts:
+			-------------------------------------
+				Maintain clear documentation of APIs and message formats.
+				Use contract testing to ensure compatibility between producers and consumers.
+
+		
+		
+	REAL-WORLD USE CASE of Microservice Communication:
+	--------------------------------------------------
+
+		Use Case: Placing a Food Order:
+		-------------------------------
+		
+		Microservices Involved:
+		-----------------------
+			1. User Service – 			Handles login and user profile
+			2. Restaurant Service – 	Provides restaurant and menu data
+			3. Order Service – 			Manages order creation and status
+			4. Payment Service – 		Processes payments
+			5. Delivery Service – 		Assigns delivery agents
+			6. Notification Service – 	Sends order updates via SMS/email
+		
+		Communication Flow:
+		-------------------
+			
+			Step 1: User Browses Menu
+			-------
+				User Service authenticates the user 		 (synchronous REST)
+				Restaurant Service provides menu data		 (synchronous REST)
+
+			Step 2: User Places Order
+			-------
+				Order Service receives the order request. 					(synchronous)
+				It calls Inventory Service to check item availability. 		(synchronous)
+				It sends an event to Payment Service to initiate payment. 	(asynchronous via message queue)
+
+			Step 3: Payment Processing:
+			-------
+				Payment Service processes the payment and emits a PaymentSuccess or PaymentFailed event. 	(event-driven)
+				Order Service listens to this event and updates order status accordingly.
+			
+			Step 4: Delivery Assignment:
+			-------
+				On OrderConfirmed, Order Service emits an event.
+				Delivery Service listens and assigns a delivery agent. 	(event-driven)
+			
+			Step 5: Notifications
+			-------
+				Notification Service listens to events like OrderConfirmed, OutForDelivery, and Delivered to send updates. (event-driven)
+
+
+	Why This Works Well:
+	--------------------
+		Synchronous calls are used where immediate response is needed (e.g., placing an order).
+		Asynchronous communication ensures loose coupling and resilience (e.g., payment and delivery).
+		Services can scale independently (e.g., Payment Service during peak hours).	
+		
+	
+What problem of the monolith application do microservices solve?
+----------------------------------------------------------------
+	Poor flexibility:
+		Monolith applications resist implementation of various cutting-edge technologies. It can't be even easily migrated to the cloud.
+
+	Unreliability:
+		In case if a system unit fails, the entire monolith system would also fail. It causes frequent downtimes.
+
+	Challenging scalability:
+		The entire system must be rebuild in order to be scaled. A new technology can't be also easily implemented, because everything is dependent and not always compatible with the desired technology to be implemented.
+
+	Interdependence of dev teams:
+		Dev teams have to adapt to each other, because some modules await the completion of development of some other ones.
+
+	Dependency of modules:
+		Modules have to be developed one after another, so it doesn't allow the simultaneous development to reach the market faster.		
+		
+			
+Challenges In this microservice architecture:
+---------------------------------------------
+	1. Distributed System Complexity
+	2. Data Consistency
+	3. Service Communication
+	4. Deployment & DevOps Overhead
+	5. Monitoring & Observability
+	6. Security
+	7. Versioning & Compatibility
+	8. Latency & Performance
+	9. Testing Complexity
+	10. Team Coordination		
+		
+		
+		
+	1. System Complexity:
+	--------------------
+		Challenge: Microservices are distributed systems, which increases architectural complexity.
+		Impact: Harder to understand, debug, and manage inter-service dependencies.
+	
+	2. Data Management:
+	-------------------
+		Challenge: Each service often has its own database, leading to data fragmentation.
+		Impact: Difficult to maintain consistency and perform cross-service queries.
+	
+	3. Inter-Service Communication:
+	-------------------------------
+		Challenge: Services must communicate over the network, introducing latency and potential failures.
+		Impact: Requires robust error handling, retries, and fallback mechanisms.
+	
+	4. Deployment & Operations:
+	---------------------------
+		Challenge: More services mean more deployment pipelines and configurations.
+		Impact: Increased DevOps overhead and need for automation.
+	
+	5. Monitoring & Observability:
+	------------------------------
+		Challenge: Logs, metrics, and traces are spread across services.
+		Impact: Requires centralized tools and strategies to maintain visibility.
+	
+	6. Security:
+	------------
+		Challenge: Each service must handle authentication, authorization, and secure communication.
+		Impact: More attack surfaces and complexity in managing secrets and access control.
+	
+	7. Versioning & Compatibility:
+	------------------------------
+		Challenge: Updating one service may break others if APIs are not backward-compatible.
+		Impact: Requires careful versioning and testing strategies.
+	
+	8. Performance & Latency:
+	-------------------------
+		Challenge: Network calls between services introduce latency.
+		Impact: Can degrade user experience and require optimization.
+	
+	9. Testing:
+	-----------
+		Challenge: Testing across multiple services is complex.
+		Impact: Requires mocks, stubs, contract testing, and full integration environments.
+	
+	10. Team Coordination:
+	----------------------
+		Challenge: Multiple teams working on different services need alignment.
+		Impact: Risk of duplication, miscommunication, and inconsistent standards.
+
+
+
+Mitigation Strategies:
+----------------------
+
+	1. Distributed System Complexity:
+	---------------------------------
+		Domain-Driven Design (DDD) to define clear service boundaries.
+		Use service discovery tools (e.g., Consul, Eureka).
+		Maintain a centralized service registry and documentation.
+		Implement API Gateway to simplify client-service interactions.
+	
+	2. Data Consistency:
+	--------------------
+		Adopt eventual consistency using asynchronous messaging.
+		Use Saga patterns (orchestration/choreography) for distributed transactions.
+		Ensure idempotency in APIs to handle retries.
+		Use Change Data Capture (CDC) for syncing data across services.
+	
+	3. Service Communication:
+	-------------------------
+		Use REST/gRPC for synchronous and Kafka/RabbitMQ for asynchronous communication.
+		Implement circuit breakers, retries, and timeouts (e.g., Resilience4j).
+		Use a service mesh (e.g., Istio) for managing communication policies.
+	
+	4. Deployment & DevOps Overhead:
+	--------------------------------
+		Containerize services with Docker and orchestrate with Kubernetes.
+		Automate builds and deployments using CI/CD pipelines (e.g., GitHub Actions, Jenkins).
+		Use Infrastructure as Code (IaC) tools like Terraform or Helm.
+	
+	5. Monitoring & Observability:
+	------------------------------
+		Centralize logs using ELK stack, Fluentd, or Loki.
+		Use Prometheus + Grafana for metrics and dashboards.
+		Implement distributed tracing with Jaeger or Zipkin.
+		Set up health checks and alerting systems.
+	
+	6. Security:
+	------------
+		Use OAuth2/JWT for authentication and authorization.
+		Secure APIs with HTTPS/TLS.
+		Manage secrets with Vault, AWS Secrets Manager, or Kubernetes Secrets.
+		Apply Role-Based Access Control (RBAC) and network policies.
+	
+	7. Versioning & Compatibility:
+	------------------------------
+		Use semantic versioning for APIs.
+		Implement backward-compatible changes and deprecation strategies.
+		Use contract testing (e.g., Pact) to validate service interactions.
+	
+	8. Latency & Performance:
+	-------------------------
+		Use caching (Redis, CDN) for frequently accessed data.
+		Optimize payloads and use gRPC for low-latency communication.
+		Apply load balancing and rate limiting.
+	
+	9. Testing Complexity:
+	----------------------
+		Use unit, integration, and end-to-end tests.
+		Mock dependencies for isolated testing.
+		Use contract testing to ensure API compatibility.
+		Automate tests in CI/CD pipelines.
+	
+	10. Team Coordination:
+	----------------------
+		Define clear service ownership and responsibilities.
+		Establish shared standards for APIs, logging, and error handling.
+		Use internal documentation portals (e.g., Backstage).
+		Promote cross-functional teams and regular sync-ups.
+	
+		
+		
+In which cases we should use microservices:	
+-------------------------------------------
+	Microservices should be used when: 
+		building large, complex applications, 
+		particularly those with independent components, 
+		frequent updates, 
+		high scalability needs,
+		applications dealing with big data, real-time processing, 
+		when integrating with third-party services.	
+		Easier service upgrade
+		Faster defect identification and recovery
+		Less risks and fault tolerance
+		
+	Large, complex applications:
+		When an application has many independent modules or user journeys, microservices can help manage complexity and improve scalability. 
+	
+	Applications requiring frequent updates:
+		Microservices allow for independent deployments, enabling teams to update specific features without affecting the entire system. 
+	
+	Scalability needs:
+		Microservices can be scaled independently, allowing you to scale specific parts of your application based on demand. 
+	
+	Big data and real-time processing:
+		Microservices are well-suited for handling large volumes of data and real-time processing, often with complex data pipelines. 
+	
+	Legacy application modernization:
+		Microservices can be used to break down and modernize monolithic legacy applications. 
+	
+	Domain-driven design:
+		Microservices naturally align with domain-driven design, allowing for independent development of bounded contexts. 
+	
+	Cloud-native applications:
+		Microservices are well-suited for cloud environments, offering flexibility and cost-effectiveness. 
+	
+	Decentralized architecture:
+		Microservices encourage decentralized data management and operations, which can be beneficial in larger organizations. 
+	
+	Third-party service integrations:
+		Microservices can be used to integrate with external services, creating reusable building blocks. 	
+		
+	Easier service upgrade:
+		If there is such a need, you can upgrade a single service instead of upgrading the entire system.
+
+	Faster defect identification and recovery:
+		Monitoring tools can quickly identify the failed module and you will be able to isolate it at once for further recovery.		
+		
+	Less risks and fault tolerance:
+		The full application wouldn't crush if a module goes down. It will just continue working as usual.	
+		
+	
+Create a new microservice or extend an existing one:
+------------------------------------------------------	
+	Deciding whether to create a new microservice or extend an existing one is a critical architectural decision. 
+	Here's a structured approach to help guide that decision:
+	
+	
+	-> Create a New Microservice When:
+	----------------------------------
+		
+		1. Clear Bounded Context:
+		-------------------------	
+			The functionality belongs to a distinct domain or business capability.
+			Example: Payment processing vs. Order management.
+			
+		2. Independent Scalability:
+		--------------------------
+			The new feature has different scaling needs than existing services.
+			Example: Image processing or analytics might need more compute resources.	
+			
+		3. Different Lifecycle or Deployment Cadence:
+		--------------------------------------------
+			The new functionality evolves independently or needs frequent updates.
+			Example: A/B testing engine or recommendation engine.	
+			
+		4. Security or Compliance Isolation:
+		------------------------------------
+			Requires different access controls, audit logging, or compliance boundaries.
+			Example: Handling PII or financial data.	
+			
+		5. Team Autonomy:
+		-----------------
+			A separate team will own and manage the service.
+			Promotes DevOps and CI/CD independence.
+			
+		6. Technology Stack Justification:
+		----------------------------------
+			Needs a different tech stack or runtime environment.
+			Example: Using Python for ML while the rest is in Java.	
+			
+	
+	->Extend an Existing Microservice When:
+	---------------------------------------
+		
+		1. Same Bounded Context:
+		------------------------
+			The new feature is tightly coupled with the existing domain logic.
+			Example: Adding discount logic to an existing cart service. Or Introducing new payment mode in existing payment service.
+
+		2. Shared Data Models:
+		---------------------
+			Reuses the same data entities or schemas.
+			Avoids duplication and complex data synchronization.
+	
+		3. Low Complexity Addition:
+		---------------------------
+			The change is small and doesn’t significantly increase service complexity.
+			Example: Adding a new endpoint or minor business rule.
+			
+		4. Avoiding Overhead:
+		---------------------
+			Creating a new service would introduce unnecessary latency, deployment, or operational overhead.	
+			
+			
+	->Decision Matrix (Quick Reference):
+	------------------------------------
+	
+		Criteria			New Microservice	Extend Existing
+		-------------------	------------------	---------------
+		Bounded Context			✅					❌
+		Independent Scaling		✅					❌
+		Shared Data Model		❌					✅
+		Deployment Frequency	✅					❌
+		Security Isolation		✅					❌
+		Team Ownership			✅					❌
+		Simplicity				❌					✅		
+		
+		
+	
+	
+		
+		
+New database and a shared database:
+-----------------------------------		
+	Deciding between a new database and a shared database is a key architectural decision that impacts scalability, maintainability, and data integrity. 
+	
+	Here's a structured guide to help you make that decision:
+	---------------------------------------------------------
+
+-> Create a New Database When:
+------------------------------
+	
+	1. Different Bounded Context:
+	-----------------------------
+		The data belongs to a separate domain or microservice.
+		Example: User data vs. product catalog.
+
+	2. Security and Compliance Requirements:
+	----------------------------------------
+		Needs strict data isolation (e.g., GDPR, HIPAA).
+		Example: Financial or healthcare data.
+
+	3. Independent Scaling or Performance Needs:
+	--------------------------------------------
+		High read/write throughput or large data volume.
+		Example: Analytics or logging services.
+	
+	4. Different Data Lifecycle:
+	----------------------------
+		Data retention, archival, or deletion policies differ.
+		Example: Temporary session data vs. permanent user records.
+	
+	5. Technology Stack Differences:
+	--------------------------------
+		Requires a different type of database (SQL vs. NoSQL).
+		Example: Using MongoDB for documents and PostgreSQL for transactions.
+	
+	6. Disaster Recovery and Backup Isolation:
+	------------------------------------------
+		Separate backup and restore strategies.
+		Example: Mission-critical services with tighter RTO/RPO.
+
+
+-> Use a Shared Database When:
+------------------------------
+	
+	1. Tightly Coupled Data:
+	------------------------
+		Entities are highly interrelated and frequently joined.
+		Example: Orders and order items.
+	
+	2. Low Complexity and Small Scale:
+	----------------------------------
+		Simpler architecture is sufficient for current needs.
+		Example: MVP or early-stage product.
+	
+	3. Single Team Ownership:
+	-------------------------
+		One team manages both the schema and the application logic.
+	
+	4. Unified Transaction Management:
+	-----------------------------------
+		Requires strong consistency and ACID transactions across entities.
+	
+	5. Cost and Operational Simplicity:
+	-----------------------------------
+		Reduces infrastructure and maintenance overhead.
+
+
+	Decision Matrix:
+	----------------
+		Criteria			New Database	Shared Database
+		--------			------------	---------------
+		Bounded Context		✅				❌
+		Security Isolation	✅				❌
+		Performance Needs	✅				❌
+		Data Coupling		❌				✅
+		Team Ownership		✅				✅
+		Simplicity			❌				✅
+		
+		
+		
+
+Project: E-commerce Order Management System:
+--------------------------------------------
+	
+	Goal:	
+		Build a scalable, maintainable system to handle product orders, payments, and inventory updates.
+	
+	Microservices Overview:
+	-----------------------
+	
+		Microservice				Responsibility
+		------------				--------------
+		1. User Service				Manages user registration, login, and profiles.
+		2. Product Service			Manages product catalog and details.
+		3. Order Service			Handles order creation, status, and history.
+		4. Inventory Service		Tracks stock levels and updates.
+		5. Payment Service			Processes payments and refunds.
+		6. Notification Service		Sends emails/SMS for order updates.
+		
+	
+	Technology Stack:
+	-----------------
+		Backend: 		Node.js (Express), Java (Spring Boot)
+		Database: 		PostgreSQL (User, Order), MongoDB (Product), Redis (Inventory cache)
+		API Gateway: 	NGINX or Kong
+		Message Broker: RabbitMQ or Kafka
+		Authentication: JWT + OAuth2
+		Deployment: 	Docker + Kubernetes
+		Monitoring: 	Prometheus + Grafana
+		CI/CD: 			GitHub Actions or Jenkins	
+		
+
+	Workflow Example: Placing an Order:
+	------------------------------------
+		1. User logs in → Authenticated via User Service
+		2. User browses products → Data from Product Service
+		3. User places an order → Request sent to Order Service
+		4. Order Service:
+				Validates user and product
+				Sends message to Inventory Service to reserve stock
+				Sends message to Payment Service to process payment
+		5. Payment Service:
+				Processes payment
+				Sends success/failure message		
+		6. Order Service:
+				Updates order status
+				Sends message to Notification Service		
+		7. Notification Service:
+				Sends confirmation email/SMS
+		
+		
+	API Design (Order Service Example):
+	-----------------------------------
+		Endpoint				Method		Description
+		--------				------		-----------
+		/orders					POST		Create a new order
+		/orders/{id}			GET			Get order details
+		/orders/user/{userId}	GET			Get all orders for a user	
+		
+		
+	Data Model (Simplified):
+	------------------------
+		Order Table:
+		------------
+		Field			Type
+		-----			----
+		order_id		UUID
+		user_id			UUID
+		product_ids		Array
+		total_amount	Decimal
+		status			Enum (PENDING, CONFIRMED, FAILED)
+		created_at		Timestamp
+	
+	
+	Security Considerations:
+	------------------------
+		JWT-based authentication
+		Role-based access control (RBAC)
+		HTTPS for all services
+		Input validation and rate limiting
+		
+	Monitoring & Logging:
+	---------------------
+		Centralized logging with ELK stack
+		Health checks on each service
+		Alerts for failed payments or inventory mismatches	
+		
+	
+	Future Enhancements:
+	--------------------
+		Add recommendation engine
+		Integrate with third-party logistics
+		Support for international currencies and languages	
+		
+		
+		
+Common Microservices Deployment Strategies:
+-------------------------------------------
+	1. Blue-Green Deployment - 				For Critical Services
+	2. Rolling Deployment - 				For Non-Critical, Stateless Services
+	3. Canary Deployment - 					Best Overall Strategy
+	4. A/B Testing - 						For Experimentation
+	5. Feature Toggles  -					For Controlled Feature Releases (Feature Flags)
+	6. Shadow Deployment - 					Mirroring, For performance testing
+	7. Immutable Deployment
+	
+	
+	1. Blue-Green Deployment - For Critical Services:
+	-------------------------------------------------
+		Why:
+			- Ensures zero downtime.
+			- Instant rollback by switching traffic back to the stable version
+
+		How it works:
+			- Two identical environments: Blue (current) and Green (new).
+			- Deploy new version to Green.
+			- Switch traffic from Blue to Green once verified.
+
+		Pros:
+			- Instant rollback.
+			- Zero downtime.
+
+		Cons:
+			- Requires double the infrastructure.
+			- Complex database synchronization.
+			
+		Use For:
+			- Authentication service
+			- Inventory management
+			- Order processing	
+
+
+	2. Canary Deployment - Best Overall Strategy:
+	---------------------------------------------
+	Why:
+		- Gradual rollout reduces risk of introducing bugs.
+		- Real user traffic helps validate new features.
+		- Easy to monitor and rollback if issues arise.
+
+	How it works:
+		- Gradually roll out the new version to a small subset of users.
+		- Monitor performance and errors.
+		- Increase traffic to the new version in stages.
+	
+	Pros:
+		- Controlled risk.
+		- Real-world testing.
+
+	Cons:
+		- Requires advanced traffic routing.
+		- Monitoring must be robust.
+
+	Use For:
+		- Checkout service
+		- Payment gateway integration
+		- Recommendation engine
+
+	
+	3. A/B Testing - For Experimentation:
+	-------------------------------------
+	Why:
+		- Helps optimize conversion rates and user experience.
+		- Data-driven decision-making.
+
+	How it works:
+		- Route different user segments to different versions of a service.
+		- Measure user behavior and performance.
+
+	Pros:
+		- Great for testing features and UX.
+		- Data-driven decisions.
+
+	Cons:
+		- Complex routing and analytics.
+		- Not ideal for backend-only changes.
+
+	Use For:
+		- Product detail page layouts
+		- Search result ranking algorithms
+		- Checkout flow variations
+
+
+	4. Rolling Deployment - For Non-Critical, Stateless Services:
+	-------------------------------------------------------------
+	Why:
+		- Efficient and simple to implement in Kubernetes.
+		- No need for full duplication of environments.
+
+	How it works:
+		- Gradually replace old versions with new ones across instances.
+		- No downtime if done correctly.
+	
+	Pros:
+		- Efficient use of resources.
+		- Simple to implement in Kubernetes.
+
+	Cons:
+		- Harder to roll back mid-deployment.
+		- Inconsistent state during rollout.
+		
+	Use For:
+		- Logging and analytics services
+		- Email/SMS notification services
+		- Catalog browsing service	
+
+	
+	5. Shadow Deployment (Mirroring):
+	---------------------------------
+	How it works:
+		- New version receives real traffic in parallel (but responses are discarded).
+		- Used for testing performance and behavior.
+	
+	Pros:
+		- No impact on users.
+		- Great for load testing.
+	
+	Cons:
+		- Doubles traffic load.
+		- Doesn’t test user interaction.
+
+
+	6. Immutable Deployment:
+	------------------------
+	How it works:
+		- Deploy new instances with the updated version.
+		- Terminate old ones after the switch.
+	
+	Pros:
+		- Clean, consistent environments.
+		- Easy rollback by redeploying old image.
+	
+	Cons:
+		- Slower deployment.
+		- Higher resource usage.
+
+	
+	7. Feature Toggles (Feature Flags) - For Controlled Feature Releases:
+	---------------------------------------------------------------------
+	Why:
+		- Decouple deployment from release.
+		- Enable features for specific user groups (e.g., beta testers).
+
+	How it works:
+		- Deploy code with features turned off.
+		- Enable features selectively at runtime.
+	
+	Pros:
+		- Decouple deployment from release.
+		- Instant rollback by toggling off.
+
+	Cons:
+		- Adds complexity to codebase.
+		- Requires toggle management system.
+		
+	Use For:
+		- UI/UX changes
+		- Promotions and discounts engine
+		- Personalized recommendations	
+
+
+
+Choosing the Right Strategy:
+----------------------------
+
+	Strategy  			Best For 									Risk Level 		Infra Cost
+	--------			--------									----------		----------
+	Blue-Green 			High-availability systems 					Low 			High 
+	Canary 				Gradual rollouts, real-world testing 		Low-Med 		Medium
+	A/B Testing 		UX and feature experimentation 				Medium 			Medium
+	Rolling 			Standard updates in Kubernetes 				Medium 			Low
+	Shadow 				Performance testing without exposure 		Low 			High
+	Immutable 			Clean deployments, rollback simplicity 		Medium 			Medium
+	Feature Toggles 	Continuous delivery, fast rollback 			Low 			Medium
+
+
+
+Strategy Matrix for E-Commerce Microservices:
+---------------------------------------------
+	Deploying microservices effectively involves choosing the right architecture, tools, and practices to ensure scalability, resilience, and maintainability. 
+
+	Microservice 			Recommended Strategy 		Reason
+	------------			--------------------		------
+	Payment Gateway 		Blue-Green 					Critical path, requires zero downtime 
+	Authentication 			Blue-Green 					Must be highly available
+	Order Processing 		Blue-Green 					Critical for business continuity
+	Product Catalog 		Rolling 					Low risk, stateless
+	Notification Service 	Rolling 					Low impact, easy to redeploy
+	Promotions Engine 		Feature Toggles 			Frequent changes, needs control
+	Recommendation Engine 	Canary 						Needs real-world validation
+	Checkout 				Canary + Feature Toggles 	High risk, needs gradual rollout
+
+
+Choose a Deployment Architecture:
+---------------------------------
+	- Containerized With Docker (Recommended): 	Use Docker to package each microservice.
+	- Orchestration with Kubernetes: 			Manage containers, scale services, and handle networking.
+	- Serverless (Optional): 					For lightweight, event-driven services (e.g., AWS Lambda, Azure Functions).
+
+	Containerize with Docker:
+	-------------------------
+		For each microservice: Dockerfile
+		
+		Then build and tag:
+			docker build -t my-service-name.
+			
+	Deploy with Kubernetes (K8s):
+	----------------------------
+		Create Deployment: YAML
+		
+		Deploy with:
+			kubectl apply -f deployment.yaml
+			
+			
+https://semaphore.io/blog/deploy-microservices			
+From simple to complex, here are the five ways of running microservices:
+------------------------------------------------------------------------
+
+	1. Single machine, multiple processes: 
+	--------------------------------------
+		buy or rent a server and run the microservices as processes.
+		*source code Execute as processes in VMs.
+	
+	2. Multiple machines, multiple processes: 
+	-----------------------------------------
+		the obvious next step is adding more servers and distributing the load, offering more scalability and availability.
+		*source code Execute as processes in VMs.
+		
+	3. Containers: 
+	-------------
+		packaging the microservices inside a container makes it easier to deploy and run along with other services. It’s also the first step towards Kubernetes.
+		*source code Execute as containers in VMs. (e.g. ECS + EC2)
+	
+	4. Orchestrator: 
+	----------------
+		orchestrators such as Kubernetes or Nomad are complete platforms designed to run thousands of containers simultaneously.
+		*source code Execute as pods in K8s.
+	
+	5. Serverless: 
+	--------------
+		serverless allows us to forget about processes, containers, and servers, and run code directly in the cloud.			
+		*source code Execute as serverless containers. (e.g. ECS Fargate)
+		*source code Execute as serverless functions.
+
+
+Secure and Monitor:
+-------------------
+	- Service Mesh: 		Use Istio or Linkerd for traffic control, security, and observability.
+	- Logging: 				Centralize logs with ELK Stack or Fluentd.
+	- Monitoring: 			Use Prometheus + Grafana for metrics.
+	- Secrets Management: 	Use Kubernetes Secrets, HashiCorp Vault, or AWS Secrets Manager.
+
+
+
+How our microservices application has interacted with multiple databases?  
+How does it maintain multiple connections with multiple dbs, do we need to close all of them or it opened?
+----------------------------------------------------------- 
+	Let’s break this down step-by-step:
+
+	How Microservices Interact with Multiple Databases:
+	---------------------------------------------------
+		Through Connection Pool.
+	
+		Each microservice owns its own database (DB-per-service model). This promotes decoupling, data isolation, and independent scalability.
+		
+			So interaction looks like:
+				Service A → MySQL (e.g., User DB)
+				Service B → MongoDB (e.g., Product DB)
+				Service C → PostgreSQL (e.g., Inventory DB) 
+
+	
+		Connections are handled via connection pools, provided by libraries/frameworks (like HikariCP in Spring Boot):
+			Pool keeps a set of DB connections open.
+			When a request comes in, a connection is borrowed.
+			After use, the connection is returned—not closed.
+			
+			You don’t manually open/close connections per request in most modern setups.
+			
+			Only close connections manually if you:
+				Open raw JDBC connections without a pool.
+				Connect to external DBs dynamically during runtime and don't reuse.
+
+
+		Best Practices for Multi-DB Architecture:
+		-----------------------------------------
+			Use separate connection pools per service.
+			Keep DB interactions isolated to respective services.
+			Secure DB credentials using secrets managers.
+			Monitor connection usage (JMX, Actuator endpoints).
+			Use health checks to detect DB connection issues.

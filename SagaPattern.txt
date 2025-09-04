@@ -1,0 +1,353 @@
+https://www.javaguides.net/2025/02/saga-pattern-in-microservices.html
+https://www.geeksforgeeks.org/orchestration-vs-choreography/
+
+Saga pattern manages distributed transactions AND ensuring 'data consistency' across multiple services. 
+Ensure that all steps either complete successfully or rollback changes if something goes wrong.
+
+Types of Saga Implementation:
+-----------------------------
+	1. Choreography-Based Saga: (Event-Driven Approach), (Loose Coupling)
+	---------------------------
+		Each service publishes an event after it completes its work.
+		Other services listen for these events and trigger the next step.
+		No centralized controller.
+		
+		Example:
+			Kafka, RabbitMQ, Google Pub/Sub.
+
+	2. Orchestration-Based Saga: (Centralized Control),	(Tightly Coupling)
+	----------------------------
+		A 'Saga Orchestrator' is responsible for managing all steps.
+		It ensures that each step executes in sequence and handles rollbacks.
+		
+		Example:
+			Netflix Conductor (Microservices orchestration)
+
+Choice:
+-------
+	Both patterns can coexist within the same system. 
+	In many real-world scenarios, teams adopt a hybrid approach: 
+		simple flows handled by choreography and 
+		complex flows handled by orchestration. 
+		
+	The key is to align the choice with your domain requirements, team structure, and scalability needs.
+
+
+Scenario:
+---------
+	A customer places an order, and the system processes it through the following microservices: 
+		Order Service – 	Creates the order. 
+		Payment Service – 	Processes the payment. 
+		Inventory Service – Reserves stock. 
+		Shipping Service – 	Ships the product.	
+			
+	Handling Failures:
+	------------------
+		If payment fails, 				the order should be canceled.
+		If inventory is out of stock, 	the payment should be refunded AND order should be canceled
+		If shipping fails, 				the inventory should be restocked, payment refunded AND order should be canceled.
+			
+			
+Code example: Step-by-Step Implementation Using Spring Boot:
+------------------------------------------------------------
+		Step 1: Define the Shared OrderEvent Model
+		Step 2: Configure Kafka Topics in application.yml
+		Step 3: Implement OrderService (8081)		:O
+		Step 4: Implement PaymentService (8082)		:P
+		Step 5: Implement InventoryService (8083)	:I
+		Step 6: Implement ShippingService (8084)	:S
+		Step 7: Implement Rollback Mechanism
+		
+		 
+		O:	kafkaTemplate.send("payment-topic", new OrderEvent(order.getId(), "PENDING", "PAYMENT"));
+		P:		kafkaTemplate.send("inventory-topic", new OrderEvent(event.getOrderId(), "PENDING", "INVENTORY"));
+		I:			kafkaTemplate.send("shipping-topic", new OrderEvent(event.getOrderId(), "PENDING", "SHIPPING"));
+		S:				kafkaTemplate.send("saga-complete", new OrderEvent(event.getOrderId(), "COMPLETED", "SHIPPING"));
+
+
+
+	
+====================================================START===================================================================
+Saga:
+-----
+	In a distributed microservices architecture, ensuring data consistency across multiple services is one of the biggest challenges. 
+		The Saga pattern solves this. 
+			The Saga Pattern is a design pattern used to "manage distributed transactions" in microservices, ensuring eventual consistency across different services.
+
+		
+Understanding the Saga Pattern:
+-------------------------------
+	When a business transaction spans multiple microservices, we need "a way to ensure that all steps either complete successfully or rollback changes if something goes wrong". 
+	Instead of using traditional database transactions (ACID properties), which are hard to manage across services, we use the Saga Pattern, where "each service performs its part and notifies the next service".
+	
+	Sagas are ideal for business workflows like order processing, travel bookings, supply chain management, and any process that spans multiple microservices.
+
+Key Idea:
+---------
+	"Break a transaction into small independent steps.
+	If any step fails, execute compensating actions to undo the previous steps.
+	Ensures eventual consistency instead of strong consistency."		
+	
+	
+Types of Saga Implementation:
+-----------------------------
+	"Orchestration and choreography are two distinct ways to implement a saga"; each has its own trade-offs in terms of maintainability and coupling.
+	
+	1. Choreography-Based Saga: (Event-Driven Approach), (Loose Coupling)
+	---------------------------
+		Each service publishes an event after it completes its work.
+		Other services listen for these events and trigger the next step.
+		No centralized controller.
+
+	2. Orchestration-Based Saga: (Centralized Control),	(Tightly Coupling)
+	----------------------------
+		A 'Saga Orchestrator' is responsible for managing all steps.
+		It ensures that each step executes in sequence and handles rollbacks.	
+	
+	
+Best Practices for Implementing the Saga Pattern:
+-------------------------------------------------
+	Ensure Idempotency – 				Avoid processing the same event multiple times. 
+	Implement Logging & Monitoring – 	Use tools like Zipkin, Jaeger, or Prometheus. 
+	Automate Error Handling & Retries – Ensure compensating transactions run smoothly. 
+	Test Failure Scenarios – 			Simulate real-world failures to ensure rollback logic works.	
+	
+	
+Advantages and Disadvantages of the Saga Pattern:
+-------------------------------------------------
+	If one step fails, you can selectively rollback or undo only the required steps (via compensations). 
+	Improves fault tolerance by avoiding single points of failure.
+	Compatible with 'asynchronous processing', leading to higher concurrency.
+	Transactions can be distributed across multiple services, increasing scalability. 
+	May add latency because of extra steps for orchestrations or event processing.
+	
+	
+Real-Time Use Cases and Examples:
+---------------------------------
+		
+	1. Travel Booking Saga:
+	----------------------
+		Scenario: A travel agency reserves airline, hotel, and car rental services in sequence.
+			Step 1: Reserve airline ticket.
+			Step 2: Book a hotel.
+			Step 3: Book a car rental.
+		
+		Compensation: If Step 3 fails, the system executes:
+			Cancel car rental (if partially reserved).
+			Cancel hotel booking (compensation for Step 2).
+			Cancel airline ticket (compensation for Step 1).
+		
+		This ensures that if any part of the itinerary fails, it appears as though the trip was never booked, adhering to the agency’s governing rule.	
+		
+		
+	2. E-Commerce Order Fulfillment:
+	--------------------------------
+		Scenario: An online store processes a customer order.
+			Step 1: Create Order in the 			'Order Service'.
+			Step 2: Charge the Payment using a 		'Payment Service'.
+			Step 3: Reserve/Update Inventory in the 'Inventory Service'.
+			Step 4: Ship the Order via the 			'Shipping Service'.
+		
+		Compensation: If the process fails at Step 3 (inventory shortage):
+			Roll back Step 2 by refunding the customer’s payment.
+			Roll back Step 1 by canceling the order.	
+			
+		
+			
+Saga Choreography:
+-----------------
+	Decentralized / Event-Driven: Each service subscribes to events and publishes events when it completes its task.
+	
+	Step-to-Step Knowledge: One step directly triggers the next by publishing an event (e.g., “OrderCreated,” “PaymentProcessed,” etc.).
+	
+	Harder to Maintain: The workflow is implicit; you must read the event flow across all services to understand the entire sequence.
+
+	Example:
+	--------	
+	
+	E-Commerce Order Fulfillment:
+	-----------------------------
+		1. Order Service publishes OrderCreated.
+		2. Payment Service listens for OrderCreated, processes payment, then publishes PaymentProcessed.
+		3. Inventory Service listens for PaymentProcessed, updates inventory, and publishes InventoryUpdated, and so on.
+
+	
+	Illustration (Travel Booking Example):
+	-------------------------------------
+		1. Airline Service completes reservation and publishes AirlineReserved.
+		2. Hotel Service listens and books hotel, then publishes HotelBooked.
+		3. Car Rental Service listens to HotelBooked. If booking fails, it publishes CarRentalFailed, triggering compensations.			
+		
+		
+Saga Orchestration:
+-------------------
+	Centralized Control: A Saga Execution Coordinator (orchestrator) manages the sequence of steps.
+	
+	Flow Control: 
+		If a step succeeds, the orchestrator calls the next step; 
+		if it fails, the orchestrator triggers compensations in reverse order.
+	
+	Easier to Understand: The entire workflow (sequence of steps) is visible in one place — helpful for debugging and maintenance.		
+	
+	Example:
+	--------
+	
+	E-Commerce Order Fulfillment:
+	-----------------------------
+		1. The Orchestrator commands the Order Service to create an order.
+		2. If successful, it commands the Payment Service to process the payment, and so on.
+
+
+	Illustration (Travel Booking Example):
+	--------------------------------------
+		Orchestrator → Airline Service → success →
+		Orchestrator → Hotel Service → success →
+		Orchestrator → Car Rental Service → failure →
+		Orchestrator calls compensation on Car Rental (if partially successful).
+		Then calls compensation on Hotel booking.
+		Finally calls compensation on Airline reservation.
+		
+		
+Choice:
+-------
+	Both patterns can coexist within the same system. In many real-world scenarios, teams adopt a hybrid approach: simple flows handled by choreography and complex flows handled by orchestration. The key is to align the choice with your domain requirements, team structure, and scalability needs.		
+	
+	
+Code Example for Real-World Example: E-commerce Order Processing:
+================================================
+	Scenario:
+	---------
+		A customer places an order, and the system processes it through the following microservices: 
+			Order Service – Creates the order. 
+			Payment Service – Processes the payment. 
+			Inventory Service – Reserves stock. 
+			Shipping Service – Ships the product.	
+			
+		Handling Failures:
+		------------------
+			If payment fails, the order should be canceled.
+			If inventory is out of stock, the payment should be refunded.
+			If shipping fails, the inventory should be restocked and the payment refunded.
+
+	This is where the Saga Pattern ensures a smooth transaction flow with automatic rollback mechanisms.	
+	
+	Code example: Step-by-Step Implementation Using Spring Boot:
+	------------------------------------------------------------
+		Step 1: Define the Shared OrderEvent Model
+		Step 2: Configure Kafka Topics in application.yml
+		Step 3: Implement OrderService (8081)		:O
+		Step 4: Implement PaymentService (8082)		:P
+		Step 5: Implement InventoryService (8083)	:I
+		Step 6: Implement ShippingService (8084)	:S
+		Step 7: Implement Rollback Mechanism
+		
+		 
+		O:	kafkaTemplate.send("payment-topic", new OrderEvent(order.getId(), "PENDING", "ORDER"));
+		P:		kafkaTemplate.send("inventory-topic", new OrderEvent(event.getOrderId(), "PENDING", "INVENTORY"));
+		I:			kafkaTemplate.send("shipping-topic", new OrderEvent(event.getOrderId(), "PENDING", "SHIPPING"));
+		S:				kafkaTemplate.send("saga-complete", new OrderEvent(event.getOrderId(), "COMPLETED", "SHIPPING"));
+
+		
+		Step 1: Define the Shared Order Event Model
+		-------	
+			@Data
+			@AllArgsConstructor
+			@NoArgsConstructor
+			public class OrderEvent {
+				private Long orderId;
+				private String status; // PENDING, COMPLETED, CANCELLED
+				private String service; // ORDER, PAYMENT, INVENTORY, SHIPPING
+			}
+			
+		Step 2: Configure Kafka Topics in application.yml
+		-------	
+			spring:
+			  kafka:
+				bootstrap-servers: localhost:9092
+				consumer:
+				  group-id: saga-group
+				  auto-offset-reset: earliest
+				producer:
+				  key-serializer: org.apache.kafka.common.serialization.StringSerializer
+				  value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+				  
+		Step 3: Implement OrderService (8081)
+		-------	
+			@RestController
+			@RequestMapping("/orders")
+			public class OrderController {
+			
+				@Autowired 
+				private KafkaTemplate<String, OrderEvent> kafkaTemplate;
+				
+				@Autowired 
+				private OrderRepository orderRepository;
+				
+				@PostMapping("/create")
+				public ResponseEntity<String> createOrder(@RequestBody Order order) {
+					order.setStatus("PENDING");
+					orderRepository.save(order);
+					kafkaTemplate.send("payment-topic", new OrderEvent(order.getId(), "PENDING", "PAYMENT"));
+					return ResponseEntity.ok("Order Created Successfully");
+				}
+			}
+
+		Step 4: Implement PaymentService (8082)
+		-------	
+			@Service
+			public class PaymentService {
+			
+				@KafkaListener(topics = "payment-topic", groupId = "saga-group")
+				public void processPayment(OrderEvent event) {
+					if (new Random().nextBoolean()) { // Simulate failure
+						kafkaTemplate.send("rollback-topic", new OrderEvent(event.getOrderId(), "CANCELLED", "PAYMENT"));
+					} else {
+						kafkaTemplate.send("inventory-topic", new OrderEvent(event.getOrderId(), "PENDING", "INVENTORY"));
+					}
+				}
+			}
+			
+		Step 5: Implement InventoryService (8083)
+		-------	
+			@Service
+			public class InventoryService {
+			
+				@KafkaListener(topics = "inventory-topic", groupId = "saga-group")
+				public void reserveStock(OrderEvent event) {
+					if (new Random().nextBoolean()) { // Simulate failure
+						kafkaTemplate.send("rollback-topic", new OrderEvent(event.getOrderId(), "CANCELLED", "INVENTORY"));
+					} else {
+						kafkaTemplate.send("shipping-topic", new OrderEvent(event.getOrderId(), "PENDING", "SHIPPING"));
+					}
+				}
+			}
+			
+			
+		Step 6: Implement ShippingService (8084)
+		-------	
+			@Service
+			public class ShippingService {
+			
+				@KafkaListener(topics = "shipping-topic", groupId = "saga-group")
+				public void shipProduct(OrderEvent event) {
+					if (new Random().nextBoolean()) { // Simulate failure
+						kafkaTemplate.send("rollback-topic", new OrderEvent(event.getOrderId(), "CANCELLED", "SHIPPING"));
+					} else {
+						kafkaTemplate.send("saga-complete", new OrderEvent(event.getOrderId(), "COMPLETED", "SHIPPING"));
+					}
+				}
+			}
+			
+			
+		Step 7: Implement Rollback Mechanism
+		-------	
+			@Service
+			public class RollbackService {
+			
+				@KafkaListener(topics = "rollback-topic", groupId = "saga-group")
+				public void rollbackTransaction(OrderEvent event) {
+					System.out.println("Rolling back transaction: " + event);
+				}
+			}
+
+

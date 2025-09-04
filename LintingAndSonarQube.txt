@@ -1,0 +1,110 @@
+Linting and SonarQube:
+----------------------
+	both of which are essential tools for maintaining code quality in software development. 
+	
+	Linting:
+	--------
+		Report Syntax related issues.
+		In short, linting makes your code cleaner, safer, and easier to work with—for both humans and machines. 
+
+	Common Linting Tools:
+	---------------------
+		JavaScript/TypeScript:	ESLint
+		Python: 				Pylint, Flake8
+		Java: 					Checkstyle, PMD
+		C#: 					Roslyn analyzers
+
+	Benefits:
+	---------
+		- Error Detection: 			Catches things like undefined variables or syntax errors early.
+		- Code Style Enforcement: 	Ensures code follows consistent formatting rules (like spacing or indentation).
+		- Best Practices: 			Warns about risky patterns or outdated code structures.
+		- Team Consistency: 		Helps teams write code in a unified style, making it easier to read and maintain.
+
+		
+		
+SonarQube:
+----------
+	SonarQube is a powerful tool for continuous inspection of code quality. 
+	It performs static code analysis to detect bugs, code smells, vulnerabilities, and technical debt.		
+
+	Key Features:
+	-------------
+		Bug & Vulnerability Detection: 
+			Identifies coding bugs, security vulnerabilities, and code smells before they reach production.
+		
+		Code Quality Metrics: 
+			Provides dashboards and reports on code maintainability, reliability, and test coverage.
+		
+		Test Coverage Analysis: 
+			Integrates with testing tools to show how much of your code is covered by unit tests.
+		
+		Security Hotspot Identification: 
+			Flags areas of code that may be vulnerable to attacks or misuse.
+		
+		Enforcing Coding Standards: 
+			Helps teams follow consistent coding practices by applying customizable rules.
+		
+		CI/CD Integration: 
+			Works seamlessly with tools like Jenkins, Azure DevOps, GitHub Actions, and more to analyze code during builds and pull requests.
+		
+		Multi-language Support: 
+			Supports over 30 programming languages including Java, Python, JavaScript, C#, and more.
+
+
+SonarQube Terminology:
+----------------------
+
+	Code smells: 
+	------------
+		report poor design or implementation choices used in your code. They’re not bugs, but they can lead to bugs if left unchecked.
+		
+	Vulnerabilities:
+	----------------	
+		are security-related issues in your code that could be exploited by attackers to compromise your application or data. Vulnerabilities are flagged when your code contains risky patterns—like unsanitized user input or insecure configurations.
+		
+	Cyclomatic Complexity:
+	----------------------
+		measures the complexity of your code’s control flow. It helps identify methods or functions that are too complex and may need refactoring.
+
+		Cyclomatic complexity is calculated based on the number of:
+			- if, else if, while, for, case, catch, and logical operators (&&, ||)
+			- Each of these adds a new path through the code
+			
+		*Helps in determine how many test cases are needed.	
+		*Focus on testability.
+		
+	Cognitive Complexity:
+	--------------------- 
+		Measures how difficult code is to understand, not just how complex it is to execute. In short, it’s not just about how many paths your code can take—it’s about how hard it is for a human to follow those paths.
+		High Cognitive Complexity means the code is harder to read, review, and maintain.
+
+		*Helps in access how hard code is to read and maintain.	
+		*Focus on readability.
+	
+	Technical debt:
+	---------------
+		refers to the estimated time required to fix all maintainability issues in your codebase—primarily things like code smells, duplications, and poor design choices.
+	
+	
+		
+Using Lint and SonarQube Together:
+----------------------------------
+	Combining linting and SonarQube gives you a robust code quality strategy:
+
+	Feature				Linting					SonarQube
+	------------	------------------------	--------------------------
+	Scope			Local, developer-focused	Project-wide, team-focused
+	Integration		IDEs, pre-commit hooks		CI/CD pipelines
+	Feedback		Immediate					Periodic or on commit
+	Custom Rules	Yes							Yes
+	Reporting		Basic						Detailed dashboards and trends		
+	
+	
+Workflow Example:
+-----------------
+	Developer writes code → Linter checks syntax and style in IDE.
+	Code pushed to repo → 	SonarQube runs in CI/CD to analyze deeper issues.
+	Quality gate check → 	If failed, code is flagged for review or rejected.	
+	
+	

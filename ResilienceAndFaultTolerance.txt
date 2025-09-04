@@ -1,0 +1,120 @@
+https://www.baeldung.com/spring-boot-resilience4j
+https://github.com/AZapata27/resilience4j-examples
+https://java-design-patterns.com/patterns/circuit-breaker/#related-patterns
+
+Let's suppose, It's good to have plan-B (:fault-tolerance)  in case of some failure or plan-A doesn't work, but what you would do in case plan-B would also fail that's where resilience comes into picture.
+
+Think of fault tolerance as a backup parachute, and resilience as learning to land safely even if the parachute fails. 
+
+Key Difference:
+---------------
+	Fault tolerance is about surviving known faults without interruption.
+	Resilience is about bouncing back from unexpected disruptions and evolving.
+
+
+Fault Tolerance:
+---------------- 
+	Definition: The ability of a system to continue operating properly even when one or more components fail.
+	Focus: 		Preventing service disruption during known failures.
+	Example: 	If one server in a cluster crashes, another takes over instantly—users never notice a hiccup.
+	Techniques: Redundancy, failover mechanisms, error correction.
+	
+		A failover mechanism automatically switches operations from a failed component to a standby or redundant one, minimizing downtime and maintaining service continuity.
+
+
+Resilience:
+-----------
+	Definition: The ability of a system to recover and adapt after a disruption or failure.
+	Focus: 		Recovery, adaptation, and continued operation after unexpected or unknown failures.
+	Example: 	A system detects a new type of error, reroutes traffic, and learns to handle it better next time.
+	Techniques: Self-healing, graceful degradation, dynamic adaptation.
+
+
+Design for Failure:
+-------------------
+	Redundancy: 			Duplicate critical components to avoid single points of failure.
+	Graceful Degradation: 	Allow partial functionality when parts of the system fail.
+	Bulkhead Pattern: 		Isolate components so failure in one doesn’t cascade to others.
+
+
+Java offers powerful libraries and design patterns to implement resilience and fault tolerance, especially in distributed systems and microservices:
+--------------------------
+	1. Resilience4j:
+	----------------
+		Lightweight fault tolerance library inspired by Netflix Hystrix.
+		Designed for Java 8+ and functional programming.
+		
+		Supports:
+			Circuit Breaker
+			Retry
+			Rate Limiter
+			Time Limiter
+			Bulkhead
+			Fallbacks
+
+	2. Failsafe:
+	------------
+		Zero-dependency library for resilience policies.
+		
+		Supports:
+			Retry
+			Circuit Breaker
+			Timeout
+			Fallback
+			Bulkhead
+
+
+Common Patterns & How to Implement Them:
+----------------------------------------
+
+	Pattern 		Purpose 								Resilience4j Annotation 	Example Use Case
+	-------			-------									-----------------------		----------------
+	Circuit Breaker Prevent cascading failures 				@CircuitBreaker 			External API fails repeatedly
+	Retry 			Recover from transient failures 		@Retry 						Temporary network glitch
+	Rate Limiter 	Control request rate 					@RateLimiter 				Throttle user requests 
+	Bulkhead 		Isolate failures to prevent overload 	@Bulkhead 					Protect thread pool from exhaustion
+	Time Limiter 	Timeout long-running calls 				@TimeLimiter 				Slow database query
+	
+	
+Sample Implementation with Resilience4:
+---------------------------------------
+		
+	@Service
+	public class SampleService {
+
+		@CircuitBreaker(name = "sampleService", fallbackMethod = "fallback")
+		@Retry(name = "sampleService")
+		public String callExternalService() {
+			// Simulate failure
+			if (Math.random() > 0.5) {
+				throw new RuntimeException("Service failed");
+			}
+			return "Success!";
+		}
+
+		public String fallback(Exception ex) {
+			return "Fallback response: " + ex.getMessage();
+		}
+	}	
+
+
+	Configuration (application.yml):
+	--------------------------------
+		resilience4j:
+		  circuitbreaker:
+			instances:
+			  sampleService:
+				failureRateThreshold: 50
+				slidingWindowSize: 5
+				waitDurationInOpenState: 10s
+
+
+	Tips for Small Teams:
+	---------------------
+		Start with Resilience4j for Spring Boot apps.
+		Use Docker and Kubernetes for container isolation and auto-recovery.
+		Monitor with Prometheus + Grafana or Spring Boot Actuator.
+
+
+
+

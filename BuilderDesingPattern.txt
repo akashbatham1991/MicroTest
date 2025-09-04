@@ -1,0 +1,180 @@
+https://www.baeldung.com/java-builder-pattern
+https://www.javaguides.net/2023/12/builder-pattern-with-java-records.html
+
+Understanding Java Records and the Builder Pattern:
+--------------------------------------------------- 
+	When dealing with objects with many fields or optional fields, using the canonical constructor directly can become cumbersome and less readable. 
+
+	The Builder Pattern comes to the rescue here. It allows step-by-step construction of complex objects and can be particularly useful when you have several optional parameters. 
+
+		1. Classic Builder Pattern
+		2. Builder Pattern with Java Records
+		3. Lombok Builder
+	
+	
+1. Classic Builder Pattern:
+---------------------------
+	In the classic implementation of the Builder Pattern, we create a separate Builder inner class.	
+		
+	public class Post {
+
+		private final String title;
+		private final String text;
+		private final String category;
+
+		Post(Builder builder) {
+			this.title = builder.title;
+			this.text = builder.text;
+			this.category = builder.category;
+		}
+
+		public String getTitle() {
+			return title;
+		}
+
+		public String getText() {
+			return text;
+		}
+
+		public String getCategory() {
+			return category;
+		}
+
+		public static class Builder {
+		
+			private String title;
+			private String text;
+			private String category;
+
+			public Builder title(String title) {
+				this.title = title;
+				return this;
+			}
+
+			public Builder text(String text) {
+				this.text = text;
+				return this;
+			}
+
+			public Builder category(String category) {
+				this.category = category;
+				return this;
+			}
+
+			public Post build() {
+				return new Post(this);
+			}
+		}
+	}
+	
+	Now, we can use the Builder to create a new object:
+	
+		Post post = new Post.Builder()
+					  .title("Java Builder Pattern")
+					  .text("Explaining how to implement the Builder Pattern in Java")
+					  .category("Programming")
+					  .build();
+		
+		
+2. Implementing Builder Pattern with Java Records: 
+-------------------------------------------------	
+	
+	Step 1: Define the Record:
+	--------------------------
+	We start by defining a Product record with multiple fields.
+
+		public record Product(Long id, String name, String description, Double price, String category) {}
+		
+		
+	Step 2: Create the Builder Class:
+	---------------------------------		
+	We then create a static inner builder class inside the Product record.	
+		
+		public record Product(Long id, String name, String description, Double price, String category) {
+
+			public static class Builder {
+				private Long id;
+				private String name;
+				private String description;
+				private Double price;
+				private String category;
+
+				public Builder id(Long id) { 
+					this.id = id; 
+					return this; 
+				}
+				
+				public Builder name(String name) { 
+					this.name = name; 
+					return this; 
+				}
+				
+				public Builder description(String description) { 
+					this.description = description; 
+					return this; 
+				}
+				
+				public Builder price(Double price) { 
+					this.price = price; 
+					return this; 
+				}
+				
+				public Builder category(String category) { 
+					this.category = category; 
+					return this; 
+				}
+
+				public Product build() {
+					return new Product(id, name, description, price, category);
+				}
+			}
+		}
+		
+	Step 3: Using the Builder:
+	--------------------------	
+	With the builder in place, creating a Product record becomes more intuitive, especially when not all fields are required.
+	
+	public class Main {
+		public static void main(String[] args) {
+			Product product = new Product.Builder()
+					.name("Coffee Mug")
+					.price(15.99)
+					.build();
+
+			System.out.println(product);
+		}
+	}	
+	
+	Output:
+	-------
+		Product[id=null, name=Coffee Mug, description=null, price=15.99, category=null]
+	
+	
+3. Lombok Builder:
+------------------	
+		By annotating a class with @Builder, Lombok generates a builder class, This annotation eliminates the need for manual builder class implementation, significantly reducing verbosity.
+	
+		1)
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>1.18.32</version>
+			</dependency>
+		
+		
+		2)
+			@Builder
+			@Getter
+			public class LombokPost {
+				private String title;
+				private String text;
+				private String category;
+			}
+		
+		
+		3)
+			LombokPost lombokPost = LombokPost.builder()
+			  .title("Java Builder Pattern")
+			  .text("Explaining how to implement the Builder Pattern in Java")
+			  .category("Programming")
+			  .build();

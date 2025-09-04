@@ -1,0 +1,9 @@
+https://www.geeksforgeeks.org/system-design/system-design-tutorial/
+
+System Architectural Styles:
+---------------------------
+	Monolithic Architecture
+	Microservices Architecture
+	Monolithic vs Microservices Architecture
+	Event-Driven Architecture
+	Serverless Architecture

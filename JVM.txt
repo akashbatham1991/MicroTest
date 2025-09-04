@@ -1,0 +1,125 @@
+Java is an object-oriented programming language that includes the following features:
+-------------------------------------------------------------------------------------
+	Platform Independence:
+		Java applications are compiled into bytecode which is stored in class files and loaded in a JVM. Since applications run in a JVM, they can be run on many different operating systems and devices.
+	
+	Object-Oriented:
+		Java is an object-oriented language that take many of the features of C and C++ and improves upon them.
+	
+	Automatic Garbage Collection:
+		Java automatically allocates and deallocates memory so programs are not burdened with that task.
+
+
+Java Virtual Machine (JVM):
+---------------------------
+	A class file contains bytecodes (Java virtual machine instructions ).
+	Each JVM implementation for a specific operating system, translates the bytecodes into instructions and commands that run on the local operating system. 
+	This way, Java programs achieve platform independence.
+	It is part of the Java Runtime Environment (JRE).
+	It enables Java’s Write Once, Run Anywhere (WORA) capability by translating bytecode into native machine code on the fly.
+
+
+How JVM Works:
+--------------
+	Java Source Code → Compiled by javac → Bytecode (.class files)
+	Class Loader loads bytecode into JVM.
+	Execution Engine interprets or compiles bytecode into native machine code.
+	Garbage Collector manages memory automatically.
+	Native Libraries are accessed via the Java Native Interface (JNI).
+
+	
+	
+Types of ClassLoaders:
+----------------------
+	ClassLoader 		Loads...
+	-----------			--------
+	Bootstrap 			Core Java classes (java.lang.*, etc.)
+	Extension 			Classes from lib/ext or java.ext.dirs 
+	System/Application 	Classes from the classpath (-cp or CLASSPATH)
+	Custom 				User-defined loaders for plugins, modules, etc.
+	
+	
+	Example: Custom ClassLoader
+	---------------------------
+		public class MyClassLoader extends ClassLoader {
+			
+			@Override
+			protected Class<?> findClass(String name) throws ClassNotFoundException {
+				byte[] bytes = loadClassData(name); 				//your logic here
+				return defineClass(name, bytes, 0, bytes.length);
+			}
+		}
+
+	Custom ClassLoaders are often used in:
+	--------------------------------------
+		Application servers (e.g., Tomcat, JBoss)
+		Plugin systems
+		Dynamic class loading (e.g., loading from network or encrypted sources)
+
+	
+JVM converts bytecode into machine code:
+----------------------------------------
+	Yes, the Java Virtual Machine (JVM) converts bytecode into machine code during runtime using a combination of interpretation and compilation techniques. Here's how it works:
+
+	Step-by-Step: Bytecode to Machine Code:
+	---------------------------------------
+		
+		1. Compilation to Bytecode:
+		---------------------------
+			Java source code (.java) is compiled by the Java Compiler (javac) into bytecode (.class files).
+			Bytecode is a platform-independent intermediate representation.
+
+		2. Class Loading:
+		-----------------
+			The ClassLoader loads .class files into the JVM.
+			It verifies and prepares classes for execution.
+
+		3. Execution Engine:
+		--------------------
+			This is where bytecode becomes machine code.
+			
+			It includes:
+			------------
+				1. Interpreter: 
+					Reads and executes bytecode line by line, translating it into machine instructions on the fly.
+					Used when a method is run for the first few times.
+
+				
+				2. JIT Compiler (Just-In-Time): 
+					After a method is called multiple times, the JVM considers it “hot.”
+					The JIT compiler compiles the bytecode into native machine code for faster execution.
+					This compiled code is cached, so future calls run at near-native speed.
+					
+
+				3. Garbage Collector: Manages memory during execution.
+
+		4. Runtime Data Areas:
+		----------------------
+			JVM uses memory areas like Heap, Method Area, Stack, and PC Registers to manage execution.
+
+		
+		Why JIT Compilation Matters:
+		----------------------------
+			The JIT compiler improves performance by compiling "hot" code paths (frequently executed methods) into native code.
+			This avoids repeated interpretation and speeds up execution.
+
+	
+JVM Architecture:
+-----------------	
+	The main components of the JVM include: 
+		1. Classloader, 
+		2. Runtime data areas, and 
+		3. Execution engine
+	
+	Class Loader: 			Loads .class files into memory.	
+	Runtime Data Areas: 	Method Area, Heap, Stack, Program Counter Register, Native Internal threads.
+	Execution Engine:		JIT Compilor, Garbage Collector.	
+	
+	Native Interface: Connects Java code with native libraries (e.g., C/C++).
+		
+	There are three components of the JVM that are focused on when tuning performance:
+		1. The heap is where your object data is stored. This area is then managed by the garbage collector selected at startup. 
+		
+		2. Most tuning options relate to, sizing the heap and choosing the most appropriate garbage collector for your situation. 
+		
+		3. The JIT compiler also has a big impact on performance but rarely requires tuning with the newer versions of the JVM.	

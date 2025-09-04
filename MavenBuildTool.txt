@@ -1,0 +1,287 @@
+https://www.geeksforgeeks.org/maven-remote-repository/
+
+
+Maven:
+------
+	Maven is an open-source "build automation and project management tool" widely used for Java applications.  
+	As a build automation tool, it automates: 
+		the source code compilation, 
+		dependency management, 
+		assembles binary codes into packages and 
+		executes test scripts. 
+		
+	Maven translates and packages your source code so that it becomes an executable application.
+	
+	Using Maven, you can create Java deliverables like JAR, EAR, and WAR files. The pom.xml file helps you to do these tasks. These XML files contain your Java project’s name, group ID, and other valuable information. Based on this information, Maven creates the JAR (Java archives) files and transfers them to the Maven repository. You can download and use the JAR files for compilation and testing purposes.
+	
+	Apart from the build, it can handle team collaboration, reporting, documentation, distribution publication, and release management. Thus it has also become an excellent project management tool.
+	
+	
+	What does Maven manage for your Java projects?
+	----------------------------------------------
+		It manages the builds, packages, releases, documentation, test execution, test reports, email listing, and more.
+	
+	
+	Maven Plugins and Lifecycles:
+	-----------------------------
+		The Maven plugins add goals to your projects. 
+		The goals represent the functionalities of the plugins – what it can do for your project.
+		
+		
+	The build lifecycle is made up of different phases. 
+	The default lifecycle consists of the following phases:
+	------------------------------------------------------		
+		validate: 			Validates the project's configuration.
+		compile: 			Compiles the source code.
+		test: 				Runs unit tests.
+		package: 			Packages the compiled code.
+		integration-test: 	Runs integration tests.
+		verify: 			Verifies the package.
+		install: 			Installs the package into the local repository.
+		deploy: 			Deploys the package to a remote repository. 
+
+
+	There are different "dependency scopes" of Maven, such as: 
+	--------------------------------------------------------
+		compile:	This is the default scope when no other scope is provided.
+		runtime:	The dependencies with this scope are required at runtime. 
+		test:		dependency isn’t required at standard runtime of the application but is used only for test purposes. 
+		import:		It’s only available for the dependency type pom.
+		provided:	dependencies that should be provided at runtime by JDK or a container.
+		system:		System scope is very similar to the provided scope. The main difference is that system requires us 
+					to directly point to a specific jar on the system. 
+			
+
+	Transitive Dependency:
+	----------------------
+		There are two types of dependencies in Maven: 
+			direct and 
+			transitive.
+			
+		Direct dependencies are the ones that we explicitly include in the project.
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.12</version>
+			</dependency>
+
+		On the other hand, transitive dependencies are required by direct dependencies. Maven automatically includes required transitive dependencies in our project.
+		
+		We can list all dependencies including transitive dependencies in the project using below command: 
+			mvn dependency:tree 
+			
+
+	Build Automation:
+	-----------------
+		Building Java projects with Maven.
+		Compilation, packaging, and artifact generation.
+		Automated testing and reporting.
+
+		Building Java projects with Maven:
+			Maven starts the automation activities by downloading the dependencies. Later it manages the source code compilation, the binary codes, packaging, test execution, and reporting. This disciplined way provides optimized automation. It allows you to release your product after repeated validation and modification.
+
+		Compilation, packaging, and artifact generation:
+			This tool interprets source code into binary code for large applications. It compiles every class into byte codes and accumulates them within a single package. The packaging completes the building process. Then Maven will generate an output, called artifact. An artifact might be a JAR, EAR, or other executable file. 
+
+		Automated testing and reporting:
+			As it follows automation testing, you can easily test thousands of lines of your code with this tool. After finishing the test, you need to put that code in the reporting section of the POM file. Then by running the ‘mvn site’ command, you can generate the test report.
+
+		
+	Continuous Integration and Deployment:
+	--------------------------------------
+		Integrating Maven with CI/CD tools 
+		Automating build and deployment processes
+		Generating release artifacts and distribution packages
+
+
+Basic Maven Commands:
+---------------------
+	mvn clean: 		Clears the target directory, removing previously compiled code and artifacts. 
+	mvn compile: 	Compiles the project's source code. 
+	mvn test: 		Runs the unit tests of the project. 
+	mvn package: 	Packages the compiled code into a distributable format, such as a JAR or WAR file. 
+	mvn install: 	Installs the package into the 'local Maven repository', making it available as a dependency in other 
+					projects.
+	mvn deploy: 	Deploys the package to a 'remote repository', for sharing with other developers. 
+	mvn help:effective-pom: Displays the effective POM of the project, including inherited properties. 
+	mvn dependency:tree: 	Shows the project's dependency tree, including transitive dependencies. 
+	mvn archetype:generate: Generates a new Maven project based on a template (archetype). 
+
+		
+Advanced Maven Commands:
+------------------------
+mvn clean install: 		A common command that cleans the project and then installs the package into the local repository. 
+mvn -X: 				Runs Maven in debug mode, displaying detailed logs for troubleshooting. 
+mvn dependency:sources: Downloads the source code of the project's dependencies. 
+mvn dependency:analyze: Identifies unused dependencies in the project. 		
+
+
+-integrating the clean step with install phase:
+	mvn clean install
+
+-install step with debug mode on:
+	mvn -X install
+
+-run the tests while packaging or installing the Java project: 
+	mvn install -DskipTests
+	
+-build a Maven project with multi-threading enabled:
+	mvn -T 4 clean install
+
+-If you are temporarily disconnected from the internet and you need to build your projects offline, you can use the offline switch on the CLI:
+	mvn -o package
+					
+					
+diff maven package and install:
+-------------------------------
+	In summary, while both commands compile source code, run tests, and package the compiled code into an artifact, 
+	mvn install additionally installs the artifact into the local Maven repository, whereas 
+	mvn package simply creates the artifact in the project's target directory without installing it locally. 
+ 
+ 
+Maven Project Structure:
+------------------------
+	A standard Maven project structure typically includes a root directory with a pom.xml file for project configuration, 
+	a src directory for source code, and a target directory for build outputs. 
+	Within src, there are main and test directories for production and test code respectively. These directories further contain java and resources folders for Java source files and non-Java resources. 
+	
+	Here's a more detailed breakdown:
+	--------------------------------
+	Root Directory:
+		pom.xml:
+			This file contains the Project Object Model, defining project details, dependencies, plugins, and build settings. 
+
+		.gitignore:
+			Optionally, this file specifies files that should be excluded from version control (e.g., target, .mvn). 
+			
+	src Directory:
+		main:
+			java: 		Contains the Java source code for the main application. 
+			resources: 	Contains resources used by the application (e.g., configuration files, properties files). 		
+			
+		test:
+			java: 		Contains the Java source code for unit tests. 
+			resources: 	Contains resources used by the unit tests (e.g., test data). 		
+			
+	target Directory:
+		This directory is automatically generated by Maven during the build process and contains the compiled classes, packaged artifacts (e.g., JAR, WAR), and other build artifacts. 		
+		
+		
+	Other potential directories:
+		site: Optionally, this directory can contain documentation or other static web content for project documentation. 
+		examples: Optionally, this directory can contain example code. 	
+		
+		
+	In essence, the Maven project structure helps organize the project's source code, resources, dependencies, and build artifacts, making it easier for developers to manage and build the project. 	
+	
+	
+	
+Repository:
+-----------
+	Local Repository Check: 
+		The Maven checks the local repository for the required dependencies.
+	
+	Remote Repository Check: 
+		If the dependencies are not found locally, Then maven connects to the remote repository to download the required artifacts.
+	
+	Dependency Download: 
+		The dependencies are downloaded from the remote repository and stored in the local repository.	
+	
+	Build Process: 
+		Maven uses the downloaded dependencies to build the project.
+	
+	Deploy Artifacts: 
+		If configured, the build artifacts can be deployed to a remote repository for sharing with other projects.
+		
+	
+	Types of Maven Repositories:
+	----------------------------
+		Local Repository
+		Central Repository
+		Remote Repository
+		
+		
+		Local Repository:
+		-----------------
+			A local repository is a directory on the developers' machine where Maven stores all the artifacts resolved from remote repositories or created by the developer. And By default, this repository is located at:
+				
+				C:\Users\{your-username}\.m2\repository
+				
+			When a dependency is needed, Maven first check this local repository. If dependency is found It is used, Otherwise Maven fetches it from the remote repositories and caches it locally.
+
+			You can change the location of the local repository in setting.xml file using localRepository tag:
+				<settings>
+					<localRepository>C:\M2</localRepository>
+				</settings>
+
+
+		Central Repository:	(default repository)
+		-------------------	
+			The central is a repository provided by the Maven community and maintained by the Apache Software Foundation. It contains a large number of commonly used libraries and is the default repository used by Maven When It needs to resolve dependencies.
+
+				https://repo.maven.apache.org/maven2
+				
+			When a dependency is not found in the local repository, Maven queries the central repository to download it.
+
+		
+		Remote Repository:
+		------------------
+			Apart from the central repository, you may have needed artifacts deployed in other remote locations. For example, in your corporate office, there may be projects or modules specific to the organization only. In this case, the organization can create a remote repository and deploy the private artifacts. This remote repository will be accessible only inside the organization.
+
+			These Maven remote repository work exactly the same way as Maven’s central repository. Whenever an artifact is needed from these repositories, it is first downloaded to the developer’s local repository and then it is used.
+
+			You can configure a remote repository in the POM file or super POM file in the remote repository itself.
+
+				<repositories>
+				   <repository>
+					   <id>org.source.repo</id>
+					   <url>https://maven.orgName.com/maven2/</url>
+				   </repository>
+				</repositories>
+				
+			Types of Remote Repositories:
+			-----------------------------
+				Corporate Repository
+				Third-Party Repository
+				etc...
+				
+			Purpose of Maven Remote Repository:
+			-----------------------------------
+			The primary purposes of the Maven Remote Repository are,
+
+				Dependency Management: 
+					It allows project to download dependencies that are not available locally.
+				
+				Centralized Storage: 
+					Provides a centralized place where all maven artifacts can be stored and accessed by any developers or project.
+				
+				Version Control: 
+					Manages different versions of artifacts ensuring that the correct versions are used and conflicts are avoided.
+				
+				Collaboration: 
+					Facilitates sharing and collaboration among developers and teams by providing a common repository for storing and retrieving dependencies.	
+					
+	
+	
+	Project Structure:
+	------------------
+	
+	my-maven-project
+	├── pom.xml
+	├── src
+	│   ├── main
+	│   │   ├── java
+	│   │   │   └── com
+	│   │   │       └── example
+	│   │   │           └── App.java
+	│   │   └── resources
+	│	│
+	│   └── test
+	│       ├── java
+	│       │   └── com
+	│       │       └── example
+	│       │           └── AppTest.java
+	│       └── resources
+	│	
+	│	
+	├──	target directory(jar)

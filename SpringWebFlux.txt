@@ -1,0 +1,563 @@
+https://www.baeldung.com/spring-webflux
+https://howtodoinjava.com/spring-webflux/spring-webflux-tutorial/
+https://docs.spring.io/spring-framework/reference/web/webflux.html
+
+Spring MVC:
+	The original Spring web framework, using a blocking, thread-per-request model. It's widely used and well-understood, but can struggle with high concurrency. 
+
+Spring WebFlux:
+	A reactive, non-blocking framework built on Project Reactor, designed for high concurrency and low latency. It's a good choice for microservices, real-time applications, and data-intensive systems. 
+	
+	
+	In Servlet async model, processing can happen on a different thread or wait.With that model, you need many threads to achieve concurrency (because many of those can be blocked waiting for I/O). With non-blocking code, you only need a few threads to process a lot of requests concurrently. This is a different concurrency model.
+
+	Servlet API is blocking I/O which requires 1 thread per HTTP request. Spring MVC async relies on Servlet APIs which only provides async behavior between container threads and request processing threads but not end to end.
+
+	Spring WebFlux on the other hand achieves concurrency by a fixed number of threads by using HTTP sockets and pushing chunks of data at a time through the sockets. This mechanism is called event loop, an idea made popular by Node.js. Such an approach is scalable and resilient. Spring 5's spring-webflux uses the event loop approach to provide async behavior.	
+	
+
+Reactive programming:
+---------------------
+	Programming paradigm focused on building systems that are asynchronous, non-blocking, and event-driven.
+	Allowing applications to react to events or data updates in real-time.
+
+	Real-World Analogy:
+	-------------------
+		Imagine a railway station:
+			Trains arrive (events).
+			Passengers (subscribers) react by boarding.
+			The station display updates in real time (stream of data). This is how reactive systems work—reacting to changes as they happen.
+
+	Benefits:
+	---------
+	- Responsive: 		Reacts instantly to user or system events.
+	- Resilient: 		Handles failures gracefully.
+	- Elastic: 			Scales efficiently with load.
+	- Message-driven: 	Communicates via asynchronous messages.
+
+	Use Cases:
+	----------
+	- Real-time dashboards
+	- Chat applications
+	- IoT data processing
+	- High-frequency trading platforms
+	- Microservices with asynchronous communication
+
+
+	Popular Libraries & Frameworks:
+	-------------------------------
+		Language 		Libraries/Frameworks
+		--------		--------------------
+		Java 			RxJava, Project Reactor, Spring WebFlux
+		JavaScript 		RxJS, Node.js Streams
+		Kotlin 			Flow, Coroutines
+		Python 			RxPY 
+
+
+	When to Use Reactive Programming:
+	---------------------------------
+	- Real-time systems (e.g., chat apps, live dashboards)
+	- High-concurrency environments (e.g., APIs, microservices)
+	- Applications needing non-blocking I/O (e.g., file or network access)
+
+
+Reactive vs. Traditional Programming:
+-------------------------------------
+	Feature 				Traditional Programming 				Reactive Programming
+	-------					-----------------------					--------------------
+	Execution Model 		Synchronous, blocking 					Asynchronous, non-blocking
+	Concurrency Handling 	Thread-per-task (can be inefficient) 	Event loop or reactive streams (more efficient)
+	Data Flow 				Pull-based (request → wait → response) 	Push-based (data/events pushed to observers)
+	Scalability 			Limited by thread count 				High scalability with fewer threads
+	Responsiveness 			Slower under load 						More responsive under high concurrency
+	Code Style 				Step-by-step, easier to follow 			Declarative, stream-based, can be harder to grasp 
+	Error Handling 			Try/catch blocks 						Stream-based error propagation
+	Use Cases 				Simple apps, scripts, CPU-bound tasks 	Real-time apps, UIs, microservices, I/O-bound tasks
+
+
+Reactive in Java (Spring WebFlux):
+----------------------------------
+	Spring webflux uses project reactor as the reactive library. 
+	Spring WebFlux internally uses Project Reactor and its publisher implementations, Flux and Mono:
+	
+	- Mono<T>: Emits 0 or 1 items
+	-----------------------------
+		Mono<String> mono = Mono.just("Alex");
+		Mono<String> mono = Mono.empty();
+	
+	- Flux<T>: Emits 0 to N items
+	-----------------------------
+		Flux<String> flux = Flux.just("A", "B", "C");
+		Flux<String> flux = Flux.fromArray(new String[]{"A", "B", "C"});
+		Flux<String> flux = Flux.fromIterable(Arrays.asList("A", "B", "C"));
+		 
+	
+	- subscribe():
+	-------------
+		In Spring WebFlux, the .subscribe() method is used to trigger the execution of a Mono or Flux.
+	
+	Why .subscribe() is Needed:
+	---------------------------
+	Reactive streams are lazy. This means:
+	- Nothing happens until you subscribe.
+	- Subscribing connects the Publisher (e.g., Mono, Flux) to a Subscriber (e.g., your code).
+
+	Common .subscribe() Variants:
+	-----------------------------
+	Here are the most common ways to use .subscribe() with a Mono:
+		
+		1. Basic Subscription:
+		----------------------
+			Mono<String> mono = Mono.just("Hello");
+			mono.subscribe(); // triggers execution, but does nothing with the result
+
+		2. With Consumer:
+		-----------------
+			mono.subscribe(value -> System.out.println("Received: " + value));
+
+		3. With Error Handling:
+		-----------------------	
+			mono.subscribe(
+				value -> System.out.println("Received: " + value),
+				error -> System.err.println("Error: " + error)
+			);
+
+		4. With Completion Callback:
+		----------------------------
+			mono.subscribe(
+				value -> System.out.println("Received: " + value),
+				error -> System.err.println("Error: " + error),
+				() -> System.out.println("Completed")
+			);
+
+
+		5. With Subscription Hook:
+		--------------------------
+			mono.subscribe(
+				value -> System.out.println("Received: " + value),
+				error -> System.err.println("Error: " + error),
+				() -> System.out.println("Completed"),
+				subscription -> subscription.request(1)
+			);
+
+	Important Notes:
+	----------------
+		- If you use .subscribe() in a non-reactive context (like main()), the program may exit before the async operation completes. Use block() or synchronization tools like CountDownLatch for testing.
+		- In production, avoid .block()—it defeats the purpose of reactive programming.
+
+
+https://howtodoinjava.com/spring-webflux/spring-webflux-tutorial/	
+Spring WebFlux:
+---------------		
+	Spring WebFlux is a reactive, non-blocking web framework introduced in Spring Framework 5. It’s designed to handle asynchronous, event-driven applications and is built on top of Project Reactor, using Flux and Mono as its core reactive types.
+	
+	dependency:
+	-----------
+		<dependency>
+		  <groupId>org.springframework.boot</groupId>
+		  <artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+		
+	Webflux Configuration:
+	----------------------
+		The @EnableWebFlux imports the Spring WebFlux configuration from WebFluxConfigurationSupport that enables the use of annotated controllers and functional endpoints.
+		
+			@Configuration
+			@EnableWebFlux	
+			
+		
+	ReactiveRepository:
+	-------------------
+		In the context of Spring Data, a ReactiveRepository refers to any repository interface that supports reactive, non-blocking data access using Project Reactor types like Mono and Flux. 
+
+		are designed to work with reactive databases such as MongoDB, Cassandra, and Redis.
+
+		ReactiveCrudRepository:
+		-----------------------
+			It's a core interface and provides standard CRUD operations in a reactive, non-blocking way:
+			
+				public interface ReactiveCrudRepository<T, ID> extends Repository<T, ID> {
+					<S extends T> Mono<S> save(S entity);
+					Flux<T> findAll();
+					Mono<T> findById(ID id);
+					Mono<Void> deleteById(ID id);
+					Mono<Boolean> existsById(ID id);
+				}
+				
+		Example: Reactive MongoDB Repository:
+		-------------------------------------
+			@Repository
+			public interface AccountRepository extends ReactiveMongoRepository<Account, String> {
+				Mono<Account> findByOwner(String owner);
+				Flux<Account> findByBalanceGreaterThan(Double amount);
+			}
+
+			This interface extends ReactiveMongoRepository, which itself extends ReactiveCrudRepository, enabling reactive access to MongoDB.
+
+		
+		Reactive vs. Traditional Repositories:
+		--------------------------------------
+		Feature 				Traditional Repository 			Reactive Repository
+		-------					----------------------			-------------------
+		Return Types 			List<T>, Optional<T> 			Flux<T>, Mono<T>
+		Execution 				Blocking 						Non-blocking, asynchronous
+		Use Case 				Simple apps, low concurrency 	Real-time, high-concurrency systems
+		Backpressure Support 	No 								Yes (via Reactive Streams)
+
+
+	REST Controller with CRUD APIs:
+	-------------------------------
+		
+		import reactor.core.publisher.Flux;
+		import reactor.core.publisher.Mono;
+		 
+		@RestController
+		public class EmployeeController {
+
+			@Autowired
+			private EmployeeService employeeService;
+
+			@RequestMapping(value = "/{id}", method = RequestMethod.GET)
+			public ResponseEntity<Mono<Employee>> findById(@PathVariable("id") Integer id) {
+				Mono<Employee> e = employeeService.findById(id);
+				return new ResponseEntity<Mono<Employee>>(e, HttpStatus.OK);
+			}
+			 
+			@RequestMapping(value = "/name/{name}", method = RequestMethod.GET)
+			public Flux<Employee> findByName(@PathVariable("name") String name) {
+				return employeeService.findByName(name);
+			}
+			 
+			@RequestMapping(method = RequestMethod.GET, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+			public Flux<Employee> findAll() {
+				Flux<Employee> emps = employeeService.findAll();
+				return emps;
+			}
+		}
+
+			
+	Service:
+	--------
+		public interface IEmployeeService 
+		{
+			Mono<Employee> findById(Integer id);
+			Flux<Employee> findByName(String name);
+			Flux<Employee> findAll();
+		}
+		
+		@Service
+		public class EmployeeService implements IEmployeeService {
+		   
+			@Autowired
+			EmployeeRepository employeeRepo;
+
+			public Mono<Employee> findById(Integer id) {
+				return employeeRepo.findById(id);
+			}
+		 
+			public Flux<Employee> findByName(String name) {
+				return employeeRepo.findByName(name);
+			}
+		 
+			public Flux<Employee> findAll() {
+				return employeeRepo.findAll();
+			}
+		}	
+		
+	DAO:
+	----		 
+		public interface EmployeeRepository extends ReactiveMongoRepository<Employee, Integer> {
+
+		  @Query("{ 'name': ?0 }")
+		  Flux<Employee> findByName(final String name);
+		}
+		
+	Model:
+	------
+		@Scope(scopeName = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+		@Document
+		public class Employee {
+		 
+		  @Id
+		  int id;
+		  String name;
+		  long salary;
+		 
+		  //Getters and setters
+		 
+		  @Override
+		  public String toString() {
+			return "Employee [id=" + id + ", name=" + name + ", salary=" + salary + "]";
+		  }
+		}
+		
+	Reactive Web Client:
+	--------------------
+		API based on Reactor, enables asynchronous logic without the need to deal with threads or concurrency. It is fully non-blocking.
+		WebClient needs an HTTP client library to perform requests with. There is built-in support for the following:
+			Reactor Netty
+			JDK HttpClient
+			Jetty Reactive HttpClient
+			Apache HttpComponents
+
+		We can use WebClient to create a client to retrieve data from the endpoints provided by the EmployeeController.
+		
+			public class EmployeeWebClient {
+				WebClient client = WebClient.create("http://localhost:8080");
+				// ...
+			}
+		
+			//we can use relative URLs for calls made by this client instance.
+		
+		Retrieving a Single Resource:
+		-----------------------------
+			Mono<Employee> employeeMono = client.get()
+			  .uri("/employees/{id}", "1")
+			  .retrieve()
+			  .bodyToMono(Employee.class);
+
+			employeeMono.subscribe(System.out::println);
+			
+		Retrieving a Collection Resource:
+		---------------------------------
+			Flux<Employee> employeeFlux = client.get()
+			  .uri("/employees")
+			  .retrieve()
+			  .bodyToFlux(Employee.class);
+					
+			employeeFlux.subscribe(System.out::println);
+			
+	
+Spring WebFlux Security:
+------------------------
+	We can use Spring Security to secure our reactive endpoints.
+
+	We can use Spring Security to secure our reactive endpoints.
+
+	Let’s suppose we have a new endpoint in our EmployeeController. This endpoint updates Employee details and sends back the updated Employee.
+
+	Since this allows users to change existing employees, we want to restrict this endpoint to ADMIN role users only.	
+	
+	Now, to restrict access to this method, let’s create SecurityConfig and define some path-based rules to allow only ADMIN users:
+	
+			@EnableWebFluxSecurity
+			public class EmployeeWebSecurityConfig {
+				@Bean
+				public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+					http.csrf().disable()
+					  .authorizeExchange()
+					  .pathMatchers(HttpMethod.POST, "/employees/update").hasRole("ADMIN")
+					  .pathMatchers("/**").permitAll()
+					  .and()
+					  .httpBasic();
+					return http.build();
+				}
+			}
+			
+			//This configuration will restrict access to the endpoint /employees/update. Therefore, only users with a role ADMIN will be able to access this endpoint and update an existing Employee.
+			
+			
+RestClient, RestTemplate, and WebClient in Spring:
+--------------------------------------------------
+	Summary Table:
+	--------------
+		Feature 		RestClient 			RestTemplate 		WebClient
+		-------			----------			------------		---------
+		Introduced In 	Spring 6.1 			Spring 3 			Spring 5
+		Blocking 		Yes 				Yes 				No
+		Reactive 		No 					No 					Yes
+		Use Case 		Modern sync apps	Legacy/simple apps 	Reactive, async apps
+		Status 			Recommended			Deprecated 			Recommended
+		
+
+	Examples:
+	---------
+		1)
+		RestClient client = RestClient.create();
+		String response = client.get()
+								.uri("https://api.example.com/data")
+								.retrieve()
+								.body(String.class);
+		2)
+		RestTemplate restTemplate = new RestTemplate();
+		String result = restTemplate.getForObject("https://api.example.com/data", String.class);
+
+		3)
+		WebClient client = WebClient.create("https://api.example.com");
+		Mono<String> result = client.get()
+									.uri("/data")
+									.retrieve()
+									.bodyToMono(String.class);		
+									
+									
+									
+Map and FlatMap Operator in reactive programming:
+-------------------------------------------------
+	Used to transform data but they serve different purposes and behave differently:
+
+	Code Examples:
+	--------------
+		map() – Simple transformation:
+		------------------------------
+			Mono<String> nameMono = Mono.just("Alice");
+			Mono<String> upperMono = nameMono.map(String::toUpperCase);
+			// Emits: "ALICE"
+
+
+		flatMap() – Asynchronous transformation:
+		----------------------------------------
+			Mono<String> nameMono = Mono.just("Alice");
+			Mono<String> result = nameMono.flatMap(name -> Mono.just(name.toUpperCase()));
+			// Emits: "ALICE"
+
+			//Here, flatMap is used because the transformation returns another Mono.
+
+	Nested Example:
+	---------------
+		Mono<User> userMono = userService.findById("123"); 		// returns Mono<User>
+		Mono<Account> accountMono = userMono.flatMap(user -> accountService.findByUser(user));
+		
+		// accountService.findByUser returns Mono<Account>
+		//If you used map() here, you'd get Mono<Mono<Account>>, which is not what you want. flatMap() flattens the nested structure.
+
+
+	When to Use:
+	------------
+		- Use map() when your transformation is synchronous and returns a plain value.
+		- Use flatMap() when your transformation is asynchronous or returns another Mono or Flux.
+
+
+Zip Operator:
+-------------
+	Used to "combine multiple asynchronous streams" (like Mono or Flux) by pairing their emitted items "in order" and applying a "combining function" to produce a new stream.
+	
+	Use Cases:
+	----------
+		- Combine results from multiple API calls
+		- Aggregate data from different services
+		- Synchronize multiple asynchronous operations
+	
+	Notes:
+	------
+		- zip is eager: it waits for all sources to emit before combining.
+		- If one source completes early or errors out, the zipped stream will also complete or error.
+		- For parallel execution, make sure each source is subscribed independently (e.g., using .subscribeOn(Schedulers.parallel())).
+
+
+	Example in Project Reactor (Spring WebFlux):
+	--------------------------------------------
+		Mono<String> nameMono = Mono.just("Alice");
+		Mono<Integer> ageMono = Mono.just(30);
+
+		Mono<String> result = Mono.zip(nameMono, ageMono)
+			.map(tuple -> "Name: " + tuple.getT1() + ", Age: " + tuple.getT2());
+
+		result.subscribe(System.out::println);	//O:P: Name: Alice, Age: 30
+			
+
+		You can also zip more than two Monos:
+		
+		Mono.zip(mono1, mono2, mono3)
+			.map(tuple -> {
+				var val1 = tuple.getT1();
+				var val2 = tuple.getT2();
+				var val3 = tuple.getT3();
+				return combine(val1, val2, val3);
+			});
+
+Tuple:
+------
+	In reactive programming, especially with Project Reactor (Mono, Flux), a Tuple is often used when you need to combine multiple values and pass them downstream in a single object. This is especially useful when using operators like zip, flatMap, or map where you want to carry multiple pieces of data through the reactive chain.
+
+
+
+How multiple apis are getting called in spring webflux:
+-------------------------------------------------------
+	In Spring WebFlux, multiple APIs can be called concurrently and non-blockingly using its reactive programming model.
+
+	Core Mechanism:
+	---------------
+		Reactive Streams: 
+			WebFlux uses Mono (0 or 1 item) and Flux (0 to N items) to represent asynchronous data.
+		
+		Operators like flatMap, zip, and merge allow you to combine multiple API calls in parallel or sequence.
+	
+	
+	Parallel API Calls with WebClient:
+	----------------------------------
+	
+	1. Calling Multiple APIs Simultaneously:
+	----------------------------------------
+		Flux<Integer> ids = Flux.just(1, 2, 3, 4, 5);
+
+		Flux<User> users = ids.flatMap(id -> webClient.get()
+			.uri("/user/{id}", id)
+			.retrieve()
+			.bodyToMono(User.class));
+
+
+		- flatMap executes each call in parallel.
+		- You can control concurrency with flatMap(..., concurrencyLevel).
+
+
+	2. Combining Results from Different APIs:
+	-----------------------------------------
+		Mono<User> userMono = webClient.get().uri("/user/1").retrieve().bodyToMono(User.class);
+		Mono<Item> itemMono = webClient.get().uri("/item/1").retrieve().bodyToMono(Item.class);
+
+		Mono<UserWithItem> combined = Mono.zip(userMono, itemMono, UserWithItem::new);
+
+		Mono.zip merges results from different sources into a single object.
+
+
+	3. Chaining After a First Call:
+	-------------------------------
+		saveFirstObject(request.getFirstObject())
+			.flatMap(firstResult -> Mono.zip(
+				saveSecondObject(firstResult),
+				saveThirdObject(firstResult)
+			))
+			.map(this::combineResults);
+
+		Useful when subsequent calls depend on the result of the first.
+
+
+	Key Benefits:
+	-------------
+	Non-blocking: 	Threads aren’t held up waiting for responses.
+	Scalable: 		Ideal for high-throughput applications.
+	Efficient: 		Uses fewer resources compared to traditional blocking calls.
+
+
+
+What is the media type for mono or flux:
+----------------------------------------
+	In Spring WebFlux, the media type used for Mono and Flux depends on how the data is serialized and the nature of the response:
+
+	Default Media Types:
+	--------------------
+		Reactive Type 	Typical Media Type 							Description 
+		-------------	------------------							-----------
+		Mono<T> 		application/json 							Single object serialized as JSON
+		Flux<T> 		application/json or application/stream+json Multiple objects; can be streamed or buffered
+	
+	
+	Explanation:
+	------------
+		Mono<T>: 
+			Represents 0 or 1 item. When returned from a controller, it's treated like a regular object and serialized as application/json.
+		
+		Flux<T>: 
+			Represents 0 to N items. If you want to stream the response (e.g. emit items as they arrive), use:
+				application/stream+json for JSON streaming
+				text/event-stream for Server-Sent Events (SSE)
+				application/x-ndjson for newline-delimited JSON
+		
+		Example:
+			@GetMapping(value = "/users", produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
+			public Flux<User> streamUsers() {
+				return userService.getUsers();
+			}
+
+
+

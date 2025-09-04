@@ -1,0 +1,348 @@
+https://www.javaguides.net/2025/02/memory-management-in-java-best-practices.html
+
+
+Memory Management in Java: Best Practices to Avoid Memory Leaks:
+----------------------------------------------------------------
+	Memory management is one of the most crucial aspects of Java development. 
+	
+	Java uses automatic garbage collection (GC) to handle memory allocation and deallocation, but
+	
+	Poor memory management or code practices, can still lead to: 
+		Memory leaks, 
+		High heap usage, and 
+		OutOfMemoryErrors.
+	
+	
+	Java’s memory is divided into the following key areas:
+	------------------------------------------------------
+		Heap Memory: 					Stores objects and class instances.
+		Stack Memory:					Stores method-specific local variables and references.
+		Metaspace (Formerly PermGen): 	Stores class metadata, method data, and runtime constant pool.
+		Garbage Collector (GC):			Reclaims memory of unused objects.
+		
+	
+	Below are few memory management techniques:
+	-------------------------------------------
+		1. Avoid Unnecessary Object References
+		2. Beware of Static Field Memory Leaks
+		3. Use Proper Collection Handling
+		4. Use Weak References for Caching
+		5. Close Resources After Use (Avoid Memory Leaks in Streams & Files)
+		6. Monitor and Tune Garbage Collection
+		7. Use Immutable Objects to Prevent Memory Leaks
+		8. Avoid Large Objects in Session & HTTP Requests
+		9. Optimize String and Object Creation
+		10. Monitor Memory Usage with Profiling Tools
+			
+		By applying these memory management techniques, your Java applications will: 
+			run faster, 
+			consume less memory, and 
+			avoid crashes due to memory leaks.	
+			
+		
+	1. Avoid Unnecessary Object References:
+	---------------------------------------
+		Why?
+			Holding object references unnecessarily prevents the garbage collector from reclaiming memory, leading to memory leaks.
+
+		Best Practices:
+			✔ Use local variables instead of instance variables when possible.
+			✔ Nullify references when they are no longer needed.
+
+		Example: Holding Unnecessary References
+		--------
+			❌ Bad Code:
+			------------
+				List<String> users = new ArrayList<>();
+				users.add("Alice");
+				// users is never cleared, causing memory leaks
+			
+			✔ Good Code:
+			-------------
+				List<String> users = new ArrayList<>();
+				users.add("Alice");
+				users.clear(); // Clears memory
+				users = null;  // Dereferences list
+				
+		🔹 Benefit: Ensures unused objects are garbage collected.
+
+
+	2. Beware of Static Field Memory Leaks:
+	---------------------------------------
+		Why?
+			Static fields persist throughout the application lifetime, preventing objects from being garbage collected.
+
+		Best Practices:
+			✔ Avoid storing large objects in static fields.
+			✔ Use WeakReference for cache-based static objects.
+
+		Example: Static Field Memory Leak		
+		--------
+			❌ Bad Code:
+			------------
+				public class Cache {
+					private static final List<String> CACHE = new ArrayList<>();
+				}
+				
+			✔ Good Code:
+			-------------
+				public class Cache {
+					private static final WeakReference<List<String>> CACHE = 
+						new WeakReference<>(new ArrayList<>());
+				}
+			
+			🔹 Benefit: Prevents unused objects from consuming heap memory.
+
+	
+	3. Use Proper Collection Handling:
+	----------------------------------
+		Why?
+			Improper use of collections can cause memory leaks, especially when using unbounded collections.
+
+		Best Practices:
+			✔ Use remove() when objects are no longer needed.
+			✔ Prefer WeakHashMap for caches.
+
+		Example: Not Removing Objects from Collections		
+		--------
+			❌ Bad Code:
+			-------------
+				Map<Integer, String> map = new HashMap<>();
+				map.put(1, "Data");
+				// Data stays in memory indefinitely
+				
+			✔ Good Code:
+			-------------
+				Map<Integer, String> map = new HashMap<>();
+				map.put(1, "Data");
+				map.remove(1); // Removes object from memory
+				
+		🔹 Benefit: Prevents unintentional retention of unused objects.
+
+
+	4. Use Weak References for Caching:
+	-----------------------------------
+		Why?
+			Strong references prevent garbage collection. Weak references allow GC to collect objects when no strong references exist.
+
+		Best Practices:
+			✔ Use WeakReference for caching large objects.
+			✔ Use WeakHashMap for temporary caching.
+
+		Example: Using WeakReference for Caching		
+		---------
+			Map<Integer, WeakReference<String>> cache = new HashMap<>();
+			cache.put(1, new WeakReference<>("Cached Data"));
+			
+		🔹 Benefit: Prevents caches from growing indefinitely.
+
+
+	5. Close Resources After Use (Avoid Memory Leaks in Streams & Files):
+	---------------------------------------------------------------------
+		Why?
+			Forgetting to close resources (file streams, DB connections) leads to memory leaks.
+
+		Best Practices:
+			✔ Use try-with-resources for automatic resource management.
+			✔ Always close InputStream, Connection, or Socket.
+
+		Example: Not Closing Resources	
+		--------
+			❌ Bad Code:
+			------------
+				FileInputStream fis = new FileInputStream("file.txt");
+				// Not closing stream causes memory leaks
+
+			✔ Good Code (Using Try-With-Resources):
+			----------------------------------------
+				try (FileInputStream fis = new FileInputStream("file.txt")) {
+					// Process file
+				}
+		🔹 Benefit: Ensures resources are always released properly.
+
+
+	6. Monitor and Tune Garbage Collection:
+	---------------------------------------
+		Why?
+			Garbage collection (GC) inefficiencies cause performance slowdowns and memory leaks.
+
+		Best Practices:
+			✔ Use G1GC (Garbage First GC) for better performance.
+			✔ Use -Xms and -Xmx JVM options to optimize heap size.
+			✔ Monitor GC using VisualVM, JConsole, and Java Flight Recorder.
+
+		Example: Setting JVM Heap Size		
+		--------
+			java -Xms512m -Xmx2g -XX:+UseG1GC MyApplication
+
+		🔹 Benefit: Prevents OutOfMemoryErrors and improves application stability.
+
+
+	7. Use Immutable Objects to Prevent Memory Leaks:
+	-------------------------------------------------
+		Why?
+			Mutable objects increase memory churn when modified frequently.
+
+		Best Practices:
+			✔ Use final keyword for immutable fields.
+			✔ Prefer immutable collections.
+
+		Example: Creating Immutable Objects	
+		--------
+			public final class User {
+				private final String name;
+				public User(String name) { this.name = name; }
+			}
+		
+		🔹 Benefit: Reduces unnecessary object creation.
+					
+					
+	8. Avoid Large Objects in Session & HTTP Requests:
+	--------------------------------------------------
+		Why?
+			Storing large objects in sessions leads to high memory usage.
+
+		Best Practices:
+			✔ Store only minimal session data.
+			✔ Use database or cache (Redis) for storing large objects.
+
+		Example: Avoid Storing Large Objects in HTTP Sessions
+		--------
+			HttpSession session = request.getSession();
+			session.setAttribute("largeData", largeObject); // Avoid this!
+		
+		🔹 Benefit: Improves application scalability.				
+		
+		
+	9. Optimize String and Object Creation:
+	---------------------------------------
+		Why?
+			Creating too many temporary objects leads to high heap usage.
+
+		Best Practices:
+			✔ Use StringBuilder instead of String concatenation.
+			✔ Use object pooling for expensive object creation.
+
+		Example: Avoiding String Concatenation	
+		--------
+			❌ Bad Code:
+			------------
+				String result = "Java" + "Memory" + "Optimization";
+			
+			✔ Good Code:
+			-------------
+				StringBuilder sb = new StringBuilder();
+				sb.append("Java").append("Memory").append("Optimization");
+			
+		🔹 Benefit: Reduces unnecessary string allocations.
+		
+		
+	10. Monitor Memory Usage with Profiling Tools:
+	----------------------------------------------
+		Why?
+			Monitoring memory usage helps detect and fix leaks early.
+
+		Best Practices:
+			✔ Use VisualVM, JProfiler, or Java Flight Recorder for heap analysis.
+			✔ Enable heap dumps to diagnose memory leaks.
+
+		Example: Analyzing Memory Usage in VisualVM
+		--------
+			jmap -dump:format=b,file=heapdump.hprof <PID>
+		
+		🔹 Benefit: Helps detect memory leaks before they impact performance.	
+		
+		
+Conclusion:
+-----------
+	Memory management is crucial for scalability and performance in Java applications. Following these best practices can avoid memory leaks, optimize garbage collection, and improve application stability.		
+	
+Key Takeaways:
+--------------
+	✔ Avoid unnecessary object references and clear collections when not needed.
+	✔ Use weak references and caches wisely to prevent memory growth.
+	✔ Close resources properly to avoid leaks in file streams and database connections.
+	✔ Optimize Garbage Collection (GC) tuning and monitor memory usage with profiling tools.	
+	
+	
+Keywords:
+---------
+	Java memory leaks, Java garbage collection, Java heap memory, memory optimization in Java, Java performance tuning, Java memory profiling, Java VisualVM, Java Flight Recorder, Java GC tuning.	
+	
+	
+	
+Strong Vs Weak Reference:
+-------------------------
+
+	1. Strong ref: 
+	--------------
+		If an object is strongly referenced, the Garbage Collector (GC will never reclaim it as long as the reference exists.
+		
+		Example:
+		--------
+			MyObject obj = new MyObject(); 			//Strong reference	: Way-1
+			
+	
+	2. Weak ref:
+	------------
+		A reference that does not prevent GC from reclaiming the object.
+		Used when you want to allow GC to clean up the object if it's no longer strongly reachable.
+		
+		Example:
+		--------
+			WeakReference<MyObject> weakRef = new WeakReference<>(new MyObject());		//Weak reference	: Way-1
+			
+
+	Example:
+	--------
+		Object strongRef = new Object(); 									// Strong reference	
+		WeakReference<Object> weakRef = new WeakReference<>(strongRef);		// Weak reference		: Way-2
+	
+		At this point:
+		--------------
+			strongRef is a strong reference to the object.
+			weakRef is a weak reference to the same object.
+
+		Now, if we do:
+		--------------
+			strongRef = null; 		// Remove the strong reference
+			
+			The object is now only weakly referenced via weakRef.
+
+			
+		What Happens Next?
+		------------------ 
+			Since no strong references exist anymore, the object becomes eligible for garbage collection.
+			The JVM may reclaim the memory during the next GC cycle.
+			After GC, calling weakRef.get() will return null, because the object has been collected.
+			
+			Must check if the object is still available:
+			
+				MyObject obj = weakRef.get();
+				if (obj != null) {
+					// use obj
+				}
+
+	
+	Comparison Table:
+	-----------------
+		Feature 			Strong Reference 				Weak Reference
+		-------				----------------				--------------
+		GC Eligibility 		Not eligible if referenced 		Eligible if only weakly referenced
+		Default in Java 	Yes 							No (must use WeakReference class)
+		Use Case 			Normal object usage 			Caches, maps, listeners
+		Example Class 		Object 							WeakReference<Object>
+		Risk				memory leaks					Null references (Avoid memory leaks)
+
+
+	Note:
+	-----
+		Weak references help avoid memory leaks.
+		
+		A weak reference points to an object without preventing it from being collected. If no strong references exist, the GC will:
+			Clear the weak reference
+			Reclaim the memory
+			Automatically nullifying weak reference: it's done by GC, not manually.
+			The reference’s .get() method returns null. 
+
+		

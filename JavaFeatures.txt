@@ -1,0 +1,1970 @@
+https://gpiskas.com/posts/java-8-to-java-21-new-language-features-highlights/
+https://www.tutorialspoint.com/java/java_teeing_collectors.htm
+
+1) Improved JavaDocs
+2) Multirelease JAR
+3) Collection Factory Methods Improvements
+4) Private Interface Methods
+5) Try with Resources Improvements
+6) Enhanced @Deprecated Annotation
+7) Inner Class Diamond Operator
+8) Local Variable Type Inference
+9) Local-Variable Syntax for Lambda Parameters
+10) HTTP Client API standardized
+11) Compiler Free Launch (Single File Source Code)
+12) Java - Switch Expressions
+13) Compact Number Formatting
+14) Text Blocks
+15) Sealed Classes and Interfaces
+16) Record Classes
+17) Helpful NullPointerException
+18) Pattern Matching for instanceof
+19) Pattern Matching for switch
+20) Record Patterns
+21) Extra Details: Lombok
+22) Extra Details: Record
+
+
+
+
+
+Java 9 - New Features:
+----------------------
+	1)Improved JavaDocs:
+	--------------------
+		Creating a HTML5 compliant javadoc.
+		
+			public class Tester {
+			   /**
+				  * Default method to be run to print 
+				  * <p>Hello world</p>
+				  * @param args command line arguments
+				  */
+			   public static void main(String []args) {
+				  System.out.println("Hello World");
+			   }
+			}
+			
+			
+	2)Multirelease JAR:
+	-------------------
+		Multiple java release specific versions of class files can coexist in a single jar file.
+		In JAR, a file MANIFEST.MF file has an entry Multi-Release: true.
+		META-INF directory also contains a versions subdirectory whose subdirectories store version specific classes and resource files.
+
+		Sample Jar Structure:
+		---------------------
+			MyApp.jar
+			│
+			├── META-INF/
+			│   ├── MANIFEST.MF
+			│   └── versions/
+			│			└──9/com/example/HelloWorld.class  	← Java 9 override		(version specific classes)
+			│			└──10/com/example/HelloWorld.class  ← Java 10 override		(version specific classes)
+			│
+			├── src/																(root level classes)
+			│	└── main/
+			│   	└── java/
+			│       	└── com/example/HelloWorld.java         ← Java 8 version 
+			│
+			├── resources/
+			│   └── config.properties
+
+	
+		Now if JRE is not support Multi-release jar, then it will choose the root level classes to load and execute otherwise, version specific classes will be loaded.
+			
+		For example, 
+				if above jar is used in Java 8, then root level HelloWorld.class file will be used. 
+				If same jar is executed by Java 9, then java 9 version specific HelloWorld.class file will be picked and so on.
+				
+		This way, third party libraries/frameworks can support new features without changing their source codes which was written targetting the lower versions.
+		
+		
+		MANIFEST.MF File:
+		-----------------
+			Manifest-Version: 1.0
+			Multi-Release: true
+			
+			
+			Manifest Entry Explained:
+			-------------------------	
+				Manifest-Version: 1.0
+					This is a required entry and always the first line in MANIFEST.MF file.
+					It specifies the version of the manifest file format.
+					
+				
+				Multi-Release: true
+					This tells the JVM that the JAR contains version-specific class files.
+					Enables the JVM to look inside META-INF/versions/{version}/ directories for overrides.
+	
+
+		Why Use Multi-Release JARs?:
+		----------------------------
+			Backward Compatibility: Support older Java versions.
+			Modern Features: 		Use newer APIs (like Optional.orElseThrow() in Java 10).
+			Single Distribution: 	Avoid maintaining multiple JARs.
+		
+		
+		
+	3) Collection Factory Methods Improvements:
+	-------------------------------------------
+		New static factory methods are added to List, Set, and Map interfaces to create immutable instances of those collections. 
+		
+		Here, we are creating unmodifiable list before Java 9:
+			public class Tester {
+			   public static void main(String[] args) {
+				  List<String> list = new ArrayList<>();
+
+				  list.add("Java");
+				  list.add("HTML 5");
+				  list.add("C");
+				  list = Collections.unmodifiableList(list);
+				  System.out.println(list);
+			   }  
+			}
+
+		Here, we are creating unmodifiable list in Java 9:
+			public class Tester {
+			   public static void main(String[] args){
+				   List<String> list =  List.of("Java","HTML 5","C");
+				   System.out.println(list);
+			   }  
+			}
+
+
+	4) Private Interface Methods:
+	-----------------------------
+		Private and static private methods in interface were introduced in Java 9.
+		Being a private method, such a method cannot be accessed via implementing class or sub-interface.
+		
+		These methods were introduced: 
+			to allow encapsulation where the implementation of certain method will be kept in interface only. 
+		
+		Benefits:
+			It helps to reduce the duplicity, increase maintainability and to write clean code.
+			These methods are intended for internal use within the interface itself, primarily to support default and static methods defined within that interface.
+		
+		1) First, let’s look at how we can use private methods from default interface methods:
+		-----------------------------	
+			public interface Foo {
+			
+				default void bar() {
+					System.out.print("Hello");
+					baz();
+				}
+
+				private void baz() {						//private non-static method
+					System.out.println(" world!");
+				}
+			}
+			
+		2) Next, let’s add a statically defined private method to our Foo interface:
+		-------------------------------	
+			public interface Foo {
+			
+				static void buzz() {
+					System.out.print("Hello");
+					staticBaz();
+				}
+
+				private static void staticBaz() {				//private static method
+					System.out.println(" static world!");
+				}
+			}
+			
+		3)
+		Finally, let’s call the defined default and static methods from a concrete class:
+		----------------------------------------------	
+			public class CustomFoo implements Foo {
+				public static void main(String... args) {
+					Foo customFoo = new CustomFoo();
+					customFoo.bar();					//call default method with class instance.
+					Foo.buzz();							//call static method with class itself.
+				}
+			}
+			
+	Summary: Default vs Static Methods:
+	-----------------------------------
+	Feature 			Default Method 							Static Method
+	-------				--------------							-------------
+	Belongs To 			Interface instance 						Interface itself 
+	Can Be Overridden 	Yes 									No
+	Accessed Via 		Implementing class instance 			Interface name
+	Inheritance 		Participates in inheritance 			Does not participate in inheritance
+	Use Cases 			Provide default behavior to instances, 	Provide utility/helper methods 
+						Also Provide Backward Compatibility
+		
+		
+	5) Try with Resources Improvements:
+	-----------------------------------
+		The try with resource block which was introduced in Java 1.6, in that we cannot use the resources that defined outside this try with resource block like below:
+						
+			Resource rs = resource;
+			Try(resource){};
+
+		It will give you an error. But starting from java 9, we can define our resources anywhere in our code which are auto closable then we can use them directly in the try block like below:
+			
+			Public static void main(String[] args) {
+				MyThread th = new MyThread();
+				try (th) {
+					Th.executeSomething();
+				} catch (Exception ex) {}
+			}
+			
+		Another Example:
+		----------------
+			Before Java 9:
+			--------------
+				try (FileOutputStream fos = new FileOutputStream("file.txt");
+					 BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos))) {
+					bw.write("Hello, world!");
+				}
+		
+			With Java 9:
+			------------
+				FileOutputStream fos = new FileOutputStream("file.txt");
+				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+				try (fos; bw) {
+					bw.write("Hello, world!");
+				}
+
+		Benefits:
+		---------
+			This enhancement reduces code verbosity and improves readability, particularly when working with pre-existing resource variables.
+			
+			
+	6) Enhanced @Deprecated Annotation:
+	-----------------------------------
+		@Deprecated means it should not be used for any of the following reasons −
+			Its usage may leads to errors.
+			It may be incompatible in future version.
+			It may be removed in future version.
+			A better and efficient alternative has superseeded it.
+
+		Compiler generates warnings whenever a deprecated element is used. 
+		
+		With Java 9, two new enhancements are made to @Deprecated annotation:
+		
+			forRemoval − 
+			-------------
+				Indicates whether the annotated element is subject to removal in a future version. The default value is false.
+
+			since − 
+			-------
+				Returns the version in which the annotated element "became deprecated". The default value is the empty string.
+
+			@Deprecated(since="9")			
+			@Deprecated(since="1.2", forRemoval=true)
+			
+			
+	7) Inner Class Diamond Operator:
+	--------------------------------
+		In Java 7, the diamond operator (<>) was introduced to simplify the use of generics by allowing the compiler to infer the type arguments. However, it could not be used with anonymous inner classes until Java 9. 
+		
+		Java 9 enhanced the diamond operator to support anonymous inner classes, allowing for more concise code.
+		
+		Prior to Java 9, when creating an instance of an anonymous inner class that implemented a generic interface or extended a generic class, the type arguments had to be explicitly specified, even if they were redundant:
+
+			// Before Java 9:
+			-----------------
+			
+			List<String> list = new List<String>() {
+				// Implementation
+			};
+
+		With Java 9, the diamond operator can be used with anonymous inner classes, enabling the compiler to infer the type arguments:
+			// Java 9 and Later:
+			--------------------
+			
+			List<String> list = new List<>() {
+				// Implementation
+			};		
+			
+		This enhancement reduces verbosity and improves code readability.
+
+		Problem with Diamond Operator in JDK 7?
+			With the help of Diamond operator, we can create an object without mentioning the generic type on the right hand side of the expression. But the problem is it will only work with normal classes. Suppose you want to use the diamond operator for anonymous inner class then compiler will throw error message.	
+			
+			
+	8) CompletableFuture API Enhancement:
+	-------------------------------------
+		Following are the relevant changes done to the API:
+			Support for delays and timeouts.
+			Improved support for subclassing.
+			New factory methods added.
+		
+		
+		Support for delays and timeouts:
+		-------------------------------
+			- public CompletableFuture<T> completeOnTimeout(T value, long timeout, TimeUnit unit)
+				
+				This method completes this CompletableFuture with the given value if not otherwise completed before the given timeout.
+				
+			- public CompletableFuture<T> orTimeout(long timeout, TimeUnit unit)
+				
+				This method exceptionally completes this CompletableFuture with a TimeoutException if not otherwise completed before the given timeout.
+				
+		Improved support for subclassing
+		--------------------------------
+			public Executor defaultExecutor()
+			public <U> CompletableFuture<U> newIncompleteFuture()			
+		
+		New factory Methods
+		-------------------
+			public static <U> CompletableFuture<U> completedFuture(U value)
+			public static <U> CompletionStage<U> completedStage(U value)
+			public static <U> CompletionStage<U> failedStage(Throwable ex)
+			
+			
+	9) Stream API Improvements:
+	---------------------------
+		Streams were introduced in Java 8 to help developers perform aggregate operations from a sequence of objects. With Java 9, few more methods are added to make streams better.
+		
+		default Stream<T> takeWhile(Predicate<? super T> predicate):
+			takeWhile method takes all the values until the predicate returns false. 
+		
+		default Stream<T> dropWhile(Predicate<? super T> predicate):
+			dropWhile method throw away all the values at the start until the predicate returns true.
+			
+		static <T> Stream<T> iterate(T seed, Predicate<? super T> hasNext, UnaryOperator<T> next):
+			iterate method now has hasNext predicate as parameter which stops the loop once hasNext predicate returns false.
+			
+		static <T> Stream<T> ofNullable(T t):
+			ofNullable method is introduced to prevent NullPointerExceptions and to avoid null checks for streams.
+			
+========================================================================================================================================================================================================================================================
+
+Java 10 - New Features (APIs & Options):
+========================================
+	Java 10 enhanced 70+ APIs with new methods and options and removed deprecated APIs and options. 
+	
+	1)
+	Local Variable Type Inference:
+	------------------------------
+		It allows to define a variable using var and without specifying the type of it. 
+		The compiler infers the type of the variable using the value provided. 
+		This type inference is restricted to local variables.
+		
+		1)
+			String name = "Welcome to tutorialspoint.com";		//Old Way
+				var name = "Welcome to tutorialspoint.com";		//New Way
+			
+		2)			
+			Map<Integer, String> mapNames = new HashMap<>();	//Old Way
+			var mapNames1 = new HashMap<Integer, String>();		//New Way
+					
+		Now compiler infers the type of name variable as String by inspecting the value provided.
+		
+		public class Tester {
+		   public static void main(String[] args) {
+			  var names = List.of("Julie", "Robert", "Chris", "Joseph"); 
+			  for (var name : names) {
+				 System.out.println(name);
+			  }
+			  System.out.println("");
+			  for (var i = 0; i < names.size(); i++) {
+				 System.out.println(names.get(i));
+			  }
+		   }
+		}
+				
+	Noteworthy points
+	-----------------
+		No type inference in case of member variable, method parameters, return values.
+		Local variable should be initialized at time of declaration otherwise compiler will not be infer and will throw error.
+		Local variable inference is available inside initialization block of loop statements.
+		No runtime overhead. As compiler infers the type based on value provided, there is no performance loss.
+		No dynamic type change. Once type of local variable is inferred it cannot be changed.
+		Complex boilerplate code can be reduced using local variable type inference.	
+			
+
+	2) 
+	Heap Allocation on Alternative Memory Devices
+	---------------------------------------------
+		Now user can specify an alternative memory device, like NV-DIMM to HotSpot VM to allocation the java heap space. User need to pass a path to the file system using a new option -XX:AllocateHeapAt.
+
+			-XX:AllocateHeapAt=~/etc/heap
+
+		This option takes file path and do a memory mapping to achieve the desired result. Other heap flags like -Xmx, -Xms continue to work.
+		
+		
+	3)
+	Parallel Full GC for G1:
+	-----------------------
+		Java 10 improves G1 worst-case latencies by making the full GC parallel.	
+		
+		as the general consensus was that low pause times are more important than higher throughput. But, 
+		
+		Due to the fact that G1 divides the memory up into regions, this change will most likely result in a little more wasted space (compared to a single-threaded algorithm), but in return you get a little boost to throughput and potentially your application’s performance as it’ll be spending less time performing full collections.
+		
+		You can also customise how many threads are used with the option -XX:ParallelGCThreads
+		
+	4)
+	Garbage Collector Interface:
+	----------------------------
+		Introducing an interface for garbage collectors will improve the modularity of the HotSpot JVM, making it much easier and simpler to add a new GC or exclude an existing one from a JDK build.
+		
+		Before Java10, the garbage collector code was fragmented in places scattered all over the HotSpot sources. This resulted in a few problems:
+			1- Anyone wanting to implement a new GC would require knowledge about all these various places, as well as how 	to extend the various classes for their specific needs.
+			
+			2- The same knowledge was required to remove / exclude a GC at build time.
+			
+			3- For anyone who wasn’t familiar with the GC code, it was confusing where to find a particular piece of code for a given GC.
+			
+			
+	5)
+	Experimental Java-Based JIT Compiler:
+	-------------------------------------
+		The Java-based JIT compiler, specifically Graal, was introduced as an experimental feature in JDK 9 and further enabled as a primary JIT compiler in Java 10. 
+		This JIT compiler is written in Java and designed to optimize Java bytecode into machine code during runtime, enhancing performance. 
+		
+		Performance Enhancements:
+			The JIT compiler's primary goal is to improve Java runtime performance by compiling code into machine code at runtime, enhancing speed and efficiency. 
+
+		Code Optimization:
+			Graal employs various optimizations, such as speculative optimizations, better inlining, and partial escape analysis, to produce high-performance code. 
+			
+			
+	6)
+	Thread-Local Handshakes:
+	------------------------
+		In JDK 10, a new option is introduced for JVM as -XX:ThreadLocalHandshakes. This options works only for x64 and SPARC based machines.
+
+		This option is available to improve VM performance. It allows to make a callback on application threads without making a global VM safepoint. Thus allows JVM to stop an individual thread without stopping all threads.
+
+		As this options is not available to all platforms, other platforms will fall back to normal safepoints.
+		
+		
+	7)APIs to create Unmodifiable Collections:
+	------------------------------------------
+		A new method copyOf() is available in List, Set and Map interfaces which can create new collection instances from existing one. 
+		Collector class has new methods toUnmodifiableList(), toUnmodifiableSet(), and toUnmodifiableMap() to get elements of a stream into an unmodifiable collection.	
+		
+	
+========================================================================================================================================================================================================================================================
+
+Java 11 - New Features:
+-----------------------
+	Java 11 is the first LTS , Long Term Support feature release after Java 8.
+	Java 9 and Java 10 are non-LTS release. Java 11 release is a LTS release.
+
+	1)
+	HTTP Client API standardized:
+	-----------------------------
+		It is recommended to use instead of other HTTP Client APIs like Apache Http Client API. It is quite feature rich and now Java based applications can make HTTP requests without using any external dependency.
+		
+		Steps to Use Java HttpClient:
+		-----------------------------
+		Following are the steps to use an HttpClient.
+			Create HttpClient instance using HttpClient.newBuilder() instance
+			Create HttpRequest instance using HttpRequest.newBuilder() instance
+			Make a request using httpClient.send() and get a response object.
+			
+				import java.io.IOException;
+				import java.net.URI;
+				import java.net.http.HttpClient;
+				import java.net.http.HttpRequest;
+				import java.net.http.HttpResponse;
+				import java.time.Duration;
+
+				public class APITester {
+				   public static void main(String[] args) {
+					  HttpClient httpClient = HttpClient.newBuilder()
+						 .version(HttpClient.Version.HTTP_2)
+						 .connectTimeout(Duration.ofSeconds(10))
+						 .build(); 
+						 try {
+							HttpRequest request = HttpRequest.newBuilder()
+							.GET()
+							.uri(URI.create("https://www.google.com"))
+							.build();                              
+							HttpResponse<String> response = httpClient.send(request,
+							HttpResponse.BodyHandlers.ofString()); 
+
+						 System.out.println("Status code: " + response.statusCode());                            
+						 System.out.println("Headers: " + response.headers().allValues("content-type"));
+						 System.out.println("Body: " + response.body());
+					  } catch (IOException | InterruptedException e) {
+						 e.printStackTrace();
+					  }
+				   }
+				}
+				
+				
+	2) 
+	Compiler Free Launch (Single File Source Code):
+	-----------------------------------------------
+		Java 11 onwards, now a single java file can be tested easily without compiling as well. Consider the following example −
+
+		ApiTester.java
+		--------------
+			public class Tester {
+			   public static void main(String[] args) {
+				 System.out.println("Hello World!"); 
+			   }
+			}
+			
+		Old way of running file:
+		-----------------------
+			$ javac ApiTester.java
+			$ java Tester
+			Hello World!	
+			
+		New way of running file:
+		------------------------
+			$ java ApiTester.java
+			Hello World!	
+			
+		This new feature will help developer to quick test a functionality without need to compile before running a code.
+
+			
+	3)
+	Local-Variable Syntax for Lambda Parameters:
+	--------------------------------------------
+		Java 11 allows to use var in a lambda expression and it can be used to apply modifiers to local variables:
+			
+			(@NonNull var value1, @Nullable var value2) -> value1 + value2
+			
+		Consider the following example −
+			ApiTester.java
+			--------------
+				import java.util.Arrays;
+				import java.util.List;
+				import java.util.stream.Collectors;
+
+				@interface NonNull {}
+
+				public class APITester {
+				   public static void main(String[] args) {		
+					  List<String> tutorialsList = Arrays.asList("Java", "HTML");
+
+					  String tutorials = tutorialsList.stream()
+						 .map((@NonNull var tutorial) -> tutorial.toUpperCase())
+						 .collect(Collectors.joining(", "));
+
+					  System.out.println(tutorials);
+				   }
+				}
+	
+			Output:
+				Java
+				HTML
+		
+		Limitations:
+		------------
+		There are certain limitations on using var in lambda expressions.
+
+		var parameters cannot be mixed with other parameters. Following will throw compilation error.
+			(var v1, v2) -> v1 + v2;
+
+		var parameters cannot be mixed with other typed parameters. Following will throw compilation error.
+			(var v1, String v2) -> v1 + v2;
+
+		var parameters can only be used with parenthesis. Following will throw compilation error.	
+			var v1 -> v1.toLowerCase();
+			
+		
+	4) Nest Based Access Control:
+	-----------------------------
+	https://www.baeldung.com/java-nest-based-access-control	
+		Before Java 11:
+		--------------
+			Java allows classes and interfaces to be nested within each other. These nested types have unrestricted access to each other, including to private fields, methods, and constructors.
+			
+			Outer and Inner together form a nest and are nestmates of each other.
+			
+			Bridge Method:
+				JVM access rules do not permit private access between nestmates. Ideally, we should get a compilation error for the above example. However, the Java source code compiler permits the access by introducing a level of indirection.
+				an invocation of a private member is compiled into an invocation of a compiler-generated, package-private, bridging method in the target class, which in turn invokes the intended private method. This happens behind the scenes. 	
+				
+			Reflective:			
+				A further consequence of this is that core reflection also denies access. This is surprising given that reflective invocations should behave the same as source level invocations.	
+				
+			Java 11 tries to address these concerns.
+
+		Nest Based Access Control:
+			Java 11 brings the notion of nestmates and the associated access rules within the JVM. This simplifies the job of Java source code compilers.
+			To achieve this, the class file format now contains two new attributes:
+				1.One nest member (typically the top-level class) is designated as the nest host. It contains an attribute (NestMembers) to identify the other statically known nest members.
+				2.Each of the other nest members has an attribute (NestHost) to identify its nest host.
+			Thus, for types C and D to be nestmates they must have the same nest host. A type C claims to be a member of the nest hosted by D, if it lists D in its NestHost attribute. The membership is validated if D also lists C in its NestMembers attribute. Also, type D is implicitly a member of the nest that it hosts.
+
+		Now there is no need for the compiler to generate the bridge methods.
+
+		Finally, the nest based access control removes the surprising behavior from the core reflection. 
+		
+		
+	5)
+	Collection API Updates:
+	-----------------------
+		Java 11 introduced an easy way to convert a collection to an array.
+
+		Old Way:
+			nameArray = nameList.toArray(new String[nameList.size()]);
+			
+		New Way:
+			nameArray = nameList.toArray(String[]::new);	
+			
+	6)
+	String API Additions:
+	---------------------
+		String.repeat(int) − 		Repeats a string given number of times. Returns the concatenated string.
+		String.isBlank() − 			Checks if a string is empty or have white spaces only.
+		String.strip() − 			Removes the leading and trailing whitespaces.
+		String.stripLeading() − 	Removes the leading whitespaces.
+		String.stripTrailing() − 	Removes the trailing whitespaces.
+		String.lines() − 			Return the stream of lines of multi-line string.
+		
+		public class APITester {
+		   public static void main(String[] args) {
+			  String sample = " abc ";
+			  System.out.println(sample.repeat(2)); // " abc  abc "
+			  System.out.println(sample.isBlank()); // false
+			  System.out.println("".isBlank()); // true
+			  System.out.println("   ".isBlank()); // true
+			  System.out.println(sample.strip()); // "abc"
+			  System.out.println(sample.stripLeading()); // "abc "
+			  System.out.println(sample.stripTrailing()); // " abc"
+			  sample = "This\nis\na\nmultiline\ntext.";
+
+			  List<String> lines = new ArrayList<>();
+
+			  sample.lines().forEach(line -> lines.add(line));
+			  lines.forEach(line -> System.out.println(line));
+		   }
+		}
+		
+		
+	7)
+	Files API Updates:
+	------------------
+		Java 11 introduced several updates to the java.nio.file.Files API, primarily focused on simplifying file reading and writing operations:
+		
+		1-Files.readString(Path path): 
+		------------------------------
+			This new method reads all content from a file into a String. It uses UTF-8 encoding by default but can be overridden. It throws an IOException if an I/O error occurs or if the file is larger than the maximum allowed String size.
+
+				    Path filePath = Paths.get("example.txt");
+					String content = Files.readString(filePath);
+					System.out.println(content);
+					
+		2-Files.writeString(Path path, CharSequence content, OpenOption... options): 
+		----------------------------------------------------------------------------
+			This method writes a CharSequence to a file. It also uses UTF-8 encoding by default and provides options for file handling, such as creating, appending, or truncating the file.
+					
+					    Path filePath = Paths.get("output.txt");
+						String contentToWrite = "Hello, Java 11!";
+						Files.writeString(filePath, contentToWrite, StandardOpenOption.CREATE, 
+						StandardOpenOption.TRUNCATE_EXISTING);
+						
+		3-Files.isSameFile(Path path1, Path path2): 
+		-------------------------------------------
+			This method determines whether two paths locate the same file. It handles symbolic links and returns true if the paths point to the same target.				
+			
+						    Path path1 = Paths.get("file1.txt");
+							Path path2 = Paths.get("file2.txt");
+							boolean areSame = Files.isSameFile(path1, path2);
+							System.out.println("Are the files same? " + areSame);
+							
+		These additions streamline common file operations, making code more concise and readable.
+
+
+	8)
+		Epsilon, A No-Op Garbage Collector:
+		----------------------------------
+			Epsilon GC, introduced in Java 11, is a no-operation (no-op) garbage collector. It handles memory allocation but doesn't reclaim memory. This means the JVM will run until the heap is exhausted, triggering an OutOfMemoryError and shutting down. 
+			
+			Key Characteristics and Use Cases:
+			----------------------------------
+				No Garbage Collection:
+					Epsilon GC doesn't perform any garbage collection tasks. 
+				
+				Experimental Feature:
+					It's designed for specific scenarios and is not a general-purpose garbage collector. 
+
+				Performance Testing:
+					Epsilon GC helps understand how garbage collection affects application performance and memory consumption. 
+				
+				Short-Lived Applications:
+					It's suitable for short-lived applications where the impact of garbage collection is minimized. 
+
+				Garbage-Free Applications:
+					If an application is designed to not create any garbage, Epsilon GC can be a suitable choice. 
+				
+				Memory Monitoring:
+					It can be used to monitor how much memory an application uses before exhausting available memory. 
+				
+			How Epsilon GC Works:
+			---------------------
+				Allocation: 		Epsilon GC handles memory allocation like other garbage collectors. 
+				No Reclamation: 	It doesn't reclaim memory, so allocated memory is never released. 
+				Heap Exhaustion: 	The JVM continues to run until the heap is fully used. 
+				Out-of-Memory: 		When the heap is exhausted, an OutOfMemoryError is thrown, and the JVM shuts down. 	
+		
+			Enabling Epsilon GC:
+			--------------------
+				To enable Epsilon GC, you need to use the following command-line arguments:
+				
+					-XX:+UnlockExperimentalVMOptions -XX:+UseEpsilonGC
+
+
+	9) 
+		Java 11 introduced several optional updates, enhancing functionality and developer experience. These updates include:
+		
+			Local-Variable Syntax for Lambda Parameters: The var keyword can be used when declaring lambda parameters, allowing for more concise syntax.
+			
+			Standardized HTTP Client: A new HttpClient API, supporting HTTP/2 and WebSockets, replaces the legacy HttpURLConnection.
+			
+			Nest-Based Access Control: Improved encapsulation for nested classes, enabling more efficient access control.
+			File API Updates: New methods for reading and writing strings to files simplify file handling.
+			
+			ChaCha20 and Poly1305 Cryptographic Algorithms: These modern algorithms replace the insecure RC4 stream cipher, enhancing security.
+			
+			Dynamic Class-File Constants: This feature allows for more flexible handling of class-file constants.
+			
+			Epsilon: A No-Op Garbage Collector: An experimental garbage collector that does not reclaim memory, useful for short-lived processes.
+			
+			ZGC: A Scalable Low-Latency Garbage Collector: An experimental garbage collector designed for low pause times and scalability.
+			
+			Removal of Java EE and CORBA Modules: These deprecated modules were removed, streamlining the platform.
+			
+			Flight Recorder: A low-overhead profiling tool for diagnosing application issues.
+			
+			Deprecation of the Nashorn JavaScript Engine: Nashorn was deprecated in favor of other JavaScript engines.
+			
+			Enhanced XshowSettings Launcher Option: The -XshowSettings option now displays the configured tzdata version.
+			
+			Support for Unicode 10: This update brings more characters, symbols, and emojis to the platform.
+			
+			Removal of Lucida Fonts: Oracle JDK no longer ships with Lucida fonts, relying on system-installed fonts instead.
+			
+			XML Security for Java: Updated to version 3.0.3.
+			
+			SHA-3 based RSA-MGF1 signature methods: Added four new methods.
+			
+			EdDSA signatures: Added support for ED25519 and ED448.
+		
+		These updates provide improvements in various areas, including performance, security, and developer convenience.
+							
+							
+							
+========================================================================================================================================================================================================================================================
+
+Java 12 - New Features:
+-----------------------
+	1) Java - Switch Expressions:
+	-----------------------------
+		Java provides a new way to return a value from a switch expression using case L -> notation.
+		Each case block can return a value using yield statement.
+		In case of enum, default case can be skipped. In other cases, default case is required.
+		
+		Syntax:
+			case label1, label2, ..., labeln -> expression;|throw-statement;|block 
+			
+		Where label1 to labeln are representing the various values to compare and we can use expression, a statement to return a value or throw an expression.
+				
+				public class SwitchTester {
+				   public static void main(String[] args) {
+					  System.out.println("Old Switch");
+					  System.out.println(getDayTypeOldStyle("Monday"));
+					  System.out.println(getDayTypeOldStyle("Saturday"));
+					  System.out.println(getDayTypeOldStyle(""));
+
+					  System.out.println("New Switch");
+					  System.out.println(getDayType("Monday"));
+					  System.out.println(getDayType("Saturday"));
+					  System.out.println(getDayType(""));   
+				   }
+				  
+				  	 // evaluate switch expression and get a value 
+					 ---------------------------------------------
+				   public static String getDayType(String day) {
+					  return switch (day) {
+						 case "Monday", "Tuesday", "Wednesday","Thursday", "Friday" -> "Weekday";
+						 case "Saturday", "Sunday" -> "Weekend";
+						 default -> "Invalid day.";
+					  };
+				   }
+
+					// evaluate switch statement and get a value 
+					--------------------------------------------
+				   public static String getDayTypeOldStyle(String day) {
+					  String result = null;
+					  // evaluate relevant cases and get a value into result variable 
+					  switch (day) {
+						 case "Monday":
+						 case "Tuesday":
+						 case "Wednesday":
+						 case "Thursday":
+						 case "Friday":
+							result = "Weekday";
+							break;
+						 case "Saturday": 
+						 case "Sunday":
+							result = "Weekend";
+							break;
+						 default:
+							result =  "Invalid day.";            
+					  }
+					  return result;
+				   }
+				}
+				
+			O/P:
+				Old Switch
+				Weekday
+				Weekend
+				Invalid day.
+
+				New Switch
+				Weekday
+				Weekend
+				Invalid day.
+
+		yield:
+		------
+			we can get a value from switch expression and switch statement using yield statement. 
+				
+				public static String getDayType(String day) {
+					  
+					  return switch (day) {		 
+						 case "Monday", "Tuesday", "Wednesday","Thursday", "Friday" -> {
+							System.out.println("In Weekdays");
+							yield "Weekday"; 
+						 }
+						 
+						 case "Saturday", "Sunday" -> { 
+							System.out.println("In Weekends");
+							yield "Weekend"; 
+						 }
+						 
+						 default -> throw new IllegalStateException("Invalid day: " + day);
+					  };
+				   }
+
+				   public static String getDayTypeStyle2(String day) {
+					  return switch (day) {
+						 case "Monday":
+						 case "Tuesday":
+						 case "Wednesday":
+						 case "Thursday":
+						 case "Friday":
+							yield "Weekday";           
+						 case "Saturday": 
+						 case "Sunday":
+							yield "Weekend";
+						 default:
+							throw new IllegalStateException("Invalid day: " + day);         
+					  };
+				   }
+				   
+		
+		Pattern Matching for switch:
+		----------------------------
+			Use type matching instead of instanceof, including for null checks. You can also expand composite types, such as the Point record in the example below. For blocks of code you can use yield. A switch statement can immediately return a result.
+			
+			Before Java 21:
+			---------------
+				record Point(int x, int y) {};
+
+				String format(Object obj) {
+					if (obj == null) {
+						return "Null!";
+					}
+					if (obj instanceof Integer i) {
+						System.out.println("Test extra line!");
+						return String.format("int %d", i);
+					}
+					if (obj instanceof String s) {
+						return String.format("String %s", s);
+					}
+					if (obj instanceof Point p) {
+						return String.format("Point(%d,%d)", p.x, p.y);
+					}
+					return "Unknown!";
+				}
+
+			In Java 21:
+			-----------
+				String formatUsingPatternMatching(Object obj) {
+					return switch (obj) {
+						case null -> "Null!";
+						case Integer i -> {
+							System.out.println("Test extra line!");
+							yield String.format("int %d", i);
+						}
+						case String s -> String.format("String %s", s);
+						case Point(int x, int y) -> String.format("Point(%d,%d)", x, y);
+						case "foo", "FOO" -> "Foo!";
+						default -> "Unknown!";
+						// could also do: case null, default -> "Unknown or null!";
+					};
+				}
+
+			You can further refine the cases by using the when keyword. Unused variables can be replaced with a _ if you enable the preview feature:
+				
+				void refineCaseWithWhen(Point point) {
+					switch (point) {
+						case Point p when isZero(p) -> System.out.println("Zero Point");
+						case Point(int x, int _) -> System.out.println("Point X: " + x);
+						case null -> System.out.println("There is no Point!");
+					}
+				}
+
+				boolean isZero(Point p) {
+					return p.x == 0 && p.y == 0;
+				}
+		
+			Record Patterns:
+			----------------
+				Records can be deconstructed by listing their components as follows. This can be done in many nested levels of records.
+
+				int recordPattern(Point point) {
+					return switch (point) {
+						case Point(int x, int y) -> x + y;
+						case null -> 0;
+					};
+				}
+
+				
+		
+	2)JVM:
+		https://www.tutorialspoint.com/java/java_jvm.htm
+		
+	3)
+	 File.mismatch() method:
+	------------------------
+		The mismatch() method is available in Files class from Java 12 onwards. It provides an easy way to compare two files.
+		If there is no mismatch then 1L is returned else position of first mismatch is returned.
+		Mismatch is accounted in case if file sizes are not matching or byte contents are not matching.
+		
+		A file is considered identical in following cases:
+			If both locations are pointing to same file.
+			In case path is same and file is not present, files are considered same.
+			If files are of same size and each byte is first files matches with corresponding bytes of second file.	
+			
+		import java.io.IOException;
+		import java.nio.file.Files;
+		import java.nio.file.Path;
+
+		public class APITester {
+		   public static void main(String[] args) throws IOException {
+			  // create two files in temp directory   
+			  Path path1 = Files.createTempFile("file1", ".txt");
+			  Path path2 = Files.createTempFile("file2", ".txt");
+
+			  // write same content to both the files
+			  Files.writeString(path1, "tutorialspoint");
+			  Files.writeString(path2, "tutorialspoint");
+
+			  // check files for Mismatch, 
+			  // being same content, it should return -1.
+			  long mismatch = Files.mismatch(path1, path2);
+
+			  // print the message based on mismatch result
+			  if(mismatch > 1L) {
+				 System.out.println("Mismatch occurred in file1 and file2 at : " + mismatch);
+			  }else {
+				 System.out.println("Files matched");
+			  }
+			  
+			  // delete the files	  
+			  path1.toFile().deleteOnExit();
+			  path2.toFile().deleteOnExit();
+		   }
+		}		
+		
+		
+	4) Compact Number Formatting:
+	-----------------------------
+		Convert: 1000
+		
+		To:
+			Short: 1K
+			Long: 1 thousand
+			
+		Long Formats:
+		-------------
+			1 thousand
+			1 million
+			1 billion
+				
+		Short Formats:
+		--------------
+			1K
+			1M
+			1B		
+		
+		
+		1)
+			NumberFormat formatter = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
+			
+					String formatted = formatter.format(1000);		//1K
+						   formatted = formatter.format(1000000);	//1M
+
+		2)
+			NumberFormat formatter = NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.LONG);		
+				
+						String formatted = formatter.format(1000);			//1 thousand
+							   formatted = formatter.format(1000000);		//1 million
+			
+				
+
+
+	5) Java Collectors.teeing() Method:
+	-----------------------------------
+	https://www.tutorialspoint.com/java/java_teeing_collectors.htm
+	
+		Java 12 introduced a new static method to Collectors interface which can perform two different operations on collection and then merge the result.
+		
+			public class Tester {
+			   public static void main(String[] args) {
+				  double mean
+					 = Stream.of(1, 2, 3, 4, 5, 6, 7)
+						.collect(Collectors.teeing(Collectors.summingDouble(i -> i), Collectors.counting(), (sum, n) -> sum / n));
+
+				  System.out.println(mean);
+			   }
+			}
+		
+			
+	6) 	String new methods:
+	-----------------------
+		Java 12 introduces following new methods to String for easy formatting.
+
+		1) string.indent(n)
+		-------------------
+			n > 0 - insert space at the begining of each line.
+			n < 0 - remove space at the begining of each line.
+			n < 0 and n < available spaces - remove all leading space of each line.
+			n = 0 - no change.
+			
+		2) transform(Function<? super String,? extends R> f) method:
+		------------------------------------------------------------
+			Transforms a string to give result as R.
+			
+			String transformed = text.transform(value -> new StringBuilder(value).reverse().toString());
+
+		3) Optional<String> describeConstable():
+		----------------------------------------
+			Returns Optional Object containing description of String instance.
+
+			Optional<String> optional = message.describeConstable();
+
+		4) resolveConstantDesc(MethodHandles.Lookup lookup):
+		----------------------------------------------------
+			Returns descriptor instance string of given string.
+
+			String constantDesc = message.resolveConstantDesc(MethodHandles.lookup());
+
+		Example:
+				import java.lang.invoke.MethodHandles;
+				import java.util.Optional;
+
+				public class APITester {
+				   public static void main(String[] args) {
+					  String str = "Welcome \nto Tutorialspoint!";
+					  System.out.println(str.indent(0));
+					  System.out.println(str.indent(3));
+
+					  String text = "Java";
+					  String transformed = text.transform(value -> new StringBuilder(value).reverse().toString());
+					  System.out.println(transformed);
+
+					  Optional<String> optional = text.describeConstable();
+					  System.out.println(optional);
+
+					  String cDescription = text.resolveConstantDesc(MethodHandles.lookup());
+					  System.out.println(cDescription);
+				   }
+				}
+
+			O/P:
+				Welcome 
+				to Tutorialspoint!
+
+				   Welcome 
+				   to Tutorialspoint!
+
+				avaJ
+				Optional[Java]
+				Java
+			
+========================================================================================================================================================================================================================================================
+
+Java 13 - New Features:
+=======================
+	Java 13 is a non-LTS(non Long Term Support) release.			
+	
+	1)Text Blocks:
+	--------------
+		Prior to text block, we can declare multi-line strings using string concatenation, string builder append method, string join method but that approach is quite messy.As we have to use line terminators, delimiters etc to mark a new line. 
+		
+		Text block provides a better and alternate approach to define "multiline string" using a """, 3 double-quotes mark.
+		
+		Syntax:
+					String textBlockJSON = """
+					   {
+						  "name" : "Mahesh",
+						  "RollNO" : "32"
+					   }
+					   """;
+					   
+				Equivalent String can be written using older syntax as shown below:
+					String stringJSON = "{\r\n" 
+						 + "   \"Name\" : \"Mahesh\",\r\n" 
+						 + "   \"RollNO\" : \"32\"\r\n" 
+						 + "}"; 
+					
+		Text Block String Operations:
+		----------------------------
+			Text block is same as String and can be compared using equals() method or equal operator.
+			
+				// compare the content, 
+				textBlockJSON.equals(stringJSON);
+						  
+				// compare the objects
+				textBlockJSON == stringJSON;
+			
+		Text block supports all string operations like indexOf(), contains() etc.
+				// check if text block contains a provided string or not
+				textBlockJSON.contains("Mahesh");
+
+				// get the length of string content
+				textBlockJSON.length();
+				
+	2)ZGC:
+	------
+		ZDC stands for Z Garbage Collector. 
+		ZGC makes sure that Garbage Collection pause time is not dependent on heap size. It will never exceed 10 ms no matter heap size is 2MB or 2GB.
+		It ensures that there is no long pause while processing the data due to garbage collection. 
+		
+		
+========================================================================================================================================================================================================================================================
+
+java 15 features:
+-----------------
+	https://www.tutorialspoint.com/java/java_sealed_classes.htm
+	
+	1)Sealed Classes and Interfaces:
+	--------------------------------
+	
+		Provide control over inheritance.
+		Restricts which classes can extend or implement it
+		
+		Sealed Interface:
+		-----------------
+			An interface can be marked as sealed interface using sealed keyword and then using permits keywords, we can add the interfaces which can extend this interface.
+					
+				public sealed interface Person permits Employee, Manager {
+				}
+				
+				//we've created a sealed interface Person which permits Employee and Manager interfaces to extend it.
+				
+				Example:
+				--------
+				1)	
+					// A sealed interface Person which is to be inherited by Employee and Manager interfaces
+					sealed interface Person permits Employee, Manager {
+					   String getName();
+					}
+
+					// Employee and Manager interfaces have to extend Person and can be sealed or non-sealed
+					non-sealed interface Employee extends Person {
+					   int getEmployeeId();
+					}
+
+					non-sealed interface Manager extends Person {
+					   int getManagerId();
+					}
+					
+					class CorpEmployee implements Employee {
+					}
+					
+					class CorpManager implements Manager {
+					}
+					
+		Sealed Class:
+		-------------
+			Similar to sealed interface, a class can be marked as sealed class as well using sealed keyword and then using permits keywords, we can add the subclasses which can extend this class.
+			
+				public abstract sealed class Person permits Employee, Manager {}
+				
+				
+			A subclass needs to have a modifier as sealed/final or non-sealed:
+			
+				public final class Manager extends Person {}
+				
+				
+			A subclass with non-sealed is open for all classes to extend:
+				
+				public non-sealed class Employee extends Person {}
+				
+			//In this example, we've created a sealed abstract class Person which permits Employee and Manager classes to extend it.
+			
+			
+		When permits Is Optional:
+		-------------------------
+			If all permitted subclasses are declared in the same source file as the sealed class or interface, the compiler can infer them automatically. In this case, you can omit the permits clause.
+			
+			Example:
+			--------
+				sealed class Animal {
+					// No 'permits' clause needed here
+				}
+
+				final class Dog extends Animal {}
+				non-sealed class Cat extends Animal {}
+			
+			This works because all subclasses are in the same file.
+
+		When permits Is Required:
+		-------------------------
+			If the permitted subclasses are declared in different source files, then you must explicitly use the permits clause to list them.
+
+			Example:
+			--------
+				// Animal.java
+				sealed class Animal permits Dog, Cat {}
+
+				// Dog.java
+				final class Dog extends Animal {}
+
+				// Cat.java
+				non-sealed class Cat extends Animal {}
+
+
+			Without the permits clause here, the compiler will throw an error because it can't infer the permitted subclasses from other files.
+
+		Summary:
+		--------
+			Scenario 									Is permits Required?
+			--------									--------------------	
+			All subclasses in the same file				Optional
+			Subclasses in different files/packages		Required 
+
+
+		Constraints:
+		------------
+			There are few constraint on usage of sealed classes which we should notice while extending a sealed class:			
+				Permitted subclass should be part of same module as of sealed class.
+				Permitted subclass has to extend the sealed class.
+				
+				A permitted subclass has to use any one of: 
+					final, 
+					sealed, or 
+					non-sealed modifier.
+
+				// Sealed base class
+				sealed class Shape permits Circle, Square {}
+
+				// Non-sealed subclass
+				non-sealed class Circle extends Shape {}
+
+				// Final subclass (no further extension)
+				final class Square extends Shape {}
+				
+				In this example:
+				----------------
+				- Shape is sealed and only Circle and Square can extend it.
+				- Circle is non-sealed, so any class can extend Circle.
+				- Square is final, so no class can extend Square.
+
+		Summary:
+		--------
+			- Use sealed when you want tight control over the class hierarchy.
+			- Use non-sealed when you want to reopen the hierarchy for extension from a sealed parent.
+	
+	
+	Feature			sealed									non-sealed
+	-------			------									----------
+	Purpose:		Restricts which classes can extend or 	Explicitly allows further subclassing.
+					implement it.
+	
+	Usage:			Used to define a base class/interface	Used by a subclass of a sealed class to "break the seal"
+					with limited, known subclasses.			and allow open inheritance.	
+	
+	Inheritance 	Only permitted classes (declared via 	Any class can extend a non-sealed class.
+	Control:		permits) can extend it.
+	
+	Required 		Subclasses must be sealed, non-sealed,	No restriction on subclasses. 
+	Modifiers:		or final.
+	
+	Security/		Enforces strict control over class 		Relaxes control, useful when subclassing should be open.
+	Modeling:		hierarchy.
+	
+	Example			sealed class Shape permits Circle, 		non-sealed class Circle extends Shape {}.
+					Square {}.
+		
+		
+	2) Record Classes:
+	------------------
+		record feature helps in creating immutable data objects or a POJO.
+		records are final by default and can extend interfaces.
+				
+		Purpose of a Java Record:
+		-------------------------
+			As these data objects contain a lot of fields, developers are required to write a lot of setter/getter methods, parameterized constructors, overridden equals methods, and hashcode methods. In such a scenario, the record comes to the rescue as it provides most of the boilerplate code and the developer can focus on required functionalities only.
+			
+		Features of Java Record:
+		------------------------
+			Record objects have below things implicit:
+				constructor,
+				setter/getter,
+				equals/hashcode,
+				toString.
+			
+			Record objects have implicit constructor with all the parameters as field variables.
+			Record objects have implicit field-getter methods for each field variable.
+			Record objects have implicit field setter methods for each field variable.
+			Record objects have implicit sensible implementation of hashCode(), equals(), and toString() methods.
+		
+		Example Without Using Java Record:
+		----------------------------------
+			class Student {
+			
+			   private int id;
+			   private String name;
+			   private String className;
+
+			   Student(int id, String name, String className){
+				  this.id = id;
+				  this.name = name;
+				  this.className = className;
+			   }
+
+			   public int getId() {
+				  return id;
+			   }
+			   public void setId(int id) {
+				  this.id = id;
+			   }
+			   public String getName() {
+				  return name;
+			   }
+			   public void setName(String name) {
+				  this.name = name;
+			   }
+			   public String getClassName() {
+				  return className;
+			   }
+			   public void setClassName(String className) {
+				  this.className = className;
+			   }
+
+			   @Override
+			   public String toString() {
+				  return "Student[id: " + id + ", name: " + name 
+					 + ", class: " + className + "]";
+			   }
+
+			   @Override
+			   public boolean equals(Object obj) {
+				  if(obj == null || !(obj instanceof Student) ) {
+					 return false;
+				  }
+				  Student s = (Student)obj;
+
+				  return this.name.equals(s.name) 
+					 && this.id == s.id 
+					 && this.className.equals(s.className);
+			   }
+
+			   @Override
+			   public int hashCode() {
+				  int prime = 19;
+				  int result = 1;
+				  result = prime * result + ((name == null) ? 0 : name.hashCode());
+				  result = prime * result + ((className == null) ? 0 : className.hashCode());
+				  result = prime * result + id;
+				  return result;
+			   }  
+			}
+
+		
+		Example Using Java Record:
+		--------------------------	
+			record Student(int id, String name, String className) {}
+	
+	
+		Java Record for Sealed Interfaces:
+		----------------------------------
+			As records are final by default and can extend interfaces. 
+			We can define sealed interfaces and let records implement them for better code management.
+			
+				public class Tester {
+				
+				   public static void main(String[] args) {
+					  Person employee = new Employee(23, "Robert");
+					  System.out.println(employee.id());
+					  System.out.println(employee.name());
+				   }
+				}
+				
+				sealed interface Person permits Employee, Manager {
+				   int id();
+				   String name();
+				}
+				
+				record Employee(int id, String name) implements Person {}
+				
+				record Manager(int id, String name) implements Person {}
+	
+		Overriding Methods of Java Records:
+		-----------------------------------
+			We can override a record method implementation easily and provide our own implementation.
+			
+				package com.tutorialspoint;
+				
+				public class Tester {
+				   public static void main(String args[]) {
+					  // create student objects
+					  Student student = new Student(1, "Mahesh", "XII");
+
+					  System.out.println(student);
+				   }
+				}
+
+				record Student(int id, String name, String className) {
+				
+				   public String toString() {
+					  return "Id: " + id + ", Name: " + name + ", class: " + className ;
+				   }
+				}
+
+	3)Types of Garbage Collectors:
+	------------------------------
+		https://www.tutorialspoint.com/java/java_garbage_collection.htm
+		The following GCs are used in modern JVMs:
+		-----------------------------------------
+			Serial collector
+			Throughput collector
+			CMS collector
+			G1 collector
+		
+		Each of the above algorithms does the same task - finding objects that are no longer in use and reclaiming the memory that they occupy in the heap.
+		
+		The GC has to stop application threads while it is running. This is because it moves the objects around when it runs, and therefore, those objects cannot be used. Such stops are called "stop-the-world" pauses and minimizing the frequency and duration of these pauses is what we aim while tuning our GC.
+		
+		Tuning Garbage Collectors:
+		-------------------------
+			We can tune Garbage collectors as well as per our need. Following are the areas which we can configure based on the situations:
+				Heap Size Allocation
+				Generation Sizes Allocation
+				Permagen and Metaspace Configurations
+				
+				Heap Size Allocation:
+				---------------------
+					You can control the size of memory request by the JVM using two flags −
+						-XmsN − Controls the initial memory requested.
+						-XmxN − Controls the maximum memory that can be requested.
+	
+				Permagen and Metaspace Configurations:
+				-------------------------------------
+					Permagen's size can be controlled using: 
+						-XX: PermSize=N and 
+						-XX:MaxPermSize=N. 
+						
+					Metaspace's size can be controlled using: 
+						-XX:Metaspace- Size=N and 
+						-XX:MaxMetaspaceSize=N.
+						
+				Generation Sizes Allocation:
+				---------------------------
+					Below are the flags that you can use to set these values −
+						-XX:NewRatio=N: Ratio of the YG to the OG (default value = 2)
+						-XX:NewSize=N: YG's initial size
+						-XX:MaxNewSize=N: YG's max size
+						-XmnN: Set NewSize and MaxNewSize to the same value using this flag
+						
+				Generations in Garbage Collection:
+				----------------------------------
+					Most JVMs divide the heap into three generations − 
+						the young generation (YG), 
+						the old generation (OG) and 
+						permanent generation (also called tenured generation).
+						
+						The young generation is divided into two spaces − eden and survivor space. Objects that have survived during the collection of eden are moved to survivor space, and those who survive the survivor space are moved to the old generation.
+					
+					
+		
+		4)helpful NullPointerException:
+		-------------------------------
+			The motivation behind this enhancement was to enrich the NullPointerException with more details as a traditional NullPointerException only gave details of filename, method, and the line number where a NullPointerException occurred.
+			
+			Traditional Null Pointer Exception in Java:
+			-------------------------------------------
+				Before Java 14 NullPointerException enhancement, following code will show a NullPointerException message as shown below:
+
+					// Create an employee without department
+					Employee emp = new Employee(1,"Robert",null);
+
+					// get the name of the dept
+					// as name is null, this code will throw a null pointer exception
+					String dept = emp.getDept().getName();
+
+				If this code snippet is used to run, this will produce similar result −
+
+					Exception in thread "main" java.lang.NullPointerException
+						at com.tutorialspoint.Tester.main(Tester.java:10)
+						
+						
+			New Informative Null Pointer Exception in Java:
+			-----------------------------------------------
+				During debugging, such a error message is not useful. And with multiple nesting level, it becomes more difficult to check which field being null is causing the issue. Java 14 catered to this need. It provided an option to return a more helpful message like below in such case:
+				
+					Exception in thread "main" java.lang.NullPointerException: Cannot invoke "com.tutorialspoint.Department.getName()" because the return value of "com.tutorialspoint.Employee.getDept()" is null at com.tutorialspoint.Tester.main(Tester.java:10)
+	
+			 **In order to enable this feature in Java 14, we've to run the java code using following flag. Now with Java 20, this flag is not needed anymore.
+				
+				-XX:+ShowCodeDetailsInExceptionMessages
+				
+		
+			In order to print the name of the local variable, we had to use following flag while running the program.
+
+				-g
+				
+
+	Sequenced Collections:
+	----------------------
+	https://gpiskas.com/posts/what-is-new-java-21-lts-with-practical-examples/#virtual-threads
+	
+		In order to “fix” inconsistencies such as the ones below across Collection APIs regarding accessing elements in a well defined order, Sequenced Collections are introduced (new interfaces).
+			
+					   First element	                Last element
+					   -------------					------------
+		List	       list.get(0)	                    list.get(list.size() - 1)
+		Deque	       deque.getFirst()             	deque.getLast()
+		SortedSet	   sortedSet.first()	            sortedSet.last()
+		LinkedHashSet  linkedHashSet.iterator().next()	// missing
+
+		Using Sequenced Collections:
+					   list.getFirst()	                list.getLast()
+					   // See the rest of the methods in the interfaces below
+			
+			
+		three new interfaces have been integrated into the existing Collections ecosystem:
+			SequencedCollection
+			SequencedSet
+			SequencedMap
+
+
+		interface SequencedCollection<E> extends Collection<E> {
+
+			// new method
+			SequencedCollection<E> reversed();
+
+			// methods promoted from Deque
+			void addFirst(E);
+			void addLast(E);
+
+			E getFirst();
+			E getLast();
+
+			E removeFirst();
+			E removeLast();
+		}
+		
+		
+Java Records vs. Lombok:
+------------------------
+
+	Feature 		Java Records 									Lombok
+	-------			------------									-------
+	Type: 			Built-in Java language feature (Java 14+) 		Third-party library
+	Purpose: 		Define immutable data carriers 					Reduce boilerplate via annotations
+	Syntax: 		Concise: record Person(String name, int age) 	Verbose: @Data public class Person { ... }
+	Immutability: 	Always immutable 								Optional (@Value for immutability)
+	Generated Methods: 	equals(), hashCode(), toString(), accessors 	Getters, setters, constructors, equals(), etc.
+	Customization: 	Limited (auto-generated methods can't be 		Highly customizable via annotations
+					overridden easily) 	
+	Inheritance: 	Cannot extend other classes (records are final) Can extend classes and implement interfaces
+	Field Access: 	Always public accessors (e.g., person.name()) 	Can control access levels (@Getter(AccessLevel.NONE)) 
+	Tooling/Setup: 	No setup needed 								Requires Lombok dependency and IDE plugin
+	Use Case: 		Ideal for DTOs, value objects, small immutable  Suitable for both mutable and immutable POJOs
+					classes 
+
+
+18) Pattern Matching for instanceof:
+------------------------------------
+	It allows you to test an object’s type and simultaneously cast it to a variable in a single, concise expression.
+		
+	Benefits:
+	---------
+		- Less boilerplate: 		No need to repeat the type name or cast.
+		- Improved readability: 	Cleaner and more expressive code.
+		- Safer: 					Reduces the risk of ClassCastException.
+
+	Traditional instanceof:
+	-----------------------
+		if (obj instanceof String) {
+			String s = (String) obj;  // Redundant cast
+			System.out.println(s.toLowerCase());
+		}
+
+		This approach requires manual casting after the type check, which is verbose and error-prone.
+
+	
+	Pattern Matching for instanceof (Java 16+):
+	-------------------------------------------
+		if (obj instanceof String s) {
+			System.out.println(s.toLowerCase());  // No cast needed
+		}
+
+
+	What’s Happening:
+	----------------
+		- obj instanceof String s checks if obj is a String.
+		- If true, it automatically casts obj to String and assigns it to s.
+		- The variable s is only in scope inside the if block.
+
+	Example with Multiple Types:
+	----------------------------
+		public void handleShape(Shape shape) {
+			if (shape instanceof Rectangle r) {
+				System.out.println("Area: " + (r.length() * r.width()));
+			} else if (shape instanceof Circle c) {
+				System.out.println("Area: " + (Math.PI * c.radius() * c.radius()));
+			}
+		}
+
+
+19) Pattern Matching for switch:
+--------------------------------
+	It allows you to match not just constant values, but also types and conditions directly within switch statements or expressions. 
+	This feature was introduced as a preview in Java 17 (JEP 406) and became a permanent feature in Java 21 (JEP 441).
+
+	What Is Pattern Matching for switch?:
+	-------------------------------------
+	It allows you to:
+		- Match types (e.g., String, Integer, custom classes)
+		- Use type patterns directly in case labels
+		- Add guard conditions using when
+		- Handle null values explicitly
+
+
+	Example: Type Matching in switch:
+	---------------------------------
+		static String format(Object obj) {
+			return switch (obj) {
+				case String s       -> "String: " + s.toUpperCase();
+				case Integer i      -> "Integer: " + (i * 2);
+				case null           -> "Null value";
+				default             -> "Unknown type";
+			};
+		}
+
+		What’s Happening:
+		-----------------
+			- case String s matches if obj is a String and binds it to s.
+			- case Integer i does the same for Integer.
+			- case null handles nulls explicitly.
+			- default is the fallback.
+
+
+	Guarded Patterns with when:
+	---------------------------
+		static String describe(Number n) {
+			return switch (n) {
+				case Integer i when i > 0 	 -> "Positive integer";
+				case Integer i            	 -> "Non-positive integer";
+				case Double d when d.isNaN() -> "NaN double";
+				default                   	 -> "Other number";
+			};
+		}
+
+	Benefits:
+	---------
+		- Concise: 		Reduces boilerplate if-else and casting.
+		- Safe: 		Compiler checks exhaustiveness.
+		- Expressive: 	Combines type checks and conditions.
+
+
+20) Record Patterns:
+--------------------
+	A record pattern allows you to:
+		- Test whether an object is an instance of a specific record type.
+		- Extract its components directly into variables.
+		- Use nested patterns for deeply structured data.
+
+	Basic Example:
+	--------------
+		record Point(int x, int y) {}
+
+		Object obj = new Point(3, 4);
+
+		if (obj instanceof Point(int x, int y)) {
+			System.out.println("x = " + x + ", y = " + y);
+		}
+
+	*This avoids the need to cast and call accessor methods manually.
+
+
+	Nested Record Patterns:
+	-----------------------
+	You can destructure nested records too:
+
+		record GPSPoint(double latitude, double longitude) {}
+		record Location(String name, GPSPoint gpsPoint) {}
+
+		Object obj = new Location("Home", new GPSPoint(12.34, 56.78));
+
+		if (obj instanceof Location(String name, GPSPoint(double lat, double lng))) {
+			System.out.println(name + " is at (" + lat + ", " + lng + ")");
+		}
+
+
+	With switch Statements:
+	-----------------------
+		static void describe(Object obj) {
+			switch (obj) {
+				case Point(int x, int y) -> System.out.println("Point at (" + x + ", " + y + ")");
+				case null -> System.out.println("Null value");
+				default -> System.out.println("Unknown type");
+			}
+		}
+
+	This makes switch more expressive and type-safe.
+
+	Benefits:
+	---------
+	- Concise: 	Eliminates boilerplate code.
+	- Safe: 	Compiler checks exhaustiveness.
+	- Powerful: Supports nested and generic records.
+
+
+21) Extra Details: Lombok:
+--------------------------
+Java Records vs. Lombok:
+------------------------
+
+	Feature 		Java Records 									Lombok
+	-------			------------									-------
+	Type: 			Built-in Java language feature (Java 14+) 		Third-party library
+	Purpose: 		Define immutable data carriers 					Reduce boilerplate via annotations
+	Syntax: 		Concise: record Person(String name, int age) 	Verbose: @Data public class Person { ... }
+	Immutability: 	Always immutable 								Optional (@Value for immutability)
+	Generated Methods: 	equals(), hashCode(), toString(), accessors 	Getters, setters, constructors, equals(), etc.
+	Customization: 	Limited (auto-generated methods can't be 		Highly customizable via annotations
+					overridden easily) 	
+	Inheritance: 	Cannot extend other classes (records are final) Can extend classes and implement interfaces
+	Field Access: 	Always public accessors (e.g., person.name()) 	Can control access levels (@Getter(AccessLevel.NONE)) 
+	Tooling/Setup: 	No setup needed 								Requires Lombok dependency and IDE plugin
+	Use Case: 		Ideal for DTOs, value objects, small immutable  Suitable for both mutable and immutable POJOs
+					classes 
+
+
+if we decompile the java class which has Lombok annotations, what it has inside it's dot class file:
+----------------------------------------------------------------------------------------------------
+	When you compile a Java class with Lombok annotations (like @Getter, @Setter, @Builder, etc.), Lombok injects code into the abstract syntax tree during compilation. The result is that the .class file contains all the regular Java bytecode for the methods and fields that Lombok generated — even though those methods weren’t explicitly written in the source code.
+
+	What you'll see in the .class file:
+	-----------------------------------
+		If you decompile the .class file (using tools like javap, CFR, or JD-GUI), here’s what typically appears:
+
+		Generated methods: 
+			For example, @Getter and @Setter will produce standard getter and setter methods.
+		
+		Builder pattern methods: 
+			If you use @Builder, you’ll see methods like builder(), the builder class itself, and fluent setters.
+		
+		Constructors: 
+			Annotations like @AllArgsConstructor or @NoArgsConstructor will result in corresponding constructor definitions.
+		
+		equals(), hashCode(), toString(): 
+			With annotations like @EqualsAndHashCode, @ToString, these methods are generated and visible in the bytecode.
+		
+		No trace of Lombok annotations: 
+			The annotations themselves are usually not retained in the .class file unless explicitly marked with RetentionPolicy.RUNTIME.
+	
+	So in essence:
+		Your compiled .class file behaves just like one where you manually wrote all those boilerplate methods.
+		If you were expecting some magic Lombok runtime processing — nope, it’s all baked in at compile time.
+	
+	Example:
+	--------
+		Original Java Source Code (with Lombok):
+		----------------------------------------
+			import lombok.Getter;
+			import lombok.Setter;
+
+			public class Person {
+				@Getter @Setter
+				private String name;
+
+				@Getter @Setter
+				private int age;
+			}
+			
+		When you decompile the .class file (using a tool like CFR or JD-GUI), it might look like this:
+
+			public class Person {
+				private String name;
+				private int age;
+
+				public String getName() {
+					return this.name;
+				}
+
+				public void setName(String name) {
+					this.name = name;
+				}
+
+				public int getAge() {
+					return this.age;
+				}
+
+				public void setAge(int age) {
+					this.age = age;
+				}
+			}
+			
+			
+	Examples of using @Builder in Lombok:
+	-------------------------------------
+		Lombok Example Using @Builder:
+		------------------------------
+			import lombok.Builder;
+
+			@Builder
+			public class User {
+				private String username;
+				private String email;
+				private int age;
+			}
+
+		Usage in Code:
+		--------------
+			User user = User.builder()
+							.username("tech_guru")
+							.email("guru@example.com")
+							.age(28)
+							.build();
+
+
+		Decompiled Output (Simplified):
+		-------------------------------
+			After compiling and decompiling, you’ll typically see something like:
+
+				public class User {
+					private String username;
+					private String email;
+					private int age;
+
+					public static UserBuilder builder() {
+						return new UserBuilder();
+					}
+
+					public static class UserBuilder {
+						private String username;
+						private String email;
+						private int age;
+
+						public UserBuilder username(String username) {
+							this.username = username;
+							return this;
+						}
+
+						public UserBuilder email(String email) {
+							this.email = email;
+							return this;
+						}
+
+						public UserBuilder age(int age) {
+							this.age = age;
+							return this;
+						}
+
+						public User build() {
+							return new User(username, email, age);
+						}
+					}
+
+					private User(String username, String email, int age) {
+						this.username = username;
+						this.email = email;
+						this.age = age;
+					}
+				}
+			
+	Key Insight:
+	------------
+		Lombok is a compile-time tool, so all generated code appears in the .class file as if you had written it yourself.
+		
+		The Lombok annotations themselves don’t remain in the .class file unless they’re marked to be retained at runtime (via @Retention(RetentionPolicy.RUNTIME)).
+		
+		
+		
+22) Extra Details: Record:
+--------------------------
+	If we decompile the java class which used record keyword, what it has inside it's dot class file:
+	-------------------------------------------------------------------------------------------------
+	
+	Behind the simplicity of a record declaration, the compiler generates quite a bit of bytecode.
+	
+	Source Code Example:
+	--------------------
+		public record Point(int x, int y) {}
+
+	Decompiled .class Output (Simplified):
+	--------------------------------------
+		public final class Point extends java.lang.Record {
+			private final int x;
+			private final int y;
+
+			public Point(int x, int y) {
+				this.x = x;
+				this.y = y;
+			}
+
+			public int x() {
+				return x;
+			}
+
+			public int y() {
+				return y;
+			}
+
+			public String toString() {
+				return "Point[x=" + x + ", y=" + y + "]";
+			}
+
+			public boolean equals(Object o) {
+				if (this == o) return true;
+				if (!(o instanceof Point)) return false;
+				Point other = (Point) o;
+				return x == other.x && y == other.y;
+			}
+
+			public int hashCode() {
+				return Integer.hashCode(x) * 31 + Integer.hashCode(y);
+			}
+		}
+
+		Breakdown of What’s Inside:
+		---------------------------
+			- ✅ Private final fields for each component (x and y)
+			- ✅ Compact canonical constructor that sets those fields
+			- ✅ Accessors named after the fields (not getX() but just x())
+			- ✅ Auto-generated equals(), hashCode(), and toString()
+			- ✅ Inherits from java.lang.Record (which is a marker superclass for record types)
+
+	Key Points:
+	-----------
+		- Records are implicitly final — you can’t extend them.
+		- All fields are private and final by design.
+		- No need to use Lombok here — Java already does all the boilerplate generation!
+
+	Bonus: Developer Productivity = Indirect Performance:
+	-----------------------------------------------------
+		While not a runtime metric, records drastically reduce boilerplate code, which:
+			- Speeds up development
+			- Minimizes bugs in method implementations
+			- Makes code easier to maintain and optimize
+			
+		Records aren’t just syntactic sugar — they’re a signal to the JVM that your class is a simple, immutable data carrier. That semantic clarity unlocks a suite of optimizations that make your code faster and more memory-efficient.
+
+	When to use:
+	------------	
+		If you're working with lots of DTOs, API responses, or immutable value objects, records are a smart choice. 
+		

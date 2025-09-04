@@ -1,0 +1,94 @@
+Spring Design Patterns:
+-----------------------
+	Spring Framework elegantly incorporates several design patterns to promote modularity, scalability, and maintainability. 
+
+	1) Creational Patterns:
+	-----------------------
+
+		1.1 Singleton Pattern:
+		----------------------
+			Default scope of Spring beans.
+			Ensures one instance per Spring container.
+			Example: @Bean methods in @Configuration classes.
+		
+		1.2 Factory Method Pattern:
+		---------------------------
+			Spring’s BeanFactory and ApplicationContext act as factories.
+			@Bean annotated methods define object creation logic.
+		
+		1.3 Prototype Pattern:
+		----------------------
+			Bean scope where a new instance is created every time.
+			Useful for stateful beans.
+		
+		1.4 Builder Pattern:
+		--------------------
+			Used in configurations like RestTemplateBuilder or UriComponentsBuilder.
+
+
+	2. Structural Patterns:
+	-----------------------
+	
+		2.1 Proxy Pattern:
+		------------------
+			Core to Spring AOP and @Transactional.
+			Enables method interception using JDK or CGLIB proxies.
+		
+		2.2 Adapter Pattern:
+		--------------------
+			Converts interfaces to match expected types.
+			Example: HandlerAdapter in Spring MVC.
+		
+		2.3 Decorator Pattern:
+		----------------------
+			Adds behavior to beans dynamically.
+			Often used with filters or interceptors.
+		
+		2.4 Composite Pattern:
+		----------------------
+			Used in configuration parsing and hierarchical bean definitions.
+
+
+	3. Behavioral Patterns:
+	-----------------------
+	
+		3.1 Template Method Pattern:
+		----------------------------
+			Abstracts boilerplate logic.
+			Examples: JdbcTemplate, RestTemplate, JpaTemplate.
+		
+		3.2 Strategy Pattern:
+		---------------------
+			Allows interchangeable algorithms.
+			Example: PlatformTransactionManager implementations.
+		
+		3.3 Observer Pattern:
+		---------------------
+			Spring’s event system (ApplicationEventPublisher).
+			Enables decoupled communication between components.
+		
+		3.4 Command Pattern:
+		--------------------
+			Encapsulates requests as objects.
+			Seen in JdbcTemplate callbacks.
+		
+		3.5 Chain of Responsibility Pattern:
+		------------------------------------
+			Used in Spring Security filter chains.
+
+
+	MVC-Specific Patterns:
+	----------------------
+	
+		Model-View-Controller (MVC):
+		----------------------------
+			Separates concerns in web applications.
+			Controllers handle requests, models manage data, views render output.
+		
+		Front Controller Pattern:
+		-------------------------
+			DispatcherServlet routes all incoming requests.
+		
+		View Helper Pattern:
+		--------------------
+			JSP tag libraries and Thymeleaf helpers assist in rendering views.

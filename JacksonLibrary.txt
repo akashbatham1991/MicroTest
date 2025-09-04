@@ -1,0 +1,229 @@
+https://medium.com/@abdullahkhames96/understanding-jackson-in-spring-boot-a-comprehensive-guide-c6424d9443f6
+https://www.baeldung.com/jackson
+
+To use it, you just need to include the following dependency in your pom.xml file:
+	<dependency>
+		<groupId>com.fasterxml.jackson.core</groupId>
+		<artifactId>jackson-databind</artifactId>
+	</dependency>
+
+Diff commonly used Jackson annotations:
+---------------------------------------
+	@JsonProperty
+	@JsonPropertyOrder
+	@JsonIgnore 
+	@JsonIgnoreProperties
+	@JsonIgnoreType
+	@JsonInclude(Include.NON_NULL)
+	@JsonFormat
+	@JsonRawValue
+	@JsonRootName
+	
+
+Jackson:
+--------
+	It is the default library for JSON processing.
+	
+	Jackson simplifies the conversion of: 
+		Java objects to JSON (serialization) and 
+		JSON to Java objects (deserialization).
+		
+	
+	1. Serialization (Java Object to JSON):
+	---------------------------------------
+		ObjectMapper objectMapper = new ObjectMapper();
+		User user = new User("John Doe", "john.doe@example.com", 30);
+		
+		String jsonString = objectMapper.writeValueAsString(user);
+		System.out.println(jsonString);
+		
+		This will produce the following JSON output:
+			{
+			  "name": "John Doe",
+			  "email": "john.doe@example.com",
+			  "age": 30
+			}
+			
+			
+	2. Deserialization (JSON to Java Object):
+	-----------------------------------------
+		String json = "{ \"name\": \"John Doe\", \"email\": \"john.doe@example.com\", \"age\": 30 }";
+		User user = objectMapper.readValue(json, User.class);		
+		
+	3. Pretty Print JSON Output: This makes the JSON more human-readable.
+	----------------------------		
+			objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+	
+	4. Fail on Unknown Properties:
+	------------------------------
+		This setting determines whether the mapper should throw an exception if a JSON field does not map to a Java field.
+
+			objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+			
+	5. @JsonFormat:
+	   ------------	
+		Used to format date/time fields.
+	   	
+			public class Event {
+				@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
+				private Date eventDate;
+			}		
+
+
+	6. @JsonProperty: 
+	   -------------
+		Used to specify 'custom names' for fields "during serialization".
+		
+			public class User {
+				@JsonProperty("full_name")
+				private String name;
+			}
+
+	7. @JsonPropertyOrder:
+	----------------------
+		Specify the order of properties on serialization.
+		
+		Let’s set a custom order for the properties of a MyBean entity:
+			@JsonPropertyOrder({ "name", "id" })
+			public class MyBean {
+				public int id;
+				public String name;
+			}
+
+		Here’s the output of serialization:
+			{
+				"name":"My bean",
+				"id":1
+			}			
+			
+	@JsonIgnore, @JsonIgnoreProperties and @JsonIgnoreType annotations:
+	-------------------------------------------------------------------
+		These annotations are used to ignore logical properties in JSON serialization and deserialization.
+		
+		@JsonIgnore: 
+			is used to ignore the logical property used in serialization and deserialization. @JsonIgnore can be used at setter, getter or field.
+		
+		@JsonIgnoreProperties: 
+			ignores the specified logical properties in JSON serialization and deserialization. It is annotated at the class level.
+		
+		@JsonIgnoreType: 
+			is annotated at the class level and it ignores the complete class.
+
+	8. @JsonIgnoreProperties:
+	-------------------------
+		Used at the class level to ignore multiple properties.
+
+			@JsonIgnoreProperties({ "password", "ssn" })
+			public class User {
+				// in this case only name field will be mapped
+				private String name;
+				private String password;
+				private String ssn;
+			}		
+			
+	9. Filtering Fields in Jackson:
+	-------------------------------
+		
+		@JsonIgnore:
+		------------
+			Used to ignore the specific property used in serialization and deserialization. 
+			Used at setters, getters or fields.
+			
+			public class User {
+				private String name;
+				
+				@JsonIgnore 
+				private String email;
+				
+				private String password;
+			}
+		
+			
+		@JsonInclude:
+		-------------
+		Conditionally include fields, for example, including fields only if they are non-null.
+
+			public class User {
+				private String name;
+				private String email;
+				
+				@JsonInclude(JsonInclude.Include.NON_NULL)
+				private String phoneNumber;
+			}	
+			
+		Ignore Null Fields on the Class or Field level:
+		-----------------------------------------------
+		1.	@JsonInclude(Include.NON_NULL)
+			public class MyDto { ... }
+			
+			Or
+			
+		2.	public class MyDto {
+
+				@JsonInclude(Include.NON_NULL)
+				private String stringValue;
+
+				private int intValue;
+
+				// standard getters and setters
+			}
+			
+				
+				
+	10. @JsonRawValue:
+	------------------
+		serialize a property exactly as is.
+		
+		public class RawBean {
+			public String name;
+
+			@JsonRawValue
+			public String json;
+		}
+
+		The output of serializing the entity is:
+
+		{
+			"name":"My bean",
+			"json":{
+				"attr":false
+			}
+		}
+		
+		@Test
+		public void whenSerializingUsingJsonRawValue_thenCorrect()
+		  throws JsonProcessingException {
+		 
+			RawBean bean = new RawBean("My bean", "{\"attr\":false}");
+
+			String result = new ObjectMapper().writeValueAsString(bean);
+			assertThat(result, containsString("My bean"));
+			assertThat(result, containsString("{\"attr\":false}"));
+		}
+		
+		
+	11. @JsonRootName:
+	------------------
+		specify the name of the root wrapper to be used.
+		
+		Wrapping means:
+			{
+				"id": 1,
+				"name": "John"
+			}
+			
+		It’s going to be wrapped like this:
+			{
+				"User": {
+					"id": 1,
+					"name": "John"
+				}
+			}
+			
+		We’re going to use the @JsonRootName annotation to indicate the name of this potential wrapper entity:
+			@JsonRootName(value = "user")
+			public class UserWithRoot {
+				public int id;
+				public String name;
+			}

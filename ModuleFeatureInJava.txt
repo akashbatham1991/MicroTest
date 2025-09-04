@@ -1,0 +1,436 @@
+https://www.digitalocean.com/community/tutorials/java-9-modules
+https://medium.com/@reetesh043/java-modules-a-guide-for-beginners-c1dcd6a33a83
+https://howtodoinjava.com/java9/java-9-modules-tutorial/
+https://www.tutorialspoint.com/java/java_module_system.htm
+https://jenkov.com/tutorials/java/modules.html#:~:text=A%20Java%20module%20is%20a,to%20Java%20Platform%20Module%20System.
+https://www.baeldung.com/java-modularity#:~:text=Modules%20are%20groups%20of%20packages%20and%20resources,file%20*%20As%20an%20exploded%20compiled%20project
+https://medium.com/@pvprasanth474/whats-new-in-java-9-the-top-4-features-you-should-know-cd2578ca1ed1
+
+
+Problems of Current Java System?
+--------------------------------
+	Java SE 8 or earlier systems have following problems in developing or delivering Java Based applications.
+
+	1. As JDK is too big, it is a bit tough to scale down to small devices. Java SE 8 has introduced 3 types of compact profiles to solve this problem: compact1, compact2, and compact3. But it does not solve this problem.
+	2. JAR files like rt.jar etc are too big to use in small devices and applications.
+	3. As JDK is too big, our applications or devices are not able to support better Performance.
+	4. There is no Strong Encapsulation in the current Java System because “public” access modifier is too open. Everyone can access it.
+	5. As JDK, JRE is too big, it is hard to Test and Maintain applications.
+	6. As the public is too open, They are not to avoid the accessing of some Internal Non-Critical APIs like sun.*, *.internal.* etc.
+	7. As User can access Internal APIs too, Security is also big issue.
+	8. Application is too big.
+	9. Its a bit tough to support Less Coupling between components.
+
+	To solve all these problems, Oracle Corp is going to release Java Module system in Java SE 9 Release.
+
+
+Advantages of Java SE 9 Module System:
+--------------------------------------
+	Java SE 9 Module System is going to provide the following benefits.
+
+	1. As Java SE 9 is going to divide JDK, JRE, JARs etc, into smaller modules, we can use whatever modules we want. So it is very easy to scale down the Java Application to Small devices.
+	2. Ease of Testing and Maintainability.
+	3. Supports better Performance.
+	4. As public is not just public, it supports very Strong Encapsulation. (Don’t worry its a big concept. we will explore it with some useful examples soon).
+	5. We cannot access Internal Non-Critical APIs anymore.
+	6. Modules can hide unwanted and internal details very safely, we can get better Security.
+	7. Application is too small because we can use only what ever modules we want.
+	8. Its easy to support Less Coupling between components.
+	9. Its easy to support Single Responsibility Principle (SRP).
+
+Compare JDK 8 and JDK 9:
+------------------------
+	Oracle Corp has changed the folder structure a bit.
+	
+	After installing JDK 8 software, we can see a couple of directories like bin(*.exe), jre, lib(rt.jar, tools.jar) etc in Java Home folder.
+	
+	JDK 9 does NOT contain JRE. In JDK 9, JRE is separated into a separate distribution folder. JDK 9 software contains a new folder “jmods”. It contains a set of Java 9 Modules as shown below. In JDK 9, No rt.jar and No tools.jar
+	
+	NOTE:- As of today, “jmods” contains 95 modules. It may increase in the final release. “jmods” folder is available at ${JAVA_HOME}/jmods. These are known as JDK Modules.
+	
+	Each Module contains only a set of related code and data to support Single Responsibility (Functionality) Principle (SRP).
+	
+	Java 9 Module System has a “java.base” Module. It’s known as Base Module.
+	It’s an Independent module and does NOT dependent on any other modules. By default, all other Modules dependent on this module. That’s why “java.base” Module is also known as The Mother of Java 9 Modules.
+	
+	Oracle Corp has separated JDK jars and Java SE Specifications into two set of Modules:
+		All JDK Modules starts with “jdk.*”
+		All Java SE Specifications Modules starts with “java.*”
+
+	 In brief I can say a Java 9 Module contains the following main components:
+		One Module
+		Module Name
+		Module Descriptor
+		Set of Packages
+		Set of Types and Resources
+
+	
+java Modules:
+	A Java module groups together related packages, classes, and resources, allowing them to be bundled and distributed as one unit. The intent behind modules is to aid developers in building applications that are easier to manage and scale
+
+
+Whether to start using modules is entirely up to you:
+	1. If you maintain a large legacy project that isn’t changing very much, then it’s probably not worth the effort.
+	2. If you work on a large project that’s grown difficult to maintain over the years then the clarity and discipline that modularization brings could be beneficial, but it could also be a lot of work, so think carefully before you begin.
+	3. If you’re starting a new project then I highly recommend starting with modules if you can.
+	
+
+Java Platform Module System (JPMS):
+-----------------------------------
+	Java’s modular features have evolved significantly since the introduction of the Java Platform Module System (JPMS) in Java 9 — and the latest versions (Java 24 and 25) are taking modularity to the next level. 
+
+What Is Java Modularity?
+------------------------
+	Modularity in Java means organizing code into self-contained modules that explicitly declare:
+		What they require (dependencies)
+		What they export (accessible packages)
+		What they hide (internal implementation)
+	
+	This helps eliminate “JAR Hell,” improves encapsulation, and makes applications easier to maintain, scale, and secure.
+
+
+Modular Enhancements in Java 24 & 25:
+-------------------------------------
+	Here are the latest modular features introduced in recent Java versions:
+
+	1. Module Import Declarations:
+	------------------------------
+		You can now use import module statements directly in Java source files.
+		This simplifies dependency management by making module usage more readable and IDE-friendly.
+		
+		Example:
+		--------
+			import module java.base;
+			import module java.sql;
+
+
+	2. Transitive Module Dependencies:
+	----------------------------------
+		Modules can declare dependencies that are automatically inherited by other modules.
+		This reduces boilerplate and improves modular clarity.
+	
+	3. Compact Source Files:
+	------------------------
+		Java now supports class-less files with top-level main() methods.
+		Great for scripting and rapid prototyping in modular environments.
+	
+	4. Flexible Constructor Bodies:
+	-------------------------------
+		Constructors can now include logic before calling super() or this().
+		This improves modular class design by allowing validation and setup before delegation.
+
+	Why It Matters:
+	---------------
+		Modular features in Java:
+			Improve startup performance and memory usage
+			Enable strong encapsulation and clear dependency graphs
+			Make large applications easier to test, deploy, and secure
+
+
+Types of modules in Java:
+-------------------------
+	The Java Platform Module System (JPMS), introduced in Java 9, provides a way to organize code into modules, which are self-describing collections of related packages, types, and resources. 
+	
+	There are four main types of modules in Java: 
+	---------------------------------------------
+		1. System Modules: 
+			These are the modules that comprise the Java Development Kit (JDK) and the Java Runtime Environment (JRE). They contain the standard Java APIs, such as java.base, which exports core packages like java.lang and java.io. You can list the system modules using the java --list-modules command.
+		
+		2. Application Modules: 
+			These are the modules you create for your own application to achieve specific functionalities. You define them using a module-info.java file, which specifies their name, dependencies on other modules, and the packages they export.
+		
+		3. Automatic Modules: 
+			These allow you to integrate existing JAR files (which are not explicitly defined as modules with a module-info.java file) into a modular application. When you place a regular JAR file on the module path, the Java runtime treats it as an automatic module, deriving its name from the JAR file name and exporting all its packages.
+		
+		4. Unnamed Modules: 
+			These are modules composed of JARs and classes that are placed on the traditional classpath instead of the module path. Unnamed modules can read all other modules, but they are not explicitly read by any named module. This allows for backward compatibility with older Java code. 
+			
+			
+	Module concepts and features:
+	-----------------------------
+		Module Declarations (module-info.java): 
+			Each module requires a module descriptor file (module-info.java) located at its root directory. This descriptor specifies the module's name, its dependencies on other modules using the requires directive, and the packages it exports using the exports directive.
+		
+		Exports and Encapsulation: 
+			Modules explicitly declare which packages are exported and made accessible to other modules. Packages that are not exported remain private and are only accessible within the module itself, ensuring strong encapsulation and hiding internal implementation details.
+		
+		Requires: 
+			Modules declare their dependencies on other modules using the requires directive in their module descriptor. This ensures that the module has access to the necessary dependencies at runtime.
+		
+		Services: 
+			Java's module system includes a feature for services, enabling decoupling between modules. Services are defined by interfaces or abstract classes, and modules can declare that they provide implementations for these services (using provides...with in module-info.java) or consume them (using uses in module-info.java). 
+			
+		
+	Benefits of using Java modules:
+	-------------------------------
+		Improved maintainability: 
+			Modules help organize code into smaller, independent units, making it easier to understand, test, and maintain.
+		
+		Enhanced encapsulation: 
+			Strong encapsulation ensures internal implementation details are hidden, reducing the risk of conflicts and unauthorized access to sensitive code.
+		
+		Faster startup times: 
+			Modules allow the Java runtime to load only the modules necessary for an application, potentially leading to faster startup times and reduced memory footprint.
+		
+		Reliable dependencies: 
+			Missing modules are detected at compile-time, preventing runtime errors related to missing classes or resources.
+		
+		Scalable Java platform: 
+			Modules enable the creation of custom runtimes containing only the required modules, reducing the application's footprint, especially beneficial for resource-constrained environments.
+		
+		Improved security: 
+			Modules help control access to code and limit the exposure of sensitive APIs, enhancing platform security. 
+
+
+	In summary, Java's module system provides a powerful way to organize and manage code in a modular and maintainable fashion, offering various benefits for application development, especially for large and complex projects.		
+	
+	
+What is a Package?
+------------------
+	A package is a namespace that organizes a set of related classes and interfaces.
+
+What is a Module?
+-----------------
+	A module is a collection of related Java packages and associated resources with a descriptor file, which contains information about which packages/resources are exposed by this module, which packages are used by current module and some other information.	
+	
+	
+Module Descriptor (module-info.java):
+-------------------------------------
+	Each Java module needs a Java module descriptor named module-info.java which has to be located in the corresponding module root directory.
+	
+	
+Declaring Module:
+-----------------
+	In order to declare a module, we need to create a module-info.java in root folder of the application. This file contains all the meta data or module descriptions.
+
+	Example:
+	--------
+		module-info.java
+		----------------
+			module com.tutorialspoint.greetings { 
+			}
+			
+			
+Adding Dependent Modules:
+-------------------------
+	For this purpose, we used requires keyword.
+	
+	Example:
+	--------
+		module com.tutorialspoint.greetings { 
+		   requires com.tutorialspoint.util;
+		}
+	
+Adding Optional Modules:
+------------------------
+	We can declare optional dependencies of other modules using static keyword along with requires in the module. 
+	For example, if we want to use com.tutorialspoint.logging module then we can add the declaration as follows:
+	
+	Example:
+	--------
+		module com.tutorialspoint.greetings { 
+		   requires com.tutorialspoint.util;
+		   requires static com.tutorialspoint.logging;
+		}
+		
+Adding Transitive Modules:
+--------------------------		
+	We can declare transitive dependencies of other modules using transitive keyword in the module. For example, if we want to use com.tutorialspoint.base module as dependency of com.tutorialspoint.util module then we can add the declaration as follows:
+
+	Example:
+	--------
+		module com.tutorialspoint.greetings { 
+		   requires com.tutorialspoint.util;
+		   requires static com.tutorialspoint.logging;
+		   requires transitive com.tutorialspoint.base;
+		}
+		
+Export Public Classes:
+----------------------
+	By default, no public class of a package of a module is exposed to outside world. In order to use the public class, we've to export it as shown below:
+		
+	Example:
+	--------
+		module com.tutorialspoint.greetings { 
+		   requires com.tutorialspoint.util;
+		   requires static com.tutorialspoint.logging;
+		   requires transitive com.tutorialspoint.base;
+		   
+		   exports com.tutorialspoint.greetings.HelloWorld;
+		}
+		
+Allow Reflection:
+-----------------
+	By default, no private member of a package of a module is accessible via reflection. In order to allow reflection to inspect the class or module, we've to use opens command as shown below:
+
+	Example:
+	--------
+		module com.tutorialspoint.greetings { 
+		   requires com.tutorialspoint.util;
+		   requires static com.tutorialspoint.logging;
+		   requires transitive com.tutorialspoint.base;
+		   
+		   exports com.tutorialspoint.greetings.HelloWorld;
+		   opens com.tutorialspoint.greetings.HelloWorld;
+		}
+		
+	If we need to allow complete module to be open for reflection, we can use open command as shown below:
+		open module com.tutorialspoint.greetings { 
+		   requires com.tutorialspoint.util;
+		   requires static com.tutorialspoint.logging;
+		   requires transitive com.tutorialspoint.base;
+		   
+		   exports com.tutorialspoint.greetings.HelloWorld;
+		}
+		
+Opens … To:
+-----------
+	Using 'opens ...to' keyword we can open reflection permission for specific packages to specific modules only.
+
+		module com.module.util{
+		  opens com.module.package1 to module.a, module.b, org.test.integration;
+		}	
+		
+Module Exports:
+---------------
+	
+	1) A Java module must explicitly export all packages in the module that are to be accessible for other modules using the module. The exported packages are declared in the module descriptor. Here is how a simple export declaration looks inside a module descriptor:
+	
+		module com.jenkov.mymodule {
+			exports com.jenkov.mymodule;
+		}
+
+	This example exports the package called com.jenkov.mymodule .
+
+	Please note, that only the listed package itself is exported. No "subpackages" of the exported package are exported. That means, that if the mymodule package contained a subpackage named util then the com.jenkov.mymodule.util package is *not* exported just because com.jenkov.mymodule is.			
+	
+	2) To export a subpackage also, you must declare it explicitly in the module descriptor, like this:
+		module com.jenkov.mymodule {
+			exports com.jenkov.mymodule;
+			exports com.jenkov.mymodule.util;
+		}
+		
+	3) You do not have to export the parent package in order to export a subpackage. The following module descriptor exports statement is perfectly valid:
+
+		module com.jenkov.mymodule {
+			exports com.jenkov.mymodule.util;
+		}	
+		
+	This example only exports the com.jenkov.mymodule.util package, and not the com.jenkov.mymodule package.
+
+Uses:
+-----
+	Using uses keyword we can specify that our module needs or consumes some service. Service is a interface or abstract class. It should not be an implementation class. 
+	
+	Example:
+		module com.module.util{
+			uses com.util.PersonDataService;
+		}
+	
+Provides … With:
+----------------
+	We can specify that our module provides some services that other modules can use.	
+	
+	Example:
+	--------
+		module com.module.util{
+			provides com.util.PersonDataService with com.util.DbPersonServiceImpl;
+		}
+		
+	
+Circular Dependencies Not Allowed:
+----------------------------------
+	It is not allowed to have circular dependencies between modules. In other words, If module A requires module B, then module B cannot also require module A. The module dependency graph must be an acyclic graph.	
+	
+Split Packages Not Allowed:
+---------------------------
+	The same Java package can only be exported by a single Java module at runtime. In other words, you cannot have two (or more) modules that export the same package.
+
+Unnamed Module:
+---------------
+	From Java 9 and forward, all Java classes must be located in a module for the Java VM to use them. But what do you do with older Java libraries where you just have the compiled classes, or a JAR file?
+
+	In Java 9 you can still use the -classpath argument to the Java VM when running an application. On the classpath you can include all your older Java classes, just like you have done before Java 9. All classes found on the classpath will be included in what Java calls the unnamed module.
+
+	The unnamed module exports all its packages. However, the classes in the unnamed module are only readable by other classes in the unnamed module - or from automatic modules (see next section). No named module can read the classes of the unnamed module.
+
+Automatic Modules:
+------------------
+https://jenkov.com/tutorials/java/modules.html#:~:text=A%20Java%20module%20is%20a,to%20Java%20Platform%20Module%20System.	
+
+
+
+https://medium.com/@pvprasanth474/whats-new-in-java-9-the-top-4-features-you-should-know-cd2578ca1ed1
+
+Simple Working Example: Two Modules Talking:
+--------------------------------------------
+	Let’s build a tiny modular Java app with two modules:
+		hello.module — defines a simple greeting
+		main.module — calls the greeting
+		
+	/project-root
+	 ├── hello.module
+	 │    ├── module-info.java
+	 │    └── com/example/hello/Greeting.java
+	 └── main.module
+		  ├── module-info.java
+		  └── com/example/main/MainApp.java	
+		  
+		  
+	Module 1: hello.module:
+	-----------------------
+		
+		module-info.java
+		----------------
+			module hello.module {
+				exports com.example.hello;
+			}
+			
+		Greeting.java
+		-------------
+			package com.example.hello;
+
+			public class Greeting {
+				public static String sayHello(String name) {
+					return "Hello, " + name + "!";
+				}
+			}			
+			
+	Module 2: main.module:
+	----------------------
+		
+		module-info.java
+		----------------
+			module main.module {
+				requires hello.module;
+			}
+			
+		MainApp.java
+		------------
+			package com.example.main;
+
+			import com.example.hello.Greeting;
+
+			public class MainApp {
+				public static void main(String[] args) {
+					System.out.println(Greeting.sayHello("Java 9"));
+				}
+			}	
+			
+	Compile & Run:
+	--------------
+		
+		Compile both modules:
+		---------------------
+			javac -d out/hello.module hello.module/module-info.java hello.module/com/example/hello/Greeting.java
+			
+			javac --module-path out -d out/main.module main.module/module-info.java
+													   main.module/com/example/main/MainApp.java
+		
+		Run the main module:
+		--------------------
+			java --module-path out -m main.module/com.example.main.MainApp
+	
+	Output:
+	-------
+		Hello, Java 9!

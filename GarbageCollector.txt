@@ -1,0 +1,571 @@
+https://iampravo.medium.com/journey-of-javas-garbage-collector-so-far-7c00af8c89dc
+https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html
+
+
+Garbage Collector manages memory automatically.
+Garbage Collection (GC) is the process of reclaiming memory used by objects that are no longer reachable.
+
+
+What is Automatic Garbage Collection?
+-------------------------------------
+	Automatic garbage collection is the process of looking at heap memory, identifying which objects are in use and which are not, and deleting the unused objects.	So the memory used by an unreferenced object can be reclaimed.
+	
+	In a programming language like C, allocating and deallocating memory is a manual process. 
+	In Java, process of deallocating memory is handled automatically by the garbage collector.
+	
+	So, how does GC work? 
+	---------------------
+		Imagine you’re cleaning up a room. You’d look around to see what’s not needed anymore, like empty coffee cups or Lays wrappers, and throw them away. GC does something similar.
+
+	Mark:
+		First, it looks at all the objects in your program. It identifies which ones are still being used and which ones are not. This is called “marking”.
+	
+	Sweep:
+		Next, it goes through the “sweep” phase. Here, it gets rid of the objects that are not being used anymore, freeing up memory.
+	
+	Compact:
+		Finally, it organizes the remaining referenced objects together to make the best use of space. This is called “compacting”.	This makes new memory allocation much easier and faster.
+
+
+	Example:
+	--------
+		public class GarbageCollectionExample {
+			public static void main(String[] args) {
+				String str1 = new String("Hello");
+				String str2 = new String("World");
+
+				// reassigning the reference variable
+				str1 = str2; // Now "Hello" object is eligible for garbage collection
+
+				// nullifying the reference variable
+				str2 = null; // Now "World" object is eligible for garbage collection
+			}
+		}
+
+
+Performance Basics:
+-------------------
+	Typically, when tuning a Java application, the focus is on, one of the two main goals: 
+		Responsiveness or 
+		Throughput.
+
+	1. Responsiveness:
+	------------------
+		Responsiveness refers to how quickly an application or system responds with a requested piece of data. Examples include:
+			How quickly a desktop UI responds to an event
+			How fast a website returns a page
+			How fast a database query is returned
+		
+		For applications that focus on responsiveness, "large pause times are not acceptable". The focus is on responding in short periods of time.
+
+	2. Throughput:
+	--------------
+		Throughput focuses on maximizing the amount of work by an application in a specific period of time. Examples of how throughput might be measured include:
+			The number of transactions completed in a given time.
+			The number of jobs that a batch program can complete in an hour.
+			The number of database queries that can be completed in an hour.
+		
+		High pause times are acceptable for applications that focus on throughput. Since high throughput applications "focus on benchmarks over longer periods of time", quick response time is not a consideration.	
+
+
+Factors to consider when choosing a Garbage Collector:
+------------------------------------------------------
+	Heap Size
+	Latency (Pause Time)
+	Throughput
+	Memory Overhead
+	CPU Overhead
+	
+
+	Heap Size: 
+	----------
+		Some garbage collectors, like G1GC, ZGC, and Shenandoah, are designed to handle large heap sizes efficiently.
+	
+	Latency (Pause Time): 
+	---------------------
+		If your application has strict requirements on pause times, consider using a garbage collector that does most of its work concurrently with the application threads, like CMS, G1, ZGC, or Shenandoah.
+	
+	Throughput: 
+	-----------
+		If maximizing throughput is a priority, consider using the Parallel Garbage Collector.
+	
+	Memory Overhead: 
+	----------------
+		Some garbage collectors, like ZGC and Shenandoah, can consume more memory than others.
+	
+	CPU Overhead: 
+	-------------
+		Garbage collectors that do a lot of work concurrently with the application threads, like ZGC and Shenandoah, can consume more CPU resources.
+
+	Examples:
+	---------
+		Parallel GC: 		Optimized for throughput.
+		ZGC / Shenandoah: 	Optimized for low-latency.	
+		G1GC: 				Splits heap into regions and balances pause times.	
+		
+	
+
+Types of garbage collectors available on the JVM:
+-------------------------------------------------	
+	Serial Collector													(-XX:+UseSerialGC)
+	Parallel collector													(-XX:+UseParallelGC)(-XX:+UseParallelOldGC)
+	Concurrent Mark Sweep (CMS) collector	(deprecated)				(-XX:+UseConcMarkSweepGC)
+	Garbage First or G1 garbage collector(G1GC)	(replacement of CMS)	(-XX:+UseG1GC)
+	
+Default GC:
+-----------	
+	G1GC became the default garbage collector in Java 9, replacing the Parallel collector. 
+
+
+https://iampravo.medium.com/journey-of-javas-garbage-collector-so-far-7c00af8c89dc
+
+Journey of Java’s Garbage Collector so far:
+-------------------------------------------
+	Upgrading to newer Java versions like 17, 21, or 22 (and beyond) can lead to substantial performance improvements in garbage collection, resulting in smoother, more responsive applications with reduced pauses and better overall throughput. 	
+	
+		1.7:
+		----	
+			Serial, 
+			Parallel (also known as Throughput), and 
+			Concurrent Mark Sweep (CMS)					(Deprecated now)
+			
+		1.8:
+		----
+			G1GC (Garbage First Garbage Collector)	(replacement of CMS)
+			
+		9 to 11:	
+		-------
+			Z Garbage Collector (ZGC)
+			
+		12 to 14:
+		---------
+			Shenandoah
+			
+		15 & ownwards:
+		--------------		
+			Epsilon Garbage Collector,
+			Z Garbage Collector (ZGC) Enhancements			
+		
+	
+Overview of Java Garbage Collectors:
+------------------------------------
+	GC Type 	Key Traits 						Pause Behavior 			 Threads Used 	Best For
+	-------		----------						--------------			 ------------	--------
+	Serial GC 	Simple, single-threaded			Full stop-the-world 	 1 				Small apps, single-core systems
+	Parallel GC High throughput 				Stop-the-world 			 Multiple 		Multi-core systems, batch apps
+	CMS  		Low pause time 					Mostly concurrent 		 Multiple 		Real-time apps
+	G1GC 		Balanced latency & throughput 	Region-based, concurrent Multiple 		Large heaps, server apps
+	ZGC 		Ultra-low latency 				Mostly concurrent 		 Multiple 		Large heaps, low-latency needs 
+	Shenandoah 	Low pause time 					Concurrent compaction 	 Multiple 		Large heaps, pause-sensitive apps
+	Epsilon 	No GC at all 					No pauses 				 None 			Testing, benchmarking only
+
+
+Choosing the Right GC:
+----------------------
+	Scenario 						Recommended GC
+	--------						--------------
+	Small desktop app 				Serial GC 
+	High-throughput batch job 		Parallel GC
+	Real-time system (pre-Java 14) 	CMS GC
+	Large heap, balanced needs 		G1 GC
+	Ultra-low latency, large heap 	ZGC or Shenandoah
+	Benchmarking or testing 		Epsilon GC
+
+
+General Tuning Tips for All GCs:
+--------------------------------
+	1. Set heap size wisely:
+	------------------------
+		-Xms: Initial heap size
+		-Xmx: Maximum heap size
+		
+		Match these to avoid resizing overhead.
+	
+	2. Enable GC logging:
+	---------------------
+		Use -Xlog:gc* (Java 9+) or -XX:+PrintGCDetails (Java 8) to analyze GC behavior.
+	
+	3. Profile your app:
+	--------------------
+		Use tools like JVisualVM, JFR, or GCViewer to monitor memory and GC activity.
+		Build-in JVM tools: jstat, jcmd
+		
+			
+Monitoring & Visualization Platforms:
+-------------------------------------
+	Grafana + Prometheus: 				For real-time GC metrics via JMX exporters.
+	Elastic Stack (ELK): 				Parse and visualize GC logs using Logstash and Kibana.
+	Datadog / New Relic / AppDynamics: 	APM tools with built-in JVM GC monitoring.
+
+
+https://www.geeksforgeeks.org/java/types-of-jvm-garbage-collectors-in-java-with-implementation-details/	
+Garbage Collector Options:
+--------------------------
+	Here's a table describing the available garbage collections algorithms and optimization options in the JVM.
+
+	Option									Description
+	------									-----------
+	-XX:+UseSerialGC						Enables the Serial Garbage Collector
+	-XX:+UseParallelGC						Enables the Parallel Garbage Collector
+	-XX:+UseConcMarkSweepGC					Enables the CMS Garbage Collector
+	-XX:ParallelCMSThreads=<n>				Sets the number of threads to use
+	-XX:+UseG1GC							Enables the G1 Garbage Collector
+	-XX:+UseZGC								Enables the Z Garbage Collector
+	-XX:+UseShenandoahGC					Enables the Shenandoah Garbage Collector
+	-XX:ParallelGCThreads=<n>				Sets the number of threads for Parallel and G1 Garbage Collectors.
+	-XX:G1HeapRegionSize=<size>				Sets the size of regions for G1 Garbage Collector.
+	-XX:+UseEpsilonGC						Enables the Epsilon Garbage collector.
+
+
+
+Garbage Collection JVM Options:
+-------------------------------
+	JVM Arguments
+	Here’s a table describing the arguments that can be used to instruct the JVM:
+
+	Option								Description
+	------								-----------
+	-Xms<size>							Sets the initial heap size.
+	-Xmx<size>							Sets the maximum heap size.
+	-XX:MaxMetaspaceSize=<size>			Sets the maximum metaspace size.
+	-XX:+HeapDumpOnOutOfMemoryError		Generates a heap dump when an OutOfMemoryError occurs.
+	-XX:HeapDumpPath=<path>				Specifies the path to save the heap dump file.
+	-XX:+PrintGCDetails					Prints detailed garbage collection information to the console.
+	-XX:+UseContainerSupport			Optimizes JVM behavior in containerized environments.
+	
+============================================================================================================================
+
+
+Why Generational Garbage Collection?
+------------------------------------
+	To optimize the process of reclaiming unused memory.
+	
+	As stated earlier, having to mark and compact all the objects in a JVM is inefficient. As more and more objects are allocated, the list of objects grows and grows leading to longer and longer garbage collection time which increases the pause time. 
+	
+	
+	Core Idea Behind Generational GC:
+	---------------------------------
+		The analysis of an applications has shown that most objects are short lived.
+		
+		Most objects die young.
+		
+		That is, in typical programs:
+			Many objects are created temporarily (e.g., loop counters, temporary strings, intermediate results).
+			These short-lived objects become unreachable quickly and can be collected soon after allocation.
+
+	Why Use Generational Garbage Collection?:
+	-----------------------------------------
+		Generational GC divides the heap into multiple regions (generations) based on object age. This enables more efficient memory management
+		
+		1. Improved Performance:
+		------------------------
+			Young Generation (minor GCs): 	Frequent, fast collections because most objects here are short-lived.
+			Old Generation (major GCs): 	Less frequent, more thorough collections for long-lived objects.
+			
+			This separation reduces the overhead of scanning the entire heap every time.
+		
+		2. Reduced Pause Times:
+		-----------------------
+			Minor GCs are quick and affect only a small portion of memory.
+			This minimizes application pause times, "improving responsiveness", especially important for real-time or interactive systems.
+		
+		3. Optimized Memory Scanning:
+		-----------------------------
+			GC algorithms can focus on areas where garbage is most likely to be found.
+			Young generation collections often use copying collectors, which are fast and compact memory efficiently.
+		
+		4. Promotion Strategy:
+		----------------------
+			Objects surviving multiple GC cycles in the young generation are promoted to the old generation.
+			This avoids repeatedly scanning long-lived objects, saving time and resources.
+
+		
+		Typical Generational Layout:
+		----------------------------
+			Generation 							Description 										GC Type
+			----------							-----------											-------
+			Young (Eden + Survivor:S0+S1) 		Where new objects are allocated. Most die here. 	Minor GC
+			Old (Tenured) 						Holds long-lived objects. Collected less often. 	Major GC 
+			Permanent (or Metaspace in Java 8+) Stores class metadata. 								Specialized GC
+
+
+	Java uses a generational GC strategy with collectors like:
+	----------------------------------------------------------
+		G1 GC: 				Splits heap into regions and balances pause times.
+		Parallel GC: 		Optimized for throughput.
+		ZGC / Shenandoah: 	Low-latency collectors for large heaps.
+
+	
+https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html	
+JVM Generations:
+----------------
+	Therefore, the heap is broken up into smaller parts or generations. 
+	
+	The heap parts are: 
+		Young Generation, 					(Minor Garbage collection)
+		Old or Tenured Generation, and 		(Major Garbage collection)
+		Permanent Generation				(Full Garbage collection)
+		
+	1. Young Generation:	(Eden + Survivor)
+	--------------------	
+		The Young Generation is where all new objects are allocated and aged. When the young generation fills up, this causes a "minor garbage collection". 
+		Minor collections can be optimized assuming a high object mortality rate. 
+		A young generation full of dead objects is collected very quickly. 
+		Some surviving objects are aged and eventually move to the old generation.
+
+		Stop the World Event:
+			All minor garbage collections are "Stop the World" events. 
+			This means that all application threads are stopped until the operation completes.
+
+	2. Old Generation:
+	------------------
+		The Old Generation is used to store long surviving objects. 
+		Typically, a threshold is set for young generation object and when that age is met, the object gets moved to the old generation. 
+		Eventually the old generation needs to be collected. This event is called a "major garbage collection".
+
+		Stop the World Event:
+			Major garbage collection are also Stop the World events. 
+			Often a major collection is much slower because it involves all live objects. 
+			So for Responsive applications, major garbage collections should be minimized. 
+			Also note, that the length of the Stop the World event for a major garbage collection is affected by the kind of garbage collector that is used for the old generation space.
+
+	3. Permanent Generation:
+	------------------------
+		The Permanent generation contains metadata required by the JVM to describe the classes and methods used in the application. The permanent generation is populated by the JVM at runtime based on classes in use by the application. In addition, Java SE library classes and methods may be stored here.
+
+		Classes may get collected (unloaded) if the JVM finds they are no longer needed and space may be needed for other classes. The permanent generation is included in a "full garbage collection".	
+	
+	
+	Now that you understand why the heap is separted into different generations, it is time to look at how exactly these spaces interact.
+	
+	
+Now deeper look at object allocation and aging process in the JVM:
+------------------------------------------------------------------
+	1. First, any new objects are allocated to the eden space.
+	2. When the eden space fills up, a minor garbage collection is triggered.
+	3. Unreferenced objects are deleted from eden space and referenced objects are moved to the first survivor space.
+	4. At the next minor GC, the same thing happens for the eden space. Unreferenced objects are deleted and referenced
+	   objects are moved to a survivor space.	
+	   However, in this case, they are moved to the second survivor space (S1). In addition, objects from the last minor GC on the first survivor space (S0) have their age incremented and get moved to S1. 
+	   Once all surviving objects have been moved to S1, both S0 and eden are cleared. 
+	   Notice we now have differently aged object in the survivor space.
+	5. At the next minor GC, the same process repeats. 
+	   However this time the survivor spaces switch. Referenced objects are moved to S0. Surviving objects are aged. Eden and S1 are cleared. 
+	6. After a minor GC, when aged objects reach a certain age threshold, they are promoted from young generation to old
+	   generation.
+	7. As minor GCs continue to occure objects will continue to be promoted to the old generation space.
+	8. So that pretty much covers the entire process with the young generation. Eventually, a major GC will be performed on
+	   the old generation which cleans up and compacts that space.
+	
+
+When minorGC run and when majorGC run?	
+--------------------------------------
+	Minor GC (Young Generation Collection):
+	---------------------------------------
+		When it runs:
+			Triggered when the Eden space is full.
+			Happens frequently and is fast.
+			
+			Collects garbage from the Young Generation, which includes:
+				Eden space: 		where new objects are allocated.
+				Survivor spaces: 	where objects that survive a Minor GC are moved.
+
+		Key points:
+			Most objects die young, so Minor GC is efficient.
+			Surviving objects are promoted to the Old Generation "after multiple GCs".
+
+
+	Major GC (also called Full GC):
+	-------------------------------
+		When it runs:
+			Triggered when the Old Generation is full or under memory pressure.
+			Can also be triggered explicitly by calling System.gc() (though not recommended).
+		
+			May occur during operations like:
+				Class unloading
+				Heap resizing
+				Explicit GC calls
+				Promotion failures (when objects can't be moved from Young to Old Gen)
+		
+		Key points:
+			Slower and more expensive than Minor GC.
+			Stops all application threads (Stop-the-World event).
+			Cleans both Young and Old Generations, and sometimes Metaspace.
+
+	
+	Quick Comparison:
+	-----------------
+		Feature 		Minor GC 				Major GC (Full GC)
+		-------			--------				------------------
+		Scope 			Young Generation only 	Entire heap (Young + Old Gen)
+		Frequency 		Frequent 				Less frequent
+		Performance 	Fast 					Slower, more disruptive
+		Trigger 		Eden space full 		Old Gen full, System.gc(), etc. 
+		Impact 			Short pause 			Longer pause (Stop-the-World)
+
+
+
+Permgen and Metaspace:
+----------------------
+	PermGen and Metaspace, two areas used for storing class metadata.
+	
+	PermGen (Permanent Generation):
+	-------------------------------
+		Used in: Java 7 and earlier
+		
+		Purpose:
+			Stores class metadata, such as:
+				Class definitions
+				Method and field data
+				Static variables
+				Interned Strings
+		
+		Limitations:
+			Fixed size (default ~64MB, configurable via -XX:PermSize and -XX:MaxPermSize)
+			Can lead to OutOfMemoryError: PermGen space if too many classes are loaded.
+
+		GC Behavior:
+			Collected during Full GC
+			Not very flexible for dynamic class loading/unloading
+
+	Metaspace:
+	----------
+		Introduced in: Java 8 and later (replaces PermGen)
+		
+		Purpose:
+			Also stores class metadata, but with a major improvement:
+				Allocated in native memory, not in the heap
+		
+		Advantages:
+			Dynamically resizable: grows as needed (up to system memory)
+			Avoids OutOfMemoryError unless explicitly limited
+
+			Configurable via:
+				-XX:MetaspaceSize (initial size)
+				-XX:MaxMetaspaceSize (maximum size)
+		
+		GC Behavior:
+			Still collected during Full GC
+			More efficient handling of class unloading
+
+
+	Quick Comparison:
+	-----------------
+		Feature 		PermGen (Java ≤ 7) 					Metaspace (Java ≥ 8)
+		-------			------------------					--------------------
+		Location 		JVM heap 							Native memory (outside heap)
+		Default Size 	Fixed, small 						Dynamic, system-dependent
+		Configurable 	Yes (PermSize, MaxPermSize) 		Yes (MetaspaceSize, MaxMetaspaceSize)
+		Common Error 	OutOfMemoryError: PermGen space 	OutOfMemoryError: Metaspace (less common)
+		GC Involvement 	During Full GC	 					During Full GC
+
+	
+Metaspace is allocated in native memory:
+----------------------------------------
+	we mean it's outside the Java heap, which is a big architectural shift from PermGen.
+
+	What Is Native Memory?
+	----------------------
+		Native memory refers to a portion of RAM that is managed directly by the operating system, not by the Java Virtual Machine (JVM). So yes—it's inside RAM, but it's outside the JVM heap and not controlled by the JVM's garbage collector.
+
+		Volatile: Data is lost when the system shuts down.
+		Capacity:	Limited GBs
+
+		The JVM requests memory from the OS for Metaspace as needed, rather than reserving a fixed chunk upfront.
+
+
+	Native memory is used by:
+	-------------------------
+		JVM internals (e.g., thread stacks, compiled code, GC metadata)
+		Native libraries (via JNI)
+		Direct buffers (java.nio.DirectByteBuffer)
+		Metaspace (for class metadata in Java 8+)
+		Memory-mapped file
+
+	Why It Matters:
+	---------------
+		Native memory is invisible to the garbage collector, so if you allocate too much (e.g., via direct buffers or JNI), you can run into OutOfMemoryError: native memory even if your heap is fine.
+		Tools like jcmd, jmap, or enabling Native Memory Tracking (NMT) can help monitor it.
+
+
+	Why Move Metaspace Out of the Heap?
+	-----------------------------------
+		Benefits:
+			Flexibility: 	Metaspace can grow dynamically, reducing the risk of OutOfMemoryError due to class loading.
+			Efficiency: 	Class metadata is managed separately, allowing better tuning and GC behavior.
+			Isolation: 		Keeps heap memory focused on application objects, while class metadata lives in its own space.
+
+	JVM Tuning Options for Metaspace:
+	---------------------------------
+		You can control Metaspace behavior with these flags:
+			-XX:MetaspaceSize=128M → 									Initial size before GC kicks in
+			-XX:MaxMetaspaceSize=512M → 								Upper limit to prevent runaway memory usage
+			-XX:MinMetaspaceFreeRatio and -XX:MaxMetaspaceFreeRatio → 	Control GC thresholds
+
+
+Stack Memory: Native Yet JVM-Managed:
+--------------------------------------
+	Yes, stack memory is part of native memory, meaning it resides in RAM and is allocated by the operating system. But here's the nuance: while the OS provides the raw memory, the JVM manages how it's used for Java threads.
+
+
+Diff b/w RAM and JVM Heap:
+--------------------------
+
+	RAM (Random Access Memory):
+	---------------------------
+		What it is:
+		-----------
+			RAM is the physical memory in your computer, managed by the operating system. It stores all active processes, including the JVM itself, and provides fast access to data.
+
+		Key Traits:
+		-----------
+			Hardware-level memory
+			Used by all applications, not just Java
+			Volatile (data is lost when power is off)
+			Limited by your system’s physical capacity (e.g., 8GB, 16GB)
+
+	JVM Heap:
+	---------
+		What it is:
+		-----------
+			The JVM heap is a portion of RAM allocated specifically for Java object storage. It’s managed by the JVM and used for dynamic memory allocation during runtime.
+
+		Key Traits:
+		-----------
+			Software-level memory space
+			Stores all Java objects and arrays
+			Managed by the Garbage Collector
+			Configurable via JVM flags (e.g., -Xmx512m to set max heap size)
+
+
+	How They Relate:
+	----------------
+		When you run a Java application, the JVM process is loaded into RAM.
+		The JVM then reserves a chunk of RAM as its heap.
+		All Java objects live in this heap, and the JVM manages it independently of other apps.
+
+
+	**Example:
+	----------
+		If your system has 16GB RAM, and you run a Java app with -Xmx2g, the JVM will reserve 2GB of RAM for its heap. The rest is available for other processes and the OS.
+		
+
+
+RAM Vs HDD/SSD:
+---------------
+
+	Feature			Native Memory (RAM)		Hard Disk Memory (HDD/SSD)
+	-------			-------------------		--------------------------
+	Volatility		Volatile				Non-volatile
+	Speed			Very fast				Slower
+	Purpose			Temporary processing	Long-term storage
+	Managed by		OS memory manager		File system
+	Capacity		Limited (GBs)			Large (GBs to TBs)
+	Cost per GB		Higher					Lower
+
+
+Bonus Insight: Virtual Memory:
+------------------------------
+	When RAM runs out, the OS uses part of the hard disk as virtual memory (swap space). This is much slower but helps prevent crashes. It’s a bridge between the two types.
+
+

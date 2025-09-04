@@ -1,0 +1,846 @@
+https://education.github.com/git-cheat-sheet-education.pdf
+http://guides.beanstalkapp.com/version-control/common-git-commands.html
+https://www.atlassian.com/git/tutorials/setting-up-a-repository/git-init
+
+Note:
+	1. HEAD is a symbolic reference to the currently active branch. 
+	2. As a convenience, cloning automatically creates a remote connection called "origin" pointing back to the original
+	   repository. This makes it very easy to interact with a central repository. 
+	3. We should run the command first with dry run to see the impact: --dry-run
+	
+
+1) Setting up repository:
+-------------------------
+	git init,	(convert an existing, unversioned project to a Git repository or initialize a new, empty repository, creare .git subdir)
+	git clone,		(point to an existing repo and make a clone or copy of that repo.)
+	git config,
+	git alias
+	
+2) Saving changes (Git add):
+----------------------------
+	git commit,
+	git diff,		(compare two files, two branches, two commits)
+	git stash,		(temporarily stashes changes your changes and will reapply them back.)
+	.gitignore
+	
+3) Inspecting a repository:
+---------------------------
+	git tag,
+	git blame			(see when each line was last modified and who the author of the modifications was. )
+	
+4) Undoing changes:
+-------------------
+	git clean,			(deleting untracked files which have not yet been added to the repo's index with git add)
+	git revert,			(invert the changes introduced by the commit) (undo a single commit)
+	git reset,			(revert back to the previous state of a project by removing all subsequent commits)
+	git rm				(git rm can be used to remove files from both the staging index and the working directory)
+	
+5) Rewriting history:
+---------------------
+	git rebase,		(changing the base of your branch from one commit to another, maintain a clean history)
+	git reflog
+	
+6) Syncing(git remote):
+-----------------------
+	git fetch,	(safer version of pull, download the code but doesn't merge the changes into local repo, need to run git checkout)
+	git push,
+	git pull	(download the code and merge the changes immediately)
+	
+7) Using branches:
+------------------
+	git checkout,		(create branches, switch branches, and checkout remote branches)
+	git merge,
+	merge conflicts
+	
+================================================start=================================================	
+
+git init:
+--------
+	the git init command is an incredibly easy way to create new version-controlled projects and makes it possible to start recording revisions of the project.
+	
+	The git init command creates a new Git repository. It can be used to convert an existing, unversioned project to a Git repository or initialize a new, empty repository. This is usually the first command you'll run in a new project.
+	
+	Executing git init creates a .git subdirectory in the current working directory, which contains all of the necessary Git metadata for the new repository. This metadata includes subdirectories for objects, refs, and template files. 
+	
+	A HEAD file is also created which points to the currently checked out commit.
+	
+	Aside from the .git directory, in the root directory of the project, an existing project remains unaltered (unlike SVN, Git doesn't require a .git subdirectory in every subdirectory).
+	
+	By default, git init will initialize the Git configuration to the .git subdirectory path. The subdirectory path can be modified and customized if you would like it to live elsewhere. You can set the $GIT_DIR environment variable to a custom path and git init will initialize the Git configuration files there. 
+	
+	Additionally you can pass the --separate-git-dir argument for the same result. 
+	
+	A common use case for a separate .git subdirectory is to keep your system configuration "dotfiles" (.bashrc, .vimrc, etc.) in the home directory while keeping the .git folder elsewhere.
+	
+	If you've already run git init on a project directory and it contains a .git subdirectory, you can safely run git init again on the same project directory. It will not override an existing .git configuration.
+	
+	
+Bare repositories: git init --bare	
+----------------------------------
+	git init --bare <directory>
+	
+	The most common use case for  git init --bare is to create a remote central repository.
+	The central repository is bare, and developers local repositories are non-bare.
+
+
+git init --separate-git-dir:
+---------------------------
+	You can call git init --separate-git-dir on an existing repository and the .git dir will be moved to the specified  path.
+	
+	
+--SHARED[=(FALSE|TRUE|UMASK|GROUP|ALL|WORLD|EVERYBODY|0XXX)]
+------------------------------------------------------------
+	Set access permissions for the new repository. 
+	This specifies which users and groups using Unix-level permissions are allowed to push/pull to the repository.	
+	
+
+Git clone:
+----------
+	If a project has already been set up in a central repository, the git clone command is the most common way for users to obtain a development copy.
+	
+	git clone is primarily used to point to an existing repo and make a clone or copy of that repo at in a new directory, at another location. The original repository can be located on the local filesystem or on remote machine accessible supported protocols. The git clone command copies an existing Git repository. 
+	
+	As a convenience, cloning automatically creates a remote connection called "origin" pointing back to the original repository. This makes it very easy to interact with a central repository. This automatic connection is established by creating Git refs to the remote branch heads under refs/remotes/origin and by initializing remote.origin.url and remote.origin.fetch configuration variables.
+	
+	Cloning to a specific folder:
+	----------------------------
+		git clone <repo> <directory>
+		
+	Shallow clone:
+	--------------
+		git clone -depth=1 <repo>	
+		
+	Cloning a specific tag:
+	----------------------
+		git clone --branch <tag> <repo>	
+		
+	git clone -branch:
+	------------------
+		The -branch argument lets you specify a specific branch to clone instead of the branch the remote HEAD is pointing to, usually the main branch. In addition you can pass a tag instead of branch for the same effect.
+
+	Git URL protocols:
+	------------------
+		SSH	:	authenticated network protocol
+		Git	:	it has NO AUTHENTICATION.
+		http:	
+		
+
+Git Commit:
+----------
+	Commits are created with the git commit command to capture the state of a project at that point in time. 
+	Git doesn’t force you to interact with the central repository until you’re ready.
+	Git Snapshots are always committed to the local repository.
+
+	 
+	git commit -a:
+	-------------
+		Commit a snapshot of all changes in the working directory.
+
+	git commit:
+	----------
+		will open up the locally configured text editor, and prompt for a commit message to be entered. 
+		
+	git commit -m "commit message":
+	-------------------------------
+		A shortcut command that immediately creates a commit with a passed commit message. 
+		
+	git commit -am "commit message":
+	--------------------------------
+		A power user shortcut command that combines the -a and -m options. This combination immediately creates a commit of all the staged changes and takes an inline commit message.
+		
+	git commit --amend -m "an updated commit message":
+	--------------------------------------------------
+		Passing this option will modify the last commit. Instead of creating a new commit, staged changes will be added to the previous commit. This command will open up the system's configured text editor and prompt to change the previously specified commit message.
+		
+		
+git add:
+--------
+	you stage changes with git add.
+	After you’re happy with the staged snapshot, you commit it to the project history with git commit.
+	The git reset command is used to undo a commit or staged snapshot.
+	git push is utilized to send the committed changes to remote repositories for collaboration. 
+		
+	git add <file>:
+	---------------
+		Stage all changes in <file> for the next commit.
+		
+	git add <directory>:
+	--------------------
+		Stage all changes in <directory> for the next commit.
+		
+	git add -p:
+	-----------
+		Begin an interactive staging session that lets you choose portions of a file to add to the next commit. This will present you with a chunk of changes and prompt you for a command. Use y to stage the chunk, n to ignore the chunk, s to split it into smaller chunks, e to manually edit the chunk, and q to exit.
+		
+		
+
+Git diff:
+---------
+	The 'git diff' command is often used along with 'git status' and 'git log' to analyze the current state of a Git repo.  
+	You can compare two files, two branches, two commits.
+	
+	git diff --color-words
+	----------------------
+		the output displays only the color-coded words that have changed.
+	
+	git diff:
+	--------
+		Invoking git diff without a file path will compare changes across the entire repository.
+		By default git diff will show you any uncommitted changes since the last commit.
+	
+	git diff HEAD ./path/to/file:
+	-----------------------------
+		This example is scoped to ./path/to/file when invoked, it will compare the specific changes in the working directory, against the index, showing the changes that are not staged yet. By default git diff will execute the comparison against HEAD. Omitting HEAD in the example above git diff ./path/to/file has the same effect.
+		
+	git diff --cached ./path/to/file:
+	---------------------------------
+		When git diff is invoked with the --cached option the diff will compare the staged changes with the local repository. The --cached option is synonymous with --staged.
+		
+		
+	Comparing files between two different commits:
+	----------------------------------------------
+		Every commit in Git has a commit ID which you can get when you execute GIT LOG. 
+		You can also pass this commit ID to git diff.
+		
+		git log --pretty=oneline
+		------------------------
+			957fbc92b123030c389bf8b4b874522bdf2db72c add feature
+			ce489262a1ee34340440e55a0b99ea6918e19e7a rename some classes
+		
+		$:> git diff 957fbc92b123030c389bf8b4b874522bdf2db72c ce489262a1ee34340440e55a0b99ea6918e19e7a
+
+		
+	Comparing branches:
+	-------------------
+		git diff branch1..other-feature-branch	(OR)
+		
+		This example introduces the dot operator. 
+		The same effect happens if the dots are omitted and a space is used between the branches.
+
+		git diff branch1 other-feature-branch
+		
+		
+	Comparing files from two branches:
+	----------------------------------
+		git diff main new_branch ./diff_test.txt
+
+
+Git Stash:
+----------
+	git stash temporarily shelves (or stashes) changes you've made to your working copy so you can work on something else, and then come back and re-apply them later on. 
+	
+	git stash:
+	----------
+		The git stash command takes your uncommitted changes (both staged and unstaged), saves them away for later use, and then reverts them from your working copy. 
+		
+			$ git status
+				On branch main
+				Changes to be committed:
+					new file:   style.css
+
+				Changes not staged for commit:
+					modified:   index.html
+
+			$ git stash
+				Saved working directory and index state WIP on main: 5002d47 our new homepage
+				HEAD is now at 5002d47 our new homepage
+
+			$ git status
+				On branch main
+				nothing to commit, working tree clean
+	
+		At this point you're free to make changes, create new commits, switch branches, and perform any other Git operations; then come back and re-apply your stash when you're ready.
+
+	Note that the stash is local to your Git repository; stashes are not transferred to the server when you push.
+	 
+	 
+	git stash pop:
+	--------------
+		With this command, you can reapply previously stashed changes.
+		
+		$ git status
+			On branch main
+			nothing to commit, working tree clean
+		
+		$ git stash pop
+			On branch main
+			Changes to be committed:
+				new file:   style.css
+
+			Changes not staged for commit:
+				modified:   index.html
+
+			Dropped refs/stash@{0} (32b3aa1d185dfe6d57b3c3cc3b32cbf3e380cc6a)
+			
+		Popping your stash removes the changes from your stash and reapplies them to your working copy.
+		
+		Note:
+		-----
+			By default, git stash pop will re-apply the most recently created stash: stash@{0}
+
+			You can choose which stash to re-apply by passing its identifier as the last argument, 
+			for example:
+				$ git stash pop stash@{2}
+
+		
+	git stash apply:
+	----------------
+		Alternatively, you can reapply the changes to your working copy and keep them in your stash.
+		This is useful if you want to apply the same stashed changes to multiple branches.
+
+	Note:
+	-----
+		by default Git won't stash changes made to untracked or ignored files.
+		So if we add a third file to our example above, but don't stage it (i.e. we don't run git add), git stash won't stash it.
+		
+		
+	git stash -u:
+	-------------
+		Adding the -u option (or --include-untracked) tells git stash to also stash your untracked files.
+		
+	git stash -a 
+	-------------
+		Adding the -a or --all option, tells git stash to also stash your ignored files.
+
+		
+	Managing multiple stashes:
+	--------------------------
+		You aren't limited to a single stash. You can run git stash several times to create multiple stashes, and then use git stash list to view them.
+		
+		$ git stash list
+		----------------
+			stash@{0}: WIP on main: 5002d47 our new homepage
+			stash@{1}: WIP on main: 5002d47 our new homepage
+			stash@{2}: WIP on main: 5002d47 our new homepage	
+	
+			//"WIP" – work in progress
+			
+		git stash save "message":
+		-------------------------
+			To provide a bit more context, it's good practice to annotate your stashes with a description.
+			
+			$ git stash save "add style to our site"
+
+			
+	git stash show:
+	--------------
+		You can view a summary of a stash.
+		
+	git stash show -p:
+	-----------------
+		pass the -p option (or --patch) to view the full diff of a stash.
+		
+	
+	git stash branch:
+	-----------------
+		If the changes on your branch diverge from the changes in your stash, you may run into conflicts when popping or applying your stash. Instead, you can use git stash branch to create a new branch to apply your stashed changes to:
+		
+		$ git stash branch add-stylesheet stash@{1}
+			Switched to a new branch 'add-stylesheet'
+			On branch add-stylesheet
+			Changes to be committed:
+				new file:   style.css
+
+			Changes not staged for commit:
+				modified:   index.html
+
+			Dropped refs/stash@{1} (32b3aa1d185dfe6d57b3c3cc3b32cbf3e380cc6a)
+			
+		This checks out a new branch based on the commit that you created your stash from, and then pops your stashed changes onto it.
+
+	
+	git stash drop/clear:
+	---------------------
+		If you decide you no longer need a particular stash, you can delete it with:
+			$ git stash drop stash@{1}
+
+		Or you can delete all of your stashes with:
+			$ git stash clear
+			
+			
+git blame:
+----------
+	The git blame command is used to examine the contents of a file line by line and see when each line was last modified and who the author of the modifications was. 
+
+	git blame and git log can be used in combination to help discover the history of a file's contents.
+		
+	git blame only operates on individual files. A file-path is required for any useful output.
+		
+	git blame README.MD:
+	-------------------
+		If we review the blame output list, we can make some observations. The output contains Id, Author, Timestamp, Line NUmber, Line content.
+		
+	git blame -L 1,5 README.md:
+	--------------------------
+		The -L option will restrict the output to the requested line range. Here we have restricted the output to lines 1 through 5.
+		
+	git blame -e README.md:
+	-----------------------
+		The -e option shows the authors email address instead of username.
+
+	git blame -w README.md:
+	----------------------
+		The -w option ignores whitespace changes.
+		
+	git blame -M README.md:
+	-----------------------
+		The -M option detects moved or copied lines within in the same file. This will report the original author of the lines instead of the last author that moved or copied the lines.
+		
+	git blame -C README.md:
+	-----------------------
+		The -C option detects lines that were moved or copied from other files. This will report the original author of the lines instead of the last author that moved or copied the lines.
+		
+	Git blame vs git log:
+	---------------------
+		While git blame displays the last author that modified a line, often times you will want to know when a line was originally added.
+		
+		This can be cumbersome to achieve using git blame.  It requires a combination of the -w, -C, and -M options. 
+		It can be far more convenient to use the git log command.
+		
+		To list all original commits in-which a specific code piece was added or modified execute git log with the -S option. Append the -S option with the code you are looking for. 
+		
+			git log -S"CSS3D and WebGL renderers." --pretty=format:'%h %an %ad %s'
+				e339d3c85 Mario Schuettel Tue Oct 13 16:51:06 2015 +0200 reverted README.md to original content
+				509c2cc35 Daniel Tue Sep 8 13:56:14 2015 +0200 Updated README
+				cb20237cc Mr.doob Mon Dec 31 00:22:36 2012 +0100 Removed DOMRenderer.
+			
+			This output shows us that content from the README was added or modified 3 times by 3 different authors.
+			
+		
+Git Clean:
+----------
+	git clean is a convenience method for "deleting untracked files" in a repo's working directory. Untracked files are those that are in the repo's directory but have not yet been added to the repo's index with git add. 
+	
+	git clean:
+	----------
+		git clean is not undo-able. When fully executed, git clean will make a hard filesystem deletion, similar to executing the command line rm utility. Make sure you really want to delete the untracked files before you run it.
+
+	git clean -n:
+	-------------
+		The -n option will perform a “dry run” of git clean. This will show you which files are going to be removed without actually removing them. It is a best practice to always first perform a dry run of git clean. 
+	
+	git clean -f:
+	-------------
+		The force option initiates the actual deletion of untracked files from the current directory. Force is required unless the clean.requireForce configuration option is set to false. 
+		
+	git clean -f <path>:
+	--------------------
+		 a < path > value can be passed with the -f option that will remove a specific file.
+		 
+	git clean -df:
+	------------------------------
+		The -d option tells git clean that you also want to remove any untracked directories, by default it will ignore directories. 
+		We can also do dry run to check which all directories are going to be removed.
+			git clean -dn
+			
+	git clean -xf:
+	--------------
+		will remove untracked files from the current directory as well as any files that Git usually ignores.
+		
+		
+Git revert:
+-----------
+	The git revert command can be considered an 'undo' type command.
+		
+	Instead of removing the commit from the project history, it figures out how to invert the changes introduced by the commit and appends a new commit with the resulting inverse content. This prevents Git from losing history, which is important for the integrity of your revision history and for reliable collaboration.
+
+	$ git revert HEAD:
+	------------------
+		Git revert expects a commit ref was passed in and will not execute without one. Here we have passed in the HEAD ref. This will revert the latest commit.
+		
+		a revert will create a new commit which will open up the configured system editor prompting for a new commit message. Once a commit message has been entered and saved Git will resume operation.
+
+Resetting vs reverting:
+------------------------
+	It's important to understand that git revert undoes a single commit. it does not "revert" back to the previous state of a project by removing all subsequent commits. In Git, this is actually called a reset, not a revert.
+		
+	Second, git revert is able to target an individual commit at an arbitrary point in the history, whereas git reset can only work backward from the current commit. For example, if you wanted to undo an old commit with git reset, you would have to remove all of the commits that occurred after the target commit, remove it, then re-commit all of the subsequent commits. Needless to say, this is not an elegant undo solution.
+		
+	
+Git Reset:
+---------
+	git reset is a powerful command that is used to undo local changes to the state of a Git repo. Git reset operates on "The Three Trees of Git". These trees are: 
+		the Commit History (HEAD), 
+		the Staging Index, and 
+		the Working Directory. 
+	
+	There are three command line options that correspond to the three trees. The options --soft, --mixed, and --hard can be passed to git reset.
+	
+	git reset ＜file＞:
+	------------------
+		Remove the specified file from the staging area, but leave the working directory unchanged. This unstages a file without overwriting any changes.
+		
+	git reset:
+	----------
+		Reset the staging area to match the most recent commit, but leave the working directory unchanged. This unstages all files without overwriting any changes, giving you the opportunity to re-build the staged snapshot from scratch.
+		
+	git reset --hard:
+	-----------------
+		Reset the staging area and the working directory to match the most recent commit. In addition to unstaging changes, the --hard flag tells Git to overwrite all changes in the working directory, too. 
+		
+	git reset --hard HEAD~2:
+	-----------------------
+		moves the current branch backward by two commits.
+		this kind of reset should only be used on unpublished commits.
+		
+		
+Git RM:
+-------
+	A common question when getting started with Git is "How do I tell Git not to track a file (or files) any more?" The git rm command is used to remove files from a Git repository. It can be thought of as the inverse of the git add command.
+	
+	The git rm command can be used to remove individual files or a collection of files. The primary function of git rm is to remove tracked files from the Git index. Additionally, git rm can be used to remove files from both the staging index and the working directory. There is no option to remove a file from only the working directory. The files being operated on must be identical to the files in the current HEAD. If there is a discrepancy between the HEAD version of a file and the staging index or working tree version, Git will block the removal. This block is a safety mechanism to prevent removal of in-progress changes.
+
+	Note that git rm does not remove branches. 
+	
+	The git rm command operates on the current branch only. The removal event is only applied to the working directory and staging index trees. The file removal is not persisted to the repository history until a new commit is created.An additional git add command will have to be executed on the removed file paths to add the changes to the staging index. 
+	
+	git rm is used to remove a file from a Git repository. It is a convenience method that combines the effect of the default shell rm command with git add. This means that it will first remove a target from the filesystem and then add that removal event to the staging index. 
+	
+	git rm Documentation/\*.txt:
+	----------------------------
+		This example uses a wildcard file glob to remove all *.txt files that are children of the Documentation directory and any of its subdirectories.
+		
+	git rm -f git-*.sh:
+	-------------------
+		This example uses the force option and targets all wildcard git-*.sh files. The force option explicitly removes the target files from both the working directory and staging index.
+		
+		
+Git rebase:
+----------
+	changing the base of your branch from one commit to another
+	integrate upstream changes into your local repository
+	polish a feature branch before merging it into the main code base
+	maintain a "clean history"
+	To everybody else, it will look like the entire feature was developed in a single series of well-planned commits.
+	-----
+	
+	From a content perspective, rebasing is "changing the base of your branch from one commit to another" making it appear as if you'd created your branch from a different commit. Internally, Git accomplishes this by creating new commits and applying them to the specified base. It's very important to understand that even though the branch looks the same, it's composed of entirely new commits.
+
+	Rebasing is a common way to "integrate upstream changes into your local repository". Pulling in upstream changes with Git merge results in a superfluous merge commit every time you want to see how the project has progressed. On the other hand, rebasing is like saying, “I want to base my changes on what everybody has already done.”
+	
+	Most developers like to use an interactive rebase "to polish a feature branch before merging it into the main code base". This gives them the opportunity to squash insignificant commits, delete obsolete ones, and make sure everything else is in order before committing to the “official” project history. To everybody else, it will look like the entire feature was developed in a single series of well-planned commits.
+	
+	The real power of interactive rebasing can be seen in the history of the resulting main branch. To everybody else, it looks like you're a brilliant developer who implemented the new feature with the perfect amount of commits the first time around. This is how interactive rebasing can keep a project's history clean and meaningful.
+	
+	One caveat to consider when working with Git Rebase is merge conflicts may become more frequent during a rebase workflow.  The --continue and --abort command line arguments can be passed to git rebase to advance or reset the rebase when dealing with conflicts.
+	
+	Why do we want to maintain a "clean history"? 
+		The benefits of having a clean history become tangible when performing Git operations to investigate the introduction of a regression.
+	
+	Rebase itself has 2 main modes: "manual" and "interactive" mode.
+
+	git rebase <base>:
+	------------------
+		This automatically rebases the current branch onto ＜base＞, which can be any kind of commit reference (for example an ID, a branch name, a tag, or a relative reference to HEAD).
+		
+	git rebase --interactive <base>:
+	-------------------------------
+		Running git rebase with the -i flag begins an interactive rebasing session. Instead of blindly moving all of the commits to the new base, interactive rebasing gives you the opportunity to alter individual commits in the process. This lets you clean up history by removing, splitting, and altering an existing series of commits.
+		
+		
+	Changing older or multiple commits:
+	-----------------------------------
+		To modify older or multiple commits, you can use git rebase to combine a sequence of commits into a new base commit. In standard mode, git rebase allows you to literally rewrite history — automatically applying commits in your current working branch to the passed branch head. Since your new commits will be replacing the old, it's important to not use git rebase on commits that have been pushed public, or it will appear that your project history disappeared.
+
+In these or similar instances where it's important to preserve a clean project history, adding the -i option to git rebase allows you to run rebase interactive. This gives you the opportunity to alter individual commits in the process, rather than moving all commits. 	
+		
+		
+Git push:
+--------
+	The git push command is used to upload local repository content to a remote repository. Pushing has the potential to overwrite changes, caution should be taken when pushing.
+	
+	git push <remote> <branch>
+	
+	git push origin main
+
+	git push --force origin main
+	
+	
+Git pull:
+---------
+	git pull <remote repo>
+
+
+Git fetch:
+----------
+	The git fetch command downloads commits, files, and refs from a remote repository into your local repo. 
+	Fetching is what you do when you want to see what everybody else has been working on. 
+	It doesn’t force you to actually merge the changes into your repository. Git isolates fetched content from existing local content; it has absolutely no effect on your local development work. Fetched content has to be explicitly checked out using the git checkout command. This makes fetching a safe way to review commits before integrating them with your local repository.	
+	
+	When downloading content from a remote repo, git pull and git fetch commands are available to accomplish the task. You can consider git fetch the 'safe' version of the two commands. It will download the remote content but not update your local repo's working state, leaving your current work intact. git pull is the more aggressive alternative; it will download the remote content for the active local branch and immediately execute git merge to create a merge commit for the new remote content. If you have pending changes in progress this will cause conflicts and kick-off the merge conflict resolution flow.
+	
+	git fetch is used in conjunction with git remote, git branch, git checkout, and git reset to update a local repository to the state of a remote.
+	
+	git fetch has similar behavior to git pull, however, git fetch can be considered a safer, nondestructive version.		
+		
+	git fetch origin
+
+
+Making a Pull Request:
+----------------------
+	Through UI
+
+Git checkout:
+-------------
+	It can be used to create branches, switch branches, and checkout remote branches. 
+	
+	git checkout ＜branchname＞:
+	---------------------------
+		lets you navigate between the branches created by git branch. 
+		You can work on multiple features in a single repository by switching between them with git checkout.
+
+	Note:
+		The git checkout command may occasionally be confused with git clone. The difference between the two commands is that clone works to fetch code from a remote repository, alternatively checkout works to switch between versions of code already on the local system.
+
+	Usage: Existing branches:
+		Assuming the repo you're working in contains pre-existing branches, you can switch between these branches using git checkout. To find out what branches are available and what the current branch name is, execute git branch.
+
+	New branches:
+		Git checkout works hand-in-hand with git branch. The git branch command can be used to create a new branch. When you want to start a new feature, you create a new branch off main using git branch new_branch. Once created you can then use git checkout new_branch to switch to that branch.
+		
+		git checkout -b ＜new-branch＞
+		-----------------------------
+			The git checkout command accepts a -b argument that acts as a convenience method which will create the new branch and immediately switch to it. 
+		
+		
+	git checkout -b ＜new-branch＞ ＜existing-branch＞:
+	-------------------------------------------------
+		By default git checkout -b will base the new-branch off the current HEAD. An optional additional branch parameter can be passed to git checkout. In the above example, ＜existing-branch＞ is passed which then bases new-branch off of existing-branch instead of the current HEAD.
+		
+		
+	In order to checkout a remote branch you have to first fetch the contents of the branch:
+		git fetch --all
+
+	In modern versions of Git, you can then checkout the remote branch like a local branch.
+		git checkout ＜remotebranch＞
+		
+	
+Git merge:
+----------
+	In the most frequent use cases, git merge is used to combine two branches.
+	
+	The current branch will be updated to reflect the merge, but the target branch will be completely unaffected.
+		
+	There are two main ways Git will merge: Fast Forward and Three way.
+	Git can automatically merge commits unless there are changes that conflict in both commit sequences.	
+	
+	git merge --no-ff <branch>
+	--------------------------
+		This command merges the specified branch into the current branch, but always generates a merge commit (even if it was a fast-forward merge). 
+		
+	Git can automatically merge commits unless there are changes that conflict in both commit sequences.
+
+
+merge conflicts:
+----------------
+	conflict arises when two separate branches have made edits to the same line in a file, or when a file has been deleted in one branch but edited in the other.
+
+	Git will do its best to merge the files but will leave things for you to resolve manually in the conflicted files. 
+
+	The output from git status indicates that there are unmerged paths due to a conflict. 
+		
+	<<<<<<< HEAD
+	
+	=======
+	
+	>>>>>>> new_branch_to_merge_later	
+	
+	Think of these new lines as "conflict dividers". 
+	The ======= line is the "center" of the conflict. All the content between the center and the <<<<<<< HEAD line is content that exists in the current branch main which the HEAD ref is pointing to. Alternatively all content between the center and >>>>>>> new_branch_to_merge_later is content that is present in our merging branch.
+	
+	
+	Git commands that can help resolve merge conflicts:
+	---------------------------------------------------
+
+	git status
+		The status command is in frequent use when a working with Git and during a merge it will help identify conflicted files.
+
+	git log --merge
+		Passing the --merge argument to the git log command will produce a log with a list of commits that conflict between the merging branches.
+
+	git diff
+		diff helps find differences between states of a repository/files. This is useful in predicting and preventing merge conflicts.
+
+	Tools for when git fails to start a merge:
+	------------------------------------------
+		git checkout
+			checkout can be used for undoing changes to files, or for changing branches
+
+		git reset --mixed
+			reset can be used to undo changes to the working directory and staging area.
+
+	Tools for when git conflicts arise during a merge:
+	-------------------------------------------------
+		git merge --abort
+			Executing git merge with the --abort option will exit from the merge process and return the branch to the state before the merge began.
+
+		git reset
+			Git reset can be used during a merge conflict to reset conflicted files to a know good state.
+			
+			
+git branch:
+-----------
+	The git branch commands primary functions are to create, list, rename and delete branches.
+	A branch represents an independent line of development.
+	
+	git branch:
+	-----------
+		List all of the branches in your repository. This is synonymous with git branch --list.
+		
+	git branch -a:
+	-------------
+		List all remote branches. 	
+		
+	git branch <branch>:
+	-------------------
+		Create a new branch called ＜branch＞. This does not check out the new branch.	
+		
+	git branch -d <branch>:
+	-----------------------
+		Delete the specified branch. This is a “safe” operation in that Git prevents you from deleting the branch if it has unmerged changes.
+		
+	git branch -D <branch>:
+	-----------------------
+		Force delete the specified branch, even if it has unmerged changes.
+		
+	git branch -m <branch>:
+	-----------------------
+		Rename the current branch to ＜branch＞.
+
+		
+		
+		
+Git cherry pick:
+----------------
+	git cherry-pick is a powerful command that enables arbitrary Git commits to be picked by reference and appended to the current working HEAD. Cherry picking is the act of picking a commit from a branch and applying it to another. 
+	
+	git cherry-pick can be useful for undoing changes. For example, say a commit is accidently made to the wrong branch. You can switch to the correct branch and cherry-pick the commit to where it should belong.
+		
+
+
+The overall flow of Gitflow is:
+-------------------------------
+	1. A develop branch is created from main.
+
+	2. A release branch is created from develop.
+
+	3. Feature branches are created from develop.
+
+	4. When a feature is complete it is merged into the develop branch.
+
+	5. When the release branch is done it is merged into develop and main.
+
+	6. If an issue in main is detected a hotfix branch is created from main.
+
+	7. Once the hotfix is complete it is merged to both develop and main.
+	
+	Main and Develop branch:
+	------------------------
+		The main branch stores the official release history, and the develop branch serves as an integration branch for features.
+	
+	Feature branch:
+	--------------
+		Each new feature should reside in its own branch, which can be pushed to the central repository for backup/collaboration. But, instead of branching off of main, feature branches use develop as their parent branch. When you’re done with the development work on the feature, the next step is to merge the feature_branch into develop. Features should never interact directly with main.
+		
+		Creating a feature branch:
+			git checkout develop
+			git checkout -b feature_branch
+			
+		Finishing a feature branch:
+			git checkout develop
+			git merge feature_branch
+	
+	
+	Release branch:
+	---------------
+		Once develop has acquired enough features for a release (or a predetermined release date is approaching), you fork a release branch off of develop. Creating this branch starts the next release cycle, so no new features can be added after this point—only bug fixes, documentation generation, and other release-oriented tasks should go in this branch. 
+		Once it's ready to ship, the release branch gets merged into main and tagged with a version number. In addition, it should be merged back into develop, which may have progressed since the release was initiated.
+		Once the release is ready to ship, it will get merged it into main and develop, then the release branch will be deleted. It’s important to merge back into develop because critical updates may have been added to the release branch and they need to be accessible to new features. 
+		
+		Using a dedicated branch to prepare releases makes it possible for one team to polish the current release while another team continues working on features for the next release. 
+		It also creates well-defined phases of development (e.g., it's easy to say, “This week we're preparing for version 4.0,” and to actually see it in the structure of the repository).
+		
+		Creating a release branch:
+			git checkout develop
+			git checkout -b release/0.1.0
+			
+			
+		Finishing a release branch:
+			git checkout main
+			git merge release/0.1.0
+		
+		
+	Maintenance or “hotfix” branches:
+	---------------------------------
+		Hotfix branches are a lot like release branches and feature branches except they're based on main instead of develop. This is the only branch that should fork directly off of main. As soon as the fix is complete, it should be merged into both main and develop (or the current release branch), and main should be tagged with an updated version number.
+		Having a dedicated line of development for bug fixes lets your team address issues without interrupting the rest of the workflow or waiting for the next release cycle. 
+		
+		Creating a release branch:
+			git checkout main
+			git checkout -b hotfix_branch
+			
+		Similar to finishing a release branch, a hotfix branch gets merged into both main and develop:
+			git checkout main
+			git merge hotfix_branch
+			
+			git checkout develop
+			git merge hotfix_branch
+			
+		Deleting the hotfix branch:	
+			git branch -D hotfix_branch
+		
+		
+	A complete example demonstrating a Feature Branch Flow is as follows. Assuming we have a repo setup with a main branch:
+	-----------------------------------------------------------------------------------------------------------------------
+		git checkout main					(switch into main branch)
+		git checkout -b develop				(create and immediately switch to develop branch off main)
+		git checkout -b feature_branch		(create and immediately switch to feature branch off develop)
+		
+		# work happens on feature branch	(Once development work is completed on feature branch.)
+		git checkout develop
+		git merge feature_branch			(feature branch merged into develop branch)
+		
+		git checkout main
+		git merge develop					(develop branch merged into main branch)
+		
+		git branch -d feature_branch		(delete the feature branch.)
+		
+		
+	A hotfix example is as follows:
+	------------------------------
+		git checkout main
+		git checkout -b hotfix_branch
+		
+		# work is done commits are added to the hotfix_branch
+		git checkout develop
+		git merge hotfix_branch
+		
+		git checkout main
+		git merge hotfix_branch	
+		
+		
+================================
+CG new repo Micro code push:
+----------------------------
+
+How to Push local changes into github repo:
+-------------------------------------------
+	https://www.youtube.com/watch?v=vbQ2bYHxxEA		
+
+-----
+push an existing repository from the command line:
+---------------------------------------------------
+	1. git remote add origin https://github.com/akashbatham1991/Test.git		(the word origin is the nickname of the remote directory, it's a stantdard practices, but you can choose any name you like)
+	2. git branch -M main			(Rename the current branch to ＜branch＞)
+	3. git push -u origin main		(push changes to main branch of origin)
+
+
+or create a new repository on the command line:
+----------------------------------------------
+go to your local code setup and run below commands,
+	1. git init
+	2. git add <file name>
+	3. git commit -m "first commit"
+	4. git branch -M main
+	5. git remote add origin https://github.com/akashbatham1991/Test.git
+	6. git push -u origin main		

@@ -1,0 +1,70 @@
+Foreign keys should always be placed on the "child" or "many" or "dependent" side to keep the primary table simpler.
+A foreign key in a child table, references the primary key of the parent table.
+
+Which Side consists foreign key:
+-------------------------------
+	One To One:		Either side
+	One To Many: 	Many Side
+	Many To One: 	Many Side
+	Many To Many: 	Third table consists of the foreign keys from both table A and table B.	
+
+
+
+
+======================================================START=================================================================
+
+A foreign key is nothing more than a key from another table that’s being stored in the table you’re dealing with.
+
+Which table should contain Foreign Key:
+---------------------------------------
+	In relational databases, foreign keys should always be placed on the "child" or "many" side of a one-to-many relationship. This side is the one that references the primary key of the "parent" or "one" side table. The foreign key ensures "referential integrity" by linking data across tables. 
+	
+	Explanation:
+	-----------
+	One-to-many relationship:
+		This is a common relationship where one record in a parent table can correspond to multiple records in a child table (e.g., one customer can place many orders). 
+
+	Primary key:
+		The primary key is a unique identifier for each record in a table. 
+
+	Foreign key:
+		A foreign key in a child table references the primary key of the parent table, creating a link between the two tables. 
+	
+	Referential integrity:
+		This is the principle that data in the foreign key of the child table must exist as a primary key value in the parent table. 
+	
+	Child table:	
+		The table that holds the foreign key, referencing the parent table's primary key. 
+	
+	Parent table:
+		The table that contains the primary key being referenced by the foreign key in the child table. 
+		
+		
+	For Example:
+	------------
+		One Customer can place many orders.
+		
+		Consider a database with Customers and Orders tables. 
+			The Customers table has a primary key, CustomerID.
+			The Orders table has a foreign key, CustomerID, that references the Customers table's primary key.
+	
+		This foreign key ensures that each order in the Orders table is linked to a valid customer in the Customers table. 	
+		
+		
+		
+	For One To One Mapping:
+	-----------------------
+		Sometimes the foreign key could be placed in either table based on the use case but typically the foreign key is placed in the "secondary" or "dependent" table to keep the primary table simpler.
+		
+		
+	For Many To Many Mapping:
+	-------------------------
+		You create such a relationship by defining a "third table" that is called a junction table. The primary key of the junction table consists of the foreign keys from both table A and table B.
+		
+		Explanation:
+		------------
+		A foreign Key is used in a many-to-many relationship table. In fact, that’s all the table handles; it’s actually made up of foreign keys.
+
+		A foreign key is nothing more than a key from another table that’s being stored in the table you’re dealing with. For instance, suppose you have two tables. One holds information about computers that your company owns. The other holds information about software your company has purchased. Now what you want to do is to keep track of what software has been loaded on which computer. Since a single computer can be associated with many pieces of software all you need to do is add a column in the software table to hold the key from the hardware table. The problem is a single piece of software can be associated with many computers so you would either need to add many columns to the software table to hold the key for each computer or figure something else out. Well, that’s where the third table comes in. The third table holds the key from the hardware table and the key from the software table. A single key from either table can be repeated over and over again in the column but it will ALWAYS be associated with a different key from the other table. This is what keeps each record unique.
+		
+		This third table doesn’t even have a key column of its own, it isn’t needed. It only needs to handle the keys from other tables, aka Foreign Keys. The only requirement is that each each record in the table has to be unique. What you want to prevent is storing computer A associated with software 1, twice. Why would you? You already know those two are associated. You don’t need to say that again.

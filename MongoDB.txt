@@ -1,0 +1,1479 @@
+https://www.mongodb.com/docs/manual/reference/
+https://www.interviewbit.com/mongodb-interview-questions/
+https://www.interviewbit.com/mongodb-cheat-sheet/
+https://www.mongodb.com/try/download/community
+https://www.mongodb.com/try/download/shell
+
+https://raw.githubusercontent.com/udemyx897/mongod/refs/heads/main/mongodb.js
+https://raw.githubusercontent.com/udemyx897/mongod/refs/heads/main/aggragration.js
+
+https://www.geeksforgeeks.org/mongodb/using-transactions-in-mongodb/
+https://www.geeksforgeeks.org/mongodb/multi-document-transaction-in-mongodb/
+
+
+MongoDB:
+--------
+	MongoDB is a NoSQL, document-oriented database and designed for flexibility, scalability, and high performance. 
+	
+	Unlike traditional relational databases that store data in tables, MongoDB stores data in JSON-like documents called BSON (Binary JSON), which allows for dynamic schemas.
+	
+	If you’re building something that needs to evolve quickly and handle diverse data types, MongoDB is a strong contender.
+
+	MongoDB is especially useful for applications involving: 
+		real-time data, 
+		IoT, 
+		e-commerce, 
+		Mobile and web applications, and 
+		content management. 
+		
+
+
+Key Features:
+-------------
+	Document-Oriented: 			Stores data in flexible, hierarchical documents.
+	Schema-less: 				You can add fields without affecting existing documents.
+	Scalability: 				Supports horizontal scaling "through sharding".
+	High Availability: 			Uses "replication" to ensure data redundancy.
+	Powerful Query Language: 	Supports ad-hoc queries, indexing, and aggregation.
+	Multi-Language Support: 	Official drivers for Python, Java, Node.js, C#, and more.
+
+	
+	
+Key Advantages of MongoDB:
+--------------------------
+
+	Flexible Schema Design:
+	-----------------------
+		MongoDB uses a document-oriented model with dynamic schemas, allowing developers to modify data structures without downtime or complex migrations.
+		Think of a collection as a table. But unlike relational databases, documents in the same collection can have different fields which is what we call having a flexible schema. 
+	
+	Horizontal Scalability:
+	-----------------------
+		Through sharding, MongoDB distributes data across multiple servers, making it ideal for handling massive datasets and high-traffic applications.
+	
+	High Performance:
+	-----------------
+		Its BSON format and indexing capabilities enable fast read/write operations, especially for applications with heavy data loads.
+	
+	Rich Query Language:
+	--------------------
+		MongoDB supports powerful queries, including filtering, sorting, projection, aggregation, and geospatial searches, all within its native query API.
+	
+	Real-Time Analytics:
+	--------------------
+		The aggregation framework allows for efficient data processing and transformation, making MongoDB suitable for dashboards and reporting tools.
+	
+	Multi-Platform Compatibility:
+	-----------------------------
+		It integrates seamlessly with popular programming languages like Python, JavaScript, Java, and C#, and works well with frameworks like Express.js.
+	
+	High Availability & Fault Tolerance:
+	------------------------------------
+		Replica sets ensure data redundancy and automatic failover, minimizing downtime and improving reliability.
+	
+	Developer-Friendly Ecosystem:
+	-----------------------------
+		MongoDB Atlas offers cloud-based deployment, built-in tools like Charts and Search, and flexible pricing for startups and enterprises alike.
+	
+	Cost-Effective Scaling:
+	-----------------------
+		You can start small and scale up as needed, with options for free tiers and auto-scaling clusters in MongoDB Atlas.
+
+
+Data Structure & Schema:
+------------------------
+
+	Feature			MongoDB								SQL Databases
+	-------			-------								-------------
+	Data Model 		Document-oriented (BSON) 			Table-based (rows & columns) 
+	Schema 			Flexible, schema-less 				Fixed, predefined schema
+	Relationships 	Embedded documents or references 	Foreign keys and joins 
+
+	MongoDB is great for evolving data models, while SQL enforces structure and consistency.
+
+
+Query Language & Operations:
+---------------------------- 
+	MongoDB uses MongoDB Query Language (MQL), which is object-oriented and intuitive for developers familiar with JSON or JavaScript.
+	SQL databases use Structured Query Language (SQL), ideal for complex queries, joins, and transactions.
+
+
+Scalability & Performance:
+--------------------------
+	Feature 		MongoDB 							SQL Databases
+	-------			--------							-------------
+	Scalability 	Horizontal (via sharding) 			Vertical (adding resources to server)
+	Performance 	Optimized for high write loads 		Optimized for complex read queries
+	Transactions 	Limited multi-document support 		Full ACID-compliant transactions 
+
+	MongoDB handles large, distributed datasets well, while SQL excels in transactional integrity.
+
+Use Cases:
+----------
+	MongoDB: 	Real-time analytics, IoT, content management, mobile apps.
+	SQL: 		Financial systems, inventory management, CRM, ERP platforms.
+
+	If you're building something agile and data-rich with frequent changes, MongoDB is a strong contender. 
+	But if your app demands strict consistency and complex relationships, SQL might be your best bet.
+
+	MongoDB is fantastic for agile development and handling unstructured data, but it’s not ideal for highly transactional systems like banking or apps requiring complex relational queries.
+	
+
+Technical Constraints:
+----------------------
+	MongoDB is a powerful NoSQL database, but like any technology, it has its trade-offs. Here’s a breakdown of its key limitations:
+	
+	Limited Multi-Document Transactions:
+	------------------------------------
+		MongoDB supports ACID transactions only within a single document by default. While multi-document transactions are available, they can impact performance and are not as robust as in SQL databases.
+	
+	No Native Joins:
+	----------------
+		Unlike relational databases, MongoDB doesn’t support traditional joins. You can use $lookup, but it’s slower and more resource-intensive.
+	
+	Document Size Limit:
+	--------------------
+		Each BSON document has a maximum size of 16MB, which can be restrictive for storing large objects.
+	
+	Indexing Limitations:
+	---------------------
+		MongoDB allows up to 64 indexes per collection, and compound indexes can include up to 31 fields. 
+		Poor indexing can lead to slow queries.
+	
+	Nested Document Depth:
+	----------------------
+		BSON documents support up to 100 levels of nesting, which may limit deeply hierarchical data models.
+
+
+Design & Operational Challenges:
+--------------------------------
+	Complex Sharding Setup:
+	-----------------------
+		Sharding enables horizontal scaling, but configuring it properly is tricky. A poor shard key choice can lead to uneven data distribution and performance bottlenecks.
+	
+	Memory Usage:
+	-------------
+		MongoDB stores field names with each document, increasing memory consumption. It also relies heavily on RAM for performance, which can be problematic on resource-constrained systems.
+	
+	Data Redundancy:
+	----------------
+		Without joins, related data often gets duplicated across documents, leading to higher storage needs and potential consistency issues.
+	
+	Licensing Restrictions:
+	-----------------------
+		MongoDB uses the Server Side Public License (SSPL), which may not align with all organizations’ open-source policies.
+
+
+Security & Reliability:
+-----------------------
+	No Encryption by Default:
+	-------------------------
+		Connections to MongoDB aren’t encrypted out of the box. You’ll need to configure SSL manually for secure communication.
+	
+	Authentication Disabled by Default:
+	-----------------------------------
+		MongoDB doesn’t enforce authentication unless explicitly enabled, which can be a security risk if overlooked.
+
+
+Limitations:
+------------
+	Document Size Limit (16MB)
+	Lack of Joins
+	Limited Transactions
+	Indexing Constraints
+	Query Result Size Limits
+	Security Defaults
+	
+	
+	Document Size Limit (16MB):
+	---------------------------
+		you cannot go around the 16 MB BSON size limitation for a document. 
+		If you hit the 16 MB limit, it usually means that the design is probably not optimal, since such large documents will be detrimental to performance, difficult to update, etc.
+		Typically, it’s better to have a lot of small documents as opposed to a few gigantic documents. Here are some practical strategies:
+			
+		Use GridFS:
+		-----------
+			For storing large files (images, videos, etc.), GridFS splits them into chunks and stores them across multiple documents.
+		
+		Apply Bucketing Pattern:
+		------------------------
+			Break large arrays (like sensor readings or comments) into smaller “buckets” of documents. Each bucket holds a limited number of items (e.g., 500), avoiding oversized documents.
+		
+		Subset Pattern:
+		---------------
+			Store frequently accessed data in one document and move less-used or older data to separate documents or collections.
+		
+	Lack of Joins:
+	--------------
+		Embed Related Data:
+		-------------------
+			For one-to-few relationships, embed related documents directly.
+		
+		Manual References + $lookup:
+		----------------------------
+			Use references and MongoDB’s aggregation $lookup stage to simulate joins. It’s slower than SQL joins but works for moderate use cases.
+
+
+	Limited Transactions:
+	---------------------
+		Design for Atomicity:
+		---------------------
+			Keep related data in a single document when possible to leverage MongoDB’s atomic operations.
+		
+		Use Multi-Document Transactions Sparingly:
+		------------------------------------------
+			Available since v4.0, but they can impact performance. Use only when necessary.
+
+
+	Indexing Constraints:
+	---------------------
+		Optimize Index Usage:
+		---------------------
+			Use compound indexes wisely and avoid over-indexing. Keep field names short to reduce memory usage.
+		
+		
+	Query Result Size Limits:
+	-------------------------
+		Aggregation Framework:
+		----------------------
+			Use $group, $unwind, and $project to break down large result sets and avoid hitting the 16MB result cap.
+		
+		Pagination:
+		-----------
+			Retrieve data in chunks using limit and skip to keep queries efficient.
+
+	Security Defaults:
+	------------------
+		Enable Authentication & SSL:
+		----------------------------
+			MongoDB doesn’t enforce these by default. 
+			Always configure them manually for production environments.
+
+
+List of best practices:
+-----------------------
+	Indexing Strategies:
+	--------------------
+		Create relevant indexes tailored to your query patterns (e.g. db.users.createIndex({ username: 1 }))
+		Use compound indexes for multi-field queries to reduce scan time.
+		Avoid over-indexing — too many indexes slow down writes and consume disk space.
+		Drop unused indexes to free up resources (db.collection.dropIndex("indexName")
+
+	Query Optimization:
+	-------------------
+		Use projections to limit returned fields ({ field1: 1, field2: 1 }) and reduce payload size
+		Leverage the aggregation framework for complex data processing ($match, $group, $project)
+		Avoid $where — it’s slow and uses JavaScript. Prefer $expr or $function for custom logic
+		Use the explain() method to analyze query execution plans and spot inefficiencies.
+	
+	Schema Design:
+	--------------
+		Embed documents for one-to-few relationships to reduce joins.
+		Reference documents for one-to-many or many-to-many relationships.
+		Use bucketing or subset patterns to avoid hitting the 16MB document size limit.
+	
+	Aggregation Pipeline Tips:
+	--------------------------
+		Filter early with $match to reduce data volume.
+		Project only needed fields with $project to minimize memory usage.
+		Avoid unnecessary stages — keep pipelines lean and purposeful.
+	
+	Hardware & Deployment:
+	----------------------
+		Ensure your working set fits in RAM — MongoDB relies heavily on memory
+		Use SSDs for faster disk I/O and lower latency.
+		Distribute reads across replica sets using read preferences like secondaryPreferred
+		Choose shard keys wisely to balance load and avoid hotspots.
+	
+	Monitoring & Maintenance:
+	-------------------------
+		Use tools like mongostat, mongotop, and Atlas Profiler to monitor performance
+		Compact collections and repair databases periodically (db.repairDatabase())
+		Set appropriate read/write concerns to balance durability and latency.
+
+
+https://github.com/udemyx897/mongod	
+Udemy:
+------
+	In older version of mongodb: 	mongo command will work.
+	In newer version of mongodb: 	mongosh command will work.	
+		
+
+Here's an introduction to some key concepts and features of MongoDB:
+--------------------------------------------------------------------
+
+	1. Document - Oriented: 
+	-----------------------
+		MongoDB stores data in flexible, JSON - like documents, which can have varying structures.
+		This allows developers to represent complex hierarchical relationships in a single record.
+
+	2. Schema - less: 
+	-----------------
+		Unlike traditional relational databases, MongoDB does not enforce a rigid schema.This means you can insert 
+		documents into a collection without a predefined structure.However, you can enforce schema validation rules if needed.
+		
+	Collections and Documents: 
+		MongoDB organizes data into collections, which are analogous to tables in relational databases.Each collection contains one or more documents, which are individual records represented in BSON(Binary JSON) format.
+
+	3. Indexes: 
+	-----------
+		MongoDB supports secondary indexes, which can greatly improve quefry perormance by allowing for efficient data retrieval. Indexes can be created on any field within a document. 
+			indexe;true
+
+	4. Query Language: 
+	------------------
+		MongoDB provides a rich query language that allows you to perform complex queries against your data.You can filter,
+		sort, and aggregate documents using operators and expressions.
+
+	5. Aggregation Framework: 
+	-------------------------
+		MongoDB's Aggregation Framework allows you to perform advanced data processing operations, such as grouping, sorting, and filtering, directly within the database.
+
+	6. Scalability: 
+	---------------
+		MongoDB is designed to scale horizontally across multiple servers, making it suitable for large - scale deployments.
+		It supports sharding, which distributes data across multiple machines, and replication, which provides high availability and fault tolerance.
+
+
+	7. JSON / BSON: 
+	---------------
+		MongoDB uses JSON(JavaScript Object Notation) as its primary data interchange format.Internally, data is stored 
+		in BSON, a binary representation of JSON, which adds additional data types and optimizations.
+
+	8. Community and Ecosystem: 
+	---------------------------
+		MongoDB has a large and active community of developers and contributors.It is supported by a rich ecosystem of tools, libraries, and services, including drivers for various programming languages, graphical user interfaces, and cloud services.
+
+nosql vs sql:
+-------------
+	NoSQL and SQL(Structured Query Language) are two different approaches to database management systems, each with its own strengths and weaknesses.
+	
+	Here's a comparison between the two:
+	
+	SQL(Structured Query Language):
+	-------------------------------	
+		1. Data Model:
+		--------------
+			SQL databases are based on a relational data model, where data is organized into tables with rows and columns.
+			Tables have predefined schemas, and data must conform to this schema.
+		
+		2. Query Language:
+		------------------
+			SQL databases use the SQL language for querying and manipulating data.
+			SQL provides a standardized syntax for defining, querying, and manipulating relational databases.
+
+		3. Scalability:
+		---------------
+			SQL databases traditionally scale vertically, by adding more resources(CPU, memory) to a single server.
+			Scaling out(horizontally) can be more challenging and may require sharding or replication.
+		
+		4. Examples:
+		------------
+			Examples of SQL databases include MySQL, PostgreSQL, Oracle Database, Microsoft SQL Server, etc.
+
+	NoSQL(Not Only SQL):
+	--------------------
+		1. Data Model:
+		--------------
+			NoSQL databases use various data models, including: 
+				document - oriented, 
+				key - value, 
+				column - family, and 
+				graph - based etc.
+			
+			They offer greater flexibility in data representation, allowing for schema - less or dynamic schemas.
+
+		2. Query Language:
+		------------------
+			NoSQL databases may have their own query languages or APIs for accessing and manipulating data.
+			Some NoSQL databases support SQL - like query languages for certain operations.
+
+		3. Scalability:
+		---------------
+			NoSQL databases are designed to scale horizontally, by distributing data across multiple servers.
+			They are better suited for handling large volumes of data and high throughput.
+
+		4. Examples:
+		------------
+			Examples of NoSQL databases include: 
+			
+				MongoDB		(document - oriented), 
+				Redis		(key - value), 
+				Cassandra	(column - family), 
+				Neo4j		(graph - based), etc.
+
+
+
+json vs bson:
+-------------
+	JSON(JavaScript Object Notation) and BSON(Binary JSON) are both formats used for representing structured data, but they have some differences in terms of their features and use cases.
+
+	JSON(JavaScript Object Notation):
+	---------------------------------
+		Human - Readable: 
+			JSON is a human - readable text - based data interchange format.It is easy for humans to read and write, making it popular for transmitting data between a server and a web application.
+	
+		Data Types: 
+			JSON supports a limited set of data types, including strings, numbers, booleans, arrays, objects, and null values.
+		
+		Language Agnostic: 
+			JSON is language - agnostic and widely supported across various programming languages and platforms.
+		
+		Schema - less: 
+			JSON does not have a schema.Each JSON object can have a different structure, allowing for flexibility in data representation.
+		
+		Example:
+			 {
+				 "name": "John Doe",
+					 "age": 30,
+						 "is_student": false,
+							 "hobbies": ["reading", "traveling"],
+								 "address": {
+					 "city": "New York",
+						 "country": "USA"
+				 }
+			 }
+
+
+	BSON(Binary JSON):
+	------------------
+		Binary Format: 
+			BSON is a binary serialization format for JSON - like documents.It represents JSON data in binary form, which can be more compact and efficient for storage and transmission.
+		
+		Extended Data Types: 
+			BSON extends JSON with additional data types such as Date, Binary Data, Regular Expression, ObjectId, etc.
+		
+		Efficiency: 
+			BSON is more efficient for processing and storage compared to JSON, especially for large or complex documents.
+		
+		MongoDB: 
+			BSON is the primary data format used by MongoDB for storing documents in collections. Internally, MongoDB stores data in BSON format.
+
+
+	Comparison:
+	-----------
+		JSON is human - readable and widely used for data interchange over the web, while BSON is more efficient for storage and processing in database systems like MongoDB.
+		
+		BSON supports additional data types and features compared to JSON, making it more suitable for database applications.
+		
+		JSON is easy to work with in programming languages that natively support JSON parsing and serialization, while BSON requires conversion to and from JSON in most cases.
+
+
+
+Interact with MongoDB:
+----------------------
+	Once in the MongoDB shell, you can perform various operations like database creation, data insertion, querying, etc.
+	
+	For example:
+		To show all databases: 								show dbs
+		To switch to a specific database: 					use your_database_name
+		To show all collections in the current database: 	show collections
+		To query data from a collection: 					db.your_collection_name.find()
+		
+		Remember to replace your_database_name and your_collection_name with your actual database and collection names.
+
+
+creting database:
+	use mydatabase
+
+deleting database:
+	use mydatabase  // Switch to the database you want to delete
+	db.dropDatabase()
+
+creting colletions:
+	db.createCollection("collectionName")
+	
+deleting collections:
+	db.collection_Name.drop()		//replace collection_Name with original collection name.
+	db.users.drop()
+
+insertone  method:
+	db.createCollection("users")
+
+	db.users.insertOne({
+		name: "John Doe",
+		age: 30,
+		email: "johndoe@example.com"
+	})
+
+insertMany:
+	var documents = [
+		{ name: "Alice", age: 25, email: "alice@example.com" },
+		{ name: "Bob", age: 30, email: "bob@example.com" },
+		{ name: "Charlie", age: 35, email: "charlie@example.com" }
+	];
+
+Insert the array of documents into the collection:
+	db.myCollection.insertMany(documents)
+
+ordered and unorderd:
+	var documents = [
+		{ _id: 1, name: "Alice", age: 25 },
+		{ _id: 2, name: "Bob", age: 30 },
+		{ _id: 3, name: "Charlie", age: 35 },
+		{ _id: 4, name: "Alice", age: 30 } 	// Duplicate _id intentionally added
+	];
+
+	db.myCollection.insertMany(documents, { ordered: false });
+
+
+Comparison Operator:
+--------------------
+	$eq:	Matches values that are equal to a specified value.
+	$gt:	Matches values that are greater than a specified value.
+	$gte:	Matches values that are greater than or equal to a specified value.
+	$in:	Matches any of the values specified in an array.
+	$lt:	Matches values that are less than a specified value.
+	$lte:	Matches values that are less than or equal to a specified value.
+	$ne:	Matches all values that are not equal to a specified value.
+	$nin:	Matches none of the values specified in an array.
+
+
+Logical Operator:
+-----------------
+$and Operator: 		This operator selects documents that satisfy all the specified conditions.
+$or Operator: 		This operator selects documents that satisfy at least one of the specified conditions.
+$nor Operator: 		This operator selects documents that fail all the specified conditions.
+$exists Operator: 	This operator selects documents where the specified field exists or does not exist.
+
+
+coursor oprator Explanation:
+----------------------------
+	The cursor provides a way to iterate over the query results and access each document individually.
+
+sort method:	
+------------
+	Sort documents by age in ascending order:
+		db.employees.find().sort({ age: 1 });
+
+	Sort documents by salary in descending order:
+		db.employees.find().sort({ salary: -1 });
+
+
+limit:
+------
+	Limit the result set to 5 documents:
+		db.employee.find().limit(5);
+
+count:
+------
+	Count the number of documents where the age is greater than 30:
+		db.employees.find({ age: { $gt: 30 } }).count();
+
+toArray():
+----------
+	Convert the cursor to an array:
+		var resultArray = db.employees.find().toArray();
+
+element oprator:
+---------------
+	In MongoDB, the element operators are used to query documents based on the presence or absence of fields or elements within arrays. 
+	
+	Consider a collection of contacts with different fields:
+		db.contacts.insertMany([
+			{ name: "Alice", email: "alice@example.com" },
+			{ name: "Bob", phone: "123-456-7890" },
+			{ name: "Charlie" }
+		]);
+
+	Find documents where the "email" field exists:
+		db.contacts.find({ email: { $exists: true } });
+
+	Find documents where the "phone" field does not exist:
+		db.contacts.find({ phone: { $exists: false } });
+
+$type Operator:
+---------------
+	In MongoDB, the $type operator is used in queries to match documents based on their data types.
+	It allows you to find documents where a specific field has a certain data type.
+	
+	Here's how you can use the $type operator in MongoDB queries:
+		Consider a collection of contacts with different field types
+
+Available Data Types:
+---------------------
+	MongoDB supports various data types that you can use with the $type operator.
+	Some of the commonly used data types include:
+	
+	"int": 32 - bit integer
+	"long": 64 - bit integer
+	"decimal": Decimal128
+	"double": 64 - bit floating - point number
+	"string": UTF - 8 encoded string
+	"bool": Boolean
+	"date": Date
+	"timestamp": MongoDB internal timestamp
+	"array": Array	
+	"object": Embedded document
+	"objectId": MongoDB ObjectId
+	"null": Null value
+	"binData": Binary data
+	"regex": Regular expression
+	"javascript": JavaScript code
+	"symbol": Symbol
+
+		db.contacts.insertMany([
+			{ name: "Alice", age: 25, tags: ["tech", "programming"] },
+			{ name: "Bob", isActive: true },
+			{ name: "Charlie", address: { city: "New York", zip: 10001 } }
+		]);
+
+	Find documents where the "age" field is of type number (double):
+		db.contacts.find({ age: { $type: "number" } });
+
+	Find documents where the "tags" field is an array:
+		db.contacts.find({ tags: { $type: "array" } });
+		db.collection.find({ name: { $type: 'string' } });
+
+
+
+$size Operator:
+---------------
+	The $size operator in MongoDB is used to query documents based on the size of an array field. It allows you to find documents where a specific array field contains a certain number of elements.
+	
+	Here's a detailed explanation of how the $size operator works in MongoDB queries:
+		db.items.insertMany([
+			{ name: "Item 1", tags: ["red", "blue"] },
+			{ name: "Item 2", tags: ["green", "yellow", "orange"] },
+			{ name: "Item 3", tags: ["black"] }
+		]);
+
+	Find documents where the "tags" array has exactly 2 elements
+		db.item.find({ tags: { $size: 2 } });
+
+$all Operator:
+--------------
+	Consider a collection of documents with arrays of tags
+
+	Find documents where the "tags" array contains both "tech" and "accessories"
+		db.item.find({ tags: { $all: ["green", "yellow"] } });
+
+
+$elemMatch Operator:
+--------------------
+	Consider a collection of students with scores array
+		db.students.insertMany([
+			{ name: "Alice", scores: [85, 92, 78] },
+			{ name: "Bob", scores: [90, 88, 95] },
+			{ name: "Charlie", scores: [75, 85, 80] }
+		]);
+
+	Find documents where the "scores" array contains a score greater than 90 and less than 100
+		db.students.find({ scores: { $elemMatch: { $gt: 90, $lt: 100 } } });
+
+projections:
+-----------
+	In MongoDB, projections are used to specify which fields should be returned in the query results. 
+
+		db.post.insertMany([
+			{
+				"_id": 1,
+				"title": "Introduction to MongoDB",
+				"content": "MongoDB is a NoSQL database...",
+				"comments": [
+					{ "user": "Alice", "comment": "Great introduction!" },
+					{ "user": "Bob", "comment": "Looking forward to more tutorials." }
+				]
+			},
+			{
+				"_id": 2,
+				"title": "Advanced MongoDB Queries",
+				"content": "Learn about aggregation pipelines...",
+				"comments": [
+					{ "user": "Charlie", "comment": "Very informative!" },
+					{ "user": "David", "comment": "Can't wait to try these queries." }
+				]
+			},
+			{
+				"_id": 3,
+				"title": "MongoDB Schema Design",
+				"content": "Best practices for schema design...",
+				"comments": [
+					{ "user": "Emma", "comment": "This helped me a lot!" },
+					{ "user": "Frank", "comment": "Need more examples for complex schemas." }
+				]
+			},
+			{
+				"_id": 4,
+				"title": "MongoDB Indexing",
+				"content": "Optimizing queries with indexes...",
+				"comments": [
+					{ "user": "Grace", "comment": "Indexing made a huge difference!" },
+					{ "user": "Henry", "comment": "How to create compound indexes?" }
+				]
+			},
+			{
+				"_id": 5,
+				"title": "MongoDB Performance Tuning",
+				"content": "Improving performance through configuration...",
+				"comments": [
+					{ "user": "Isabella", "comment": "These tips really boosted my app!" },
+					{ "user": "Jack", "comment": "Any suggestions for large datasets?" }
+				]
+			}
+		]);
+
+
+		db.users.find({}, { title: 1, content: 1, _id: 0 })		//1: include in query result, 0: exclude in query result.
+
+		db.post.findOne({ _id: 1 }, { comments: 1, _id: 0 })	//1: include in query result, 0: exclude in query result.	
+		
+		result:
+			{
+				"comments": [
+					{ "user": "Alice", "comment": "Great introduction!" },
+					{ "user": "Bob", "comment": "Looking forward to more tutorials." }
+				]
+			}
+
+example of updating documents using updateOne() and updateMany():
+-----------------------------------------------------------------
+	In MongoDB, along with inserting five documents into a collection:
+
+	Inserting five documents into the collection:
+			db.blog.insertMany([
+				{
+					"_id": 1,
+					"title": "Introduction to MongoDB",
+					"content": "MongoDB is a NoSQL database...",
+					"author": "Alice",
+					"status": "Draft"
+				},
+				{
+					"_id": 2,
+					"title": "Advanced MongoDB Queries",
+					"content": "Learn about aggregation pipelines...",
+					"author": "Bob",
+					"status": "Draft"
+				},
+				{
+					"_id": 3,
+					"title": "MongoDB Schema Design",
+					"content": "Best practices for schema design...",
+					"author": "Charlie",
+					"status": "Draft"
+				},
+				{
+					"_id": 4,
+					"title": "MongoDB Indexing",
+					"content": "Optimizing queries with indexes...",
+					"author": "David",
+					"status": "Draft"
+				},
+				{
+					"_id": 5,
+					"title": "MongoDB Performance Tuning",
+					"content": "Improving performance through configuration...",
+					"author": "Emma",
+					"status": "Draft"
+				}
+			]);
+
+	Update a single document using updateOne():
+		db.collection.updateOne(
+			{ "title": "Introduction to MongoDB" }, // Filter to match the document
+			{ $set: { "status": "Published" } } 	// Update operation
+		);
+
+	Update multiple documents using updateMany():
+		db.collection.updateMany(
+			{ "status": "Draft" }, 					// Filter to match documents
+			{ $set: { "status": "Reviewed" } } 		// Update operation
+		);
+
+
+To delete documents in MongoDB:
+-------------------------------
+	you can use the deleteOne() method to delete a single document that matches a specified filter, and the deleteMany() method to delete multiple documents that match a specified filter.
+	
+	Here's how you would use these methods:
+
+	Delete a single document using deleteOne():
+		db.collection.deleteOne({ "_id": 1 }); // Deletes the document with _id equal to 1
+
+	Delete multiple documents using deleteMany()
+		db.collection.deleteMany({ "status": "Draft" }); // Deletes all documents with the status "Draft".
+
+
+
+Aggregation:
+------------
+	Aggregation in MongoDB allows you to group data and extract meaningful insights.
+	It's particularly useful for data analysis, reporting, and generating aggregated results from large datasets.
+
+	Example:
+	--------
+		db.createCollection("sales")
+		[
+			{ "_id": 1, "item": "Apple", "quantity": 10, "price": 2.5, "date": ISODate("2024-04-01T00:00:00Z") },
+			{ "_id": 2, "item": "Banana", "quantity": 5, "price": 1.5, "date": ISODate("2024-04-02T00:00:00Z") },
+			{ "_id": 3, "item": "Apple", "quantity": 8, "price": 2.8, "date": ISODate("2024-04-03T00:00:00Z") },
+			{ "_id": 4, "item": "Orange", "quantity": 12, "price": 3.0, "date": ISODate("2024-04-04T00:00:00Z") }
+		]
+
+		db.sales.aggregate([
+			{ $match: { item: "Apple" } }
+		])
+
+
+	result:
+		[
+			{ "_id": 1, "item": "Apple", "quantity": 10, "price": 2.5, "date": ISODate("2024-04-01T00:00:00Z") },
+			{ "_id": 3, "item": "Apple", "quantity": 8, "price": 2.8, "date": ISODate("2024-04-03T00:00:00Z") }
+		]
+
+	$group:
+	-------
+		[
+			{ "_id": 1, "customer": "Alice", "product": "Apple", "quantity": 5, "price": 2.5 },
+			{ "_id": 2, "customer": "Bob", "product": "Banana", "quantity": 3, "price": 1.5 },
+			{ "_id": 3, "customer": "Alice", "product": "Orange", "quantity": 2, "price": 3.0 },
+			{ "_id": 4, "customer": "Bob", "product": "Apple", "quantity": 4, "price": 2.5 }
+		]
+
+		db.orders.aggregate([
+			{
+				$group: {
+					_id: "$customer",
+					totalSalesAmount: { $sum: { $multiply: ["$quantity", "$price"] } }
+				}
+			}
+		])
+	
+	result:
+		[
+			{ "_id": "Alice", "totalSalesAmount": 17.5 },
+			{ "_id": "Bob", "totalSalesAmount": 13.5 }
+		]
+
+	match and group:
+	----------------
+		db.order.aggregate([
+			{ $match: { product: "Apple" } },
+			{
+				$group: {
+					_id: "$customer",
+					totalSalesAmount: { $sum: { $multiply: ["$quantity", "$price"] } }
+				}
+			}
+		])
+
+		db.orders.aggregate([
+			{ $match: { product: "Apple" } },
+			{
+				$group: {
+					_id: "$customer",
+					totalSalesAmount: { $sum: { $multiply: ["$quantity", "$price"] } }
+				}
+			}
+		])
+
+Work with $project:
+-------------------
+	Let's explore how to use the $project stage in a MongoDB aggregation pipeline.
+	The $project stage allows you to reshape documents in the aggregation pipeline by including, excluding, or transforming fields.
+	
+		db.order.aggregate([
+			{ $match: { customer: "Alice" } },
+			{
+				$project: {
+					_id: 0, // Exclude the _id field from the output
+					customer: 1, // Include the customer field
+				 
+					totalAmount: { $multiply: ["$quantity", "$price"] } // Calculate and include a new field for total amount
+				}
+			}
+		])
+
+	output:
+		[
+			{ "customer": "Alice", "product": "Apple", "totalAmount": 12.5 },
+			{ "customer": "Alice", "product": "Orange", "totalAmount": 6.0 }
+		]
+
+
+	example3 $skip &$limit:
+	-----------------------
+		[
+			{ "_id": 1, "name": "Alice", "age": 18, "grade": "A", "city": "New York" },
+			{ "_id": 2, "name": "Bob", "age": 20, "grade": "B", "city": "Los Angeles" },
+			{ "_id": 3, "name": "Charlie", "age": 22, "grade": "C", "city": "Chicago" },
+			{ "_id": 4, "name": "David", "age": 19, "grade": "A", "city": "San Francisco" },
+			{ "_id": 5, "name": "Emily", "age": 21, "grade": "B", "city": "Miami" }
+
+		]
+
+		db.students.aggregate([
+			{ $skip: 2 }, // Skip the first two documents
+			{ $limit: 2 } // Limit the output to two documents
+		])
+
+		resultArray:
+			[
+				{ "_id": 3, "name": "Charlie", "age": 22, "grade": "C", "city": "Chicago" },
+				{ "_id": 4, "name": "David", "age": 19, "grade": "A", "city": "San Francisco" }
+			]
+
+
+$unwind:
+--------
+	The $unwind stage in MongoDB's aggregation pipeline is used to deconstruct arrays in documents, allowing you to work with array elements as individual documents. 
+	This is particularly useful when dealing with documents that contain arrays, as it enables operations such as grouping, matching, and projecting on array elements.
+
+		[    
+			{ "_id": 1, "title": "Book 1", "authors": ["Alice", "Bob"] },
+			{ "_id": 2, "title": "Book 2", "authors": ["Charlie"] },
+			{ "_id": 3, "title": "Book 3", "authors": ["David", "Emily", "Frank"] }
+		]
+
+		db.books.aggregate([
+			{ $unwind: "$authors" }
+		])
+
+		[
+			{ "_id": 1, "title": "Book 1", "authors": "Alice" },
+			{ "_id": 1, "title": "Book 1", "authors": "Bob" },
+			{ "_id": 2, "title": "Book 2", "authors": "Charlie" },
+			{ "_id": 3, "title": "Book 3", "authors": "David" },
+			{ "_id": 3, "title": "Book 3", "authors": "Emily" },
+			{ "_id": 3, "title": "Book 3", "authors": "Frank" }
+		]
+
+$filter:
+--------
+	The $filter stage in MongoDB's aggregation pipeline allows you to selectively include array elements that match specified conditions. This stage is particularly useful when you want to filter an array field within a document based on certain criteria.
+
+	[
+		{ "_id": 1, "title": "Book 1", "authors": ["Alice", "Bob", "Charlie"] },
+		{ "_id": 2, "title": "Book 2", "authors": ["David", "Emily"] },
+		{ "_id": 3, "title": "Book 3", "authors": ["Frank", "Alice"] }
+	]
+
+	db.book.aggregate([
+		{
+			$project: {
+				title: 1,
+				filteredAuthors: {
+					$filter: {
+						input: "$authors",
+						as: "author",
+						cond: { $regexMatch: { input: "$$author", regex: /^A/i } }
+					}
+				}
+			}
+		}
+	])
+
+	resultArray:
+		[
+			{ "_id": 1, "title": "Book 1", "filteredAuthors": ["Alice"] },
+			{ "_id": 2, "title": "Book 2", "filteredAuthors": [] },
+			{ "_id": 3, "title": "Book 3", "filteredAuthors": ["Alice"] }
+		]
+
+example2:
+---------
+		db.orders.insertMany([
+			{
+				_id: 0, name: "Pepperoni", size: "small", price: 19,
+				quantity: 10, date: ISODate("2021-03-13T08:14:30Z")
+			},
+			{
+				_id: 1, name: "Pepperoni", size: "medium", price: 20,
+				quantity: 20, date: ISODate("2021-03-13T09:13:24Z")
+			},
+			{
+				_id: 2, name: "Pepperoni", size: "large", price: 21,
+				quantity: 30, date: ISODate("2021-03-17T09:22:12Z")
+			},
+			{
+				_id: 3, name: "Cheese", size: "small", price: 12,
+				quantity: 15, date: ISODate("2021-03-13T11:21:39.736Z")
+			},
+			{
+				_id: 4, name: "Cheese", size: "medium", price: 13,
+				quantity: 50, date: ISODate("2022-01-12T21:23:13.331Z")
+			},
+			{
+				_id: 5, name: "Cheese", size: "large", price: 14,
+				quantity: 10, date: ISODate("2022-01-12T05:08:13Z")
+			},
+			{
+				_id: 6, name: "Vegan", size: "small", price: 17,
+				quantity: 10, date: ISODate("2021-01-13T05:08:13Z")
+			},
+			{
+				_id: 7, name: "Vegan", size: "medium", price: 18,
+				quantity: 10, date: ISODate("2021-01-13T05:10:13Z")
+			}
+		])
+
+	calculate total order quantity:
+		db.orders.aggregate([
+
+			// Stage 1: Filter pizza order documents by pizza size
+			{
+				$match: { size: "medium" }
+			},
+
+			// Stage 2: Group remaining documents by pizza name and calculate total quantity
+			{
+				$group: { _id: "$name", totalQuantity: { $sum: "$quantity" } }
+			}
+		])
+
+	output:
+	-------
+		[
+			{ _id: 'Cheese', totalQuantity: 50 },
+			{ _id: 'Vegan', totalQuantity: 10 },
+			{ _id: 'Pepperoni', totalQuantity: 20 }
+		]
+
+
+	Calculate Total Order Value and Average Order Quantity:
+		db.orders.aggregate([
+
+			// Stage 1: Filter pizza order documents by date range
+			{
+				$match:
+				{
+					"date": { $gte: new ISODate("2020-01-30"), $lt: new ISODate("2022-01-30") }
+				}
+			},
+
+			// Stage 2: Group remaining documents by date and calculate results
+			{
+				$group:
+				{
+					_id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+					totalOrderValue: { $sum: { $multiply: ["$price", "$quantity"] } },
+					averageOrderQuantity: { $avg: "$quantity" }
+				}
+			},
+
+			// Stage 3: Sort documents by totalOrderValue in descending order
+			{
+				$sort: { totalOrderValue: -1 }
+			}
+
+		])
+
+	output:
+		[
+			{ _id: '2022-01-12', totalOrderValue: 790, averageOrderQuantity: 30 },
+			{ _id: '2021-03-13', totalOrderValue: 770, averageOrderQuantity: 15 },
+			{ _id: '2021-03-17', totalOrderValue: 630, averageOrderQuantity: 30 },
+			{ _id: '2021-01-13', totalOrderValue: 350, averageOrderQuantity: 10 }
+		]		
+		
+		
+Explain the process of Sharding:
+--------------------------------
+	MongoDB’s sharding allows you to create a cluster of many machines (shards) and break up a collection across them, putting a subset of data on each shard. This allows your application to grow beyond the resource limits of a standalone server or replica set.
+
+	
+What is a Replica Set in MongoDB:
+---------------------------------
+	To keep identical copies of your data on multiple servers, we use replication. 
+	It is recommended for all production deployments. 
+	Use replication to keep your application running and your data safe, even if something happens to one or more of your servers.
+	Such replication can be created by a replica set with MongoDB. 
+	A replica set is a group of servers with one primary, the server taking writes, and multiple secondaries, servers that keep copies of the primary’s data. If the primary crashes, the secondaries can elect a new primary from amongst themselves.
+
+	The PRIMARY database saves data changes in the "Oplog". 
+	The SECONDARY database is querying the PRIMARY database for new changes in the Oplog. If there are any changes, then Oplog entries are copied from PRIMARY to SECONDARY as soon as they are created on the PRIMARY node.	
+	
+	
+What are some utilities for backup and restore in MongoDB:
+----------------------------------------------------------
+	MongoDB has created methods for accomplishing this, so that no scripting work or complex GUIs are needed. 
+	For this, several utility scripts are provided that can be used to get data in or out of the database in bulk. 
+	
+	These utility scripts are:
+		mongoimport
+		mongoexport
+		mongorestore	
+		mongodump
+		
+		
+Connect to Multiple Databases: Using Spring Data MongoDB:
+---------------------------------------------------------
+	To connect to multiple MongoDB databases using Spring Data MongoDB, you’ll need to configure separate MongoTemplate instances and repositories for each database. 
+	Here's a breakdown of how to do it:
+			
+	Step-by-Step Setup:
+	-------------------
+	
+	1. Define Connection Properties:
+	--------------------------------
+		In your application.properties or application.yml, specify connection details for each database:
+
+			mongodb.primary.uri=mongodb://localhost:27017/db1
+			mongodb.secondary.uri=mongodb://localhost:27017/db2
+		
+		You can also define more granular properties like host, port, username, and password if needed.
+		
+		
+	2. Create Configuration Classes:
+	--------------------------------
+		Set up two configuration classes—one for each database:
+
+			@Configuration
+			@EnableMongoRepositories(
+				basePackages = "com.example.repository.primary",
+				mongoTemplateRef = "primaryMongoTemplate"
+			)
+			public class PrimaryMongoConfig {
+				@Bean
+				@Primary
+				public MongoTemplate primaryMongoTemplate() {
+					return new MongoTemplate(MongoClients.create("mongodb://localhost:27017"), "db1");
+				}
+			}
+
+
+			@Configuration
+			@EnableMongoRepositories(
+				basePackages = "com.example.repository.secondary",
+				mongoTemplateRef = "secondaryMongoTemplate"
+			)
+			public class SecondaryMongoConfig {
+				@Bean
+				public MongoTemplate secondaryMongoTemplate() {
+					return new MongoTemplate(MongoClients.create("mongodb://localhost:27017"), "db2");
+				}
+			}
+
+
+	3. Create Separate Repositories:
+	--------------------------------
+		Organize your repositories into different packages and annotate them as usual:
+
+			@Repository
+			public interface UserRepository extends MongoRepository<User, String> {
+				User findByEmail(String email);
+			}
+
+			@Repository
+			public interface AccountRepository extends MongoRepository<Account, String> {
+				Account findByAccountDomain(String domain);
+			}
+
+		Each repository will be wired to the correct MongoTemplate based on the configuration.
+
+
+	4. Avoid Bean Conflicts:
+	------------------------
+		Use @Primary for one of the configurations to avoid NoUniqueBeanDefinitionException.
+
+->
+	1. Dependency Setup:
+	--------------------
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
+		</dependency>
+		
+		
+	2. Model:
+	---------
+		We’ll create two documents that will be in use by two different databases.
+		
+		For example, we’ll create a User document:
+		
+			@Document(collection = "user")
+			public class User {
+
+				@MongoId
+				private ObjectId id;
+
+				private String name;
+
+				private String surname;
+				private String email;
+
+				private int age;
+
+				// getters and setters
+			}
+			
+		Then, let’s also add an Account document:
+		
+			@Document(collection = "account")
+			public class Account {
+
+				@MongoId
+				private ObjectId id;
+				private String userEmail;
+				private String nickName;
+				private String accountDomain;
+				private String password;
+
+				// getters and setters
+			}
+
+			
+	3. To demonstrate, let’s break down all the beans and annotations.
+	------------------------------------------------------------------
+		Firstly, we’ll retrieve and set properties using MongoProperties. This way, we directly map all the properties to a bean:		
+		
+			@Bean(name = "primaryProperties")
+			@ConfigurationProperties(prefix = "mongodb.primary")
+			@Primary
+			public MongoProperties primaryProperties() {
+				return new MongoProperties();
+			}
+
+
+https://www.geeksforgeeks.org/mongodb/using-transactions-in-mongodb/
+https://www.geeksforgeeks.org/mongodb/multi-document-transaction-in-mongodb/
+
+Multi-Document Transaction or a Basic Transaction in MongoDB:
+-------------------------------------------------------------
+	MongoDB is a NoSQL database known for its flexible schema and high performance. While traditional relational databases offer ACID (Atomicity, Consistency, Isolation, Durability) transactions across multiple tables, NoSQL databases like MongoDB initially lacked this feature.
+
+	However, since MongoDB 4.0, multi-document transactions have been introduced, allowing users to execute multiple operations as a single atomic unit. 
+
+	
+	What are Multi-Document Transactions?:
+	--------------------------------------
+		Multi-document transactions in MongoDB allow multiple write operations on multiple documents across one or more collections to be executed as an atomic unit. If any operation within a transaction fails, all operations are rolled back, ensuring data integrity.
+		
+	
+	What Are Transactions in MongoDB?:
+	----------------------------------
+		A transaction in MongoDB allows us to group multiple read and write operations into a single unit. We can perform operations across multiple documents or collections and if something goes wrong during the transaction (e.g., a failure or a conflict), we can rollback all the changes made, ensuring the system's state remains consistent.
+		
+		
+	ACID Properties of Transactions:
+	--------------------------------
+		MongoDB transactions guarantee the following ACID properties:
+
+		Atomicity: 
+			All operations in a transaction are executed as a single unit. Either all operations succeed, or none of them are applied.
+		
+		Consistency: 
+			The transaction brings the database from one valid state to another valid state, maintaining data integrity.
+		
+		Isolation: 
+			Transactions are isolated from each other, meaning the operations of one transaction are not visible to other transactions until the transaction is committed.
+		
+		Durability: 
+			Once a transaction is committed, the changes are permanent and will survive system failures.	
+			
+			
+	Types of Transactions:
+	----------------------
+		MongoDB supports two types of transactions:
+
+		1. Single-Document Transactions: 
+		--------------------------------
+			These are operations involving a single document, and they behave in a way similar to a traditional atomic operation.
+		
+		2. Multi-Document Transactions: 
+		-------------------------------
+			These transactions can span multiple documents and even collections, similar to how transactions work in traditional relational databases. MongoDB supports multi-document transactions starting from version 4.0.		
+			
+			
+	When to Use Multi-Document Transactions:
+	----------------------------------------
+		Multi-document transactions should be used when:
+
+		Ensuring consistency across multiple documents is required.
+		Implementing financial transactions (e.g., transferring money between accounts).
+		Updating related data across multiple collections.
+		Avoiding partial updates in multi-step processes.		
+		
+		
+	Prerequisites for Using Transactions:
+	-------------------------------------
+		Before using transactions, there are a few things you need to ensure:
+
+		Replica Sets: 
+			Transactions are only supported in replica sets in MongoDB. A replica set is a group of MongoDB instances that maintain the same data set.
+		
+		MongoDB Version: 
+			Multi-document transactions are supported starting from MongoDB 4.0. Ensure that you are using version 4.0 or later.
+		
+		Write Concern: 
+			Transactions in MongoDB can be configured with a write concern to ensure data durability.	
+			
+		
+		
+	-> Basic Concepts of Transactions in MongoDB:
+	---------------------------------------------
+		1. Starting a Session: 
+			Transactions in MongoDB require a session. You need to start a session before initiating a transaction.
+
+		2. Executing a Transaction: 
+			Transactions follow the startTransaction, commitTransaction and abortTransaction workflow.
+		
+		
+	Example: A Simple Transaction:
+	------------------------------
+		We will transfer money between two users, ensuring that the transaction is atomic (either both operations succeed or both fail).
+		
+		1) Define the Users Collection:
+		-------------------------------
+			We have a users collection, where each document represents a user with fields name and balance:
+		
+			{
+			  "_id": ObjectId("5f1d7a20f6d5a7d37f8c5891"),
+			  "name": "Alice",
+			  "balance": 100
+			},
+			{
+			  "_id": ObjectId("5f1d7a20f6d5a7d37f8c5892"),
+			  "name": "Bob",
+			  "balance": 50
+			}
+
+		2) Perform the Transaction:
+		---------------------------
+			Now, we will transfer $30 from Alice's account to Bob's account using a transaction. If any part of the operation fails, the changes will be rolled back, ensuring that the balances remain correct.
+			
+				const session = client.startSession();
+
+				try {
+				  session.startTransaction();
+
+				  // Decrease Alice's balance
+				  const alice = db.users.findOne({ name: "Alice" }, { session });
+				  db.users.updateOne(
+					{ name: "Alice" },
+					{ $inc: { balance: -30 } },
+					{ session }
+				  );
+
+				  // Increase Bob's balance
+				  const bob = db.users.findOne({ name: "Bob" }, { session });
+				  db.users.updateOne(
+					{ name: "Bob" },
+					{ $inc: { balance: 30 } },
+					{ session }
+				  );
+
+				  // Commit the transaction
+				  session.commitTransaction();
+				  console.log("Transaction committed successfully.");
+				} catch (error) {
+				  console.log("Transaction failed. Rolling back.");
+				  session.abortTransaction();
+				} finally {
+				  session.endSession();
+				}
+				
+				
+		Output Before the transaction:
+		------------------------------
+			[
+			  { "_id": ObjectId("5f1d7a20f6d5a7d37f8c5891"), "name": "Alice", "balance": 100 },
+			  { "_id": ObjectId("5f1d7a20f6d5a7d37f8c5892"), "name": "Bob", "balance": 50 }
+			]
+
+		Output After the transaction:
+		-----------------------------
+			[
+			  { "_id": ObjectId("5f1d7a20f6d5a7d37f8c5891"), "name": "Alice", "balance": 70 },
+			  { "_id": ObjectId("5f1d7a20f6d5a7d37f8c5892"), "name": "Bob", "balance": 80 }
+			]		
+			
+		If the transaction failed at any point (e.g., if Alice didn’t have enough balance), the changes would have been rolled back.
+
+
+	Handling Errors and Rolling Back:
+	---------------------------------
+		MongoDB transactions provide an easy way to handle errors and roll back changes if something goes wrong. In the example above, we used session.abortTransaction() in the catch block to roll back the changes.		
+		
+		
+		
+	-> Using Transactions Across Multiple Collections:
+	--------------------------------------------------
+		MongoDB allows you to perform multi-document transactions that can span multiple collections. This is particularly useful for scenarios where you need to maintain consistency across different collections in your application.
+		
+		
+		Example: Transaction Across Two Collections:
+		--------------------------------------------
+			Let’s assume you have a users collection and a transactions collection. We want to transfer money between users and also log this operation in the transactions collection.
+		
+				const session = client.startSession();
+
+				try {
+				  session.startTransaction();
+
+				  // Transfer money between users
+				  db.users.updateOne({ name: "Alice" }, { $inc: { balance: -30 } }, { session });
+				  db.users.updateOne({ name: "Bob" }, { $inc: { balance: 30 } }, { session });
+
+				  // Log the transaction
+				  db.transactions.insertOne({
+					from: "Alice",
+					to: "Bob",
+					amount: 30,
+					date: new Date()
+				  }, { session });
+
+				  // Commit the transaction
+				  session.commitTransaction();
+				  console.log("Transaction committed successfully.");
+				} catch (error) {
+				  console.log("Transaction failed. Rolling back.");
+				  session.abortTransaction();
+				} finally {
+				  session.endSession();
+				}
+				
+	Optimizing Transaction Performance:
+	-----------------------------------
+		While transactions provide strong consistency, they can also introduce overhead, especially for large-scale operations. 
+		Here are some tips for optimizing performance:
+
+		Minimize the Transaction Scope: 
+			Keep the number of operations within a transaction as small as possible. The longer a transaction runs, the more likely it is to impact performance and increase the chance of conflicts with other transactions.
+		
+		Use Proper Indexing: 
+			Ensure that fields involved in the transaction are indexed. This helps MongoDB quickly find the documents that need to be modified or queried.
+		
+		Monitor Transaction Performance: 
+			Use MongoDB’s currentOp() command to monitor ongoing transactions and their impact on system performance.
+		
+		Handle Conflicts Gracefully: 
+			In a highly concurrent environment, consider using retryable writes to automatically retry operations that may have failed due to a conflict.			
+			
+		Use Transactions Only When Necessary: 
+			Since MongoDB supports atomic operations on single documents, use transactions only when multiple documents must be updated atomically.		
+			
+		Use Bulk Operations When Possible: 
+			Bulk writes can sometimes replace transactions for efficiency.	
+			
+		Limited Duration: 
+			Transactions should be completed within 60 seconds.
+	
+		Minimize Transaction Scope: 
+			Keep transactions short to reduce locking and improve performance.
+			
+			
+	Write Concern in Transactions:
+	------------------------------
+		The write concern in a MongoDB transaction defines the level of acknowledgment requested from the database when performing write operations. In a transaction, you can specify a write concern to ensure durability and data integrity.
+
+		Example of using write concern in a transaction:
+		------------------------------------------------
+			db.users.updateOne(  { name: "Alice" },  { $inc: { balance: -30 } },  { session, writeConcern: { w: "majority" } });
+		
+		In this example, the writeConcern is set to majority, meaning the operation will wait until the write is acknowledged by the majority of replica set members.		
+		
+		
+	Monitoring and Debugging Transactions:
+	--------------------------------------
+		MongoDB provides tools for monitoring and debugging transactions. The db.currentOp() command can be used to view the status of ongoing transactions, while the explain() method provides insights into how MongoDB executes a query within a transaction.	
+		
+		
+	Conclusion:
+	-----------
+		MongoDB transactions offer a powerful mechanism for ensuring data consistency and integrity in your applications. They allow you to perform multiple operations across one or more documents and collections in an atomic way.
+		
+		With features like multi-document transactions and transactions across multiple collections, MongoDB has significantly enhanced its capability to handle complex workloads while providing ACID guarantees.
+		
+		While they are powerful, they should be used judiciously due to performance implications.

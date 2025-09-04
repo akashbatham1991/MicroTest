@@ -1,0 +1,762 @@
+Composite Key Mapping: Embeddable and Embedded
+
+
+Best Practices for Entity Mapping (One To One, One To Many, Many To One, Many To Many):
+---------------------------------------------------------------------------------------
+▪ Use Lazy Loading: 			Prefer lazy loading for relationships to improve performance.
+• Avoid Eager Fetching: 		Use eager fetching sparingly as it can lead to performance issues.
+• Define Proper Cascade Types: 	Use appropriate cascade types (CascadeType.PERSIST, CascadeType.MERGE, etc.)
+• Use DTOs for Complex Queries: Use Data Transfer Objects (DTOs) to fetch and transfer data efficiently.
+• Normalize Database Schema: 	Ensure your database schema is normalized to avoid redundancy and maintain data integrity.
+• Use Indexes: 					Create indexes on columns that are frequently used in queries to improve performance.
+
+
+Introduction to JPA Auditing:
+-----------------------------
+	JPA Auditing allows you to automatically "capture and store metadata about entity changes", such as who created or modified an entity and when these changes occurred.
+	
+	Annotations: Key annotations include: 
+		@CreatedBy, 
+		@LastModifiedBy,
+		@CreatedDate, and 
+		@LastModifiedDate.
+
+	Setting up Auditing in JPA:
+		Enable Auditing: Use @EnableJpaAuditing in your configuration class.
+		
+	AuditorAware Implementation: Implement AuditorAware to provide the current auditor (user):
+	
+	@Component
+	public class AuditorAwareImpl implements AuditorAware<String> {
+	
+		@Override
+		public Optional<String> getCurrentAuditor(){
+			return Optional.of("current_user");	//replace with actual user retrieval logic
+		}
+	}
+	
+	
+	
+Integrating JWT Security:
+-------------------------
+	JWT Basics: 
+		JSON Web Tokens (JWT) are used for securely transmitting information between parties as a JSON object. They are commonly used for authentication and authorization.
+	
+	JWT Structure: 
+		A JWT consists of three parts: Header, Payload, and Signature.
+	
+	
+	Implementing Auditing with JWT:
+	-------------------------------
+		1. Extract User from JWT: 
+		-------------------------
+		Implement logic to extract the user information from the JWT token.
+
+		@Component
+		public class AuditorAwareImpl implements AuditorAware<String> {
+			@Override
+			public Optional<String> getCurrentAuditor(){
+				Authentication authentication =  SecurityContextHolder.getContext().getAuthentication();
+				if(authentication == null | !authentication.isAuthenticated()){
+					return Optional.empty();
+				}
+				return Optional.of(((UserDetails)authentication.getPrincipal()).getUsername());
+			}
+		}
+		
+		
+		2. Security Configuration:
+		--------------------------
+			Configure Spring Security to use JWT for authentication:	
+			
+			@Configuration
+			public class SecurityConfig extend WebSecurityConfigurerAdapter {
+				@Override
+				protected void configure(HttpSecurity http) throws Exception {
+					http.csrf().disable()
+					.authorizeRequests()
+					.antMatchers("/api/**").authenticated()
+					.and()
+					.addFilter(new JWTAuthenticationFilter(authenticationManager()))
+					.addFilter(new JWTAuthorizationFilter(authenticationManager()));
+				}
+			}
+		
+		
+		
+Enable Caching: Add the @EnableCaching annotation to your Spring Boot application configuration class to enable caching.
+		
+
+
+Spring Data JPA Projections – 5 ways to return custom response:
+---------------------------------------------------------------
+	Table of Contents:
+	-----------------
+		Types of Projections?
+
+			1. Interface-based Projections:
+			------------------------------
+				Close Projection
+				Open Projection
+				Dynamic Projection
+				
+			2. Class-based Projections:
+			--------------------------
+				Projection with argument constructor
+				Result in Map format
+		
+	What is Projection?
+	-------------------
+		If you already know about Spring Data JPA, you must be knowing that all the query methods of Repository classes will return an entity object. There may be cases where we do not want an entire entity from the query method. We may be interested only in few attributes of that entity or subset of that entity with some manipulation in it. In those cases, we will be using Projection which projects us only the required data out of entire entity class.	
+		
+		
+	Broadly there are two types of projections: 
+	-------------------------------------------
+		1. Interface-based Projections, and 
+		2. Class-based Projections.	
+		
+		
+	1. Interface-based Projections:
+	-------------------------------
+		As the name implies we are going to use an interface here. In this type, we create an interface with only getter methods of properties we want from an entity class. This interface will be the return type of query method we write in Spring Data JPA’s Repository interface. 
+		
+		It has the following three types:	
+			Close Projection
+			Open Projection
+			Dynamic Projection
+
+
+		Close Projection:
+		-----------------
+			In Close Projection, the getter methods of interface match exactly with the getter methods of Entity’s properties. 
+			For example, consider you have an entity of Employee table as follows:
+			
+			@Entity
+			@Table(name = "employee")
+			public class Employee implements Serializable {
+
+				@Id
+				@GeneratedValue(strategy = GenerationType.IDENTITY)
+				@Column(name = "id", unique = true, nullable = false)
+				private Long id;
+
+				@Column(name = "firstName", length = 50)
+				private String firstName;
+
+				@Column(name = "lastName", length = 50)
+				private String lastName;
+
+				@Column(name = "designation", length = 20)
+				private String designation;
+
+				@Column(name = "salary")
+				private Integer salary;
+
+				@ManyToOne(fetch = FetchType.LAZY)
+				@JoinColumn(name = "departmentId", updatable = false, insertable = false)
+				private Department department;
+
+				@Column(name = "departmentId")
+				private Long departmentId;
+
+				public Long getId() {
+					return id;
+				}
+
+				public String getFirstName() {
+					return firstName;
+				}
+
+				public String getLastName() {
+					return lastName;
+				}
+
+				public String getDesignation() {
+					return designation;
+				}
+
+				public Integer getSalary() {
+					return salary;
+				}
+
+				public Department getDepartment() {
+					return department;
+				}
+
+				public Long getDepartmentId() {
+					return departmentId;
+				}
+				
+				//setters
+			}
+			
+			
+		Now if we are interested only in Id, First Name, Last Name and Department Name of Employee, we will create an Interface as follows:	
+
+			public interface EmployeeByCloseProjectionRs {
+			
+				Long getId();
+
+				String getFirstName();
+
+				String getLastName();
+
+				DepartmentRs getDepartment();
+
+				interface DepartmentRs {
+					String getName();
+				}
+			}
+			
+		To make use of it, use this interface as a return type of query method in your Repository interface:
+
+			@Repository
+			public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+			
+				List<EmployeeByCloseProjectionRs> findByFirstName(String firstName);
+			}
+			
+			
+		Open Projection:
+		----------------
+			In Open Projection we will create an interface with getter methods of selective properties only but in addition to that, we also "use SpEL expression". The SpEL expression will help us to "define a new property from existing properties". Like in the above case if we want a property “fullName” then we can define it using SpEL expression and @Value  annotation. Likewise, we can also define a new property from nested property of entity class. In our case, we can define department name property from the hierarchy of Employee and Department entity.
+		
+			public interface EmployeeByOpenProjectionRs {
+				Long getId();
+
+				@Value("#{target.firstName} #{target.lastName}")
+				String getFullName();
+
+				@Value("#{target.department.name}")
+				String getDepartmentName();
+			}
+			
+			@Repository
+			public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+				List<EmployeeByOpenProjectionRs> findByLastName(String lastName);
+			}
+			
+			
+		If you don’t want to use SpEL expression, you can define default methods in the projection type interface to achieve the same thing.
+			
+		Add a default method:
+		---------------------
+			Within the same interface, a default method is added. This method can implement custom logic by combining or manipulating the values retrieved through the other getter methods defined in the interface.
+		
+			The custom logic is encapsulated directly within the Java code of the default method, eliminating the need for SpEL expressions in @Value annotations.	
+			
+			interface NamesOnly {
+				String getFirstname();
+				String getLastname();
+
+				default String getFullName() {
+					return getFirstname().concat(" ").concat(getLastname());
+				}
+			}
+
+			//In this example, getFullName() is a default method that concatenates the firstname and lastname obtained from the entity, providing a derived fullName property without using SpEL. This approach is suitable when the custom logic can be implemented purely based on the other accessor methods exposed on the projection interface.
+				
+			
+		Dynamic Projection:
+		-------------------
+			It is possible to define what projection type to return from the query method at runtime. 
+			
+			To achieve this, 
+				just "include a new argument to query method of type Class" and set it with your projection type as follows:
+
+				@Repository
+				public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+
+					// dynamic projection can return: 
+					//	EmployeeByOpenProjectionRs or 
+					//	EmployeeByCloseProjectionRs
+					
+					<T> List<T> findByFirstName(String firstName, Class<T> tClass);
+				}
+
+			From the Service class, invoke the repository method as follow:
+
+				@Override
+				public List<EmployeeByOpenProjectionRs> getAllByDynamicProjection() {
+				
+					return employeeRepository.findByFirstName("A", EmployeeByOpenProjectionRs.class);
+				}	
+				
+				
+		
+		Class-based Projections:
+		------------------------
+			We create Projection class which contains only those properties we were interested in the Entity class and its class hierarchy. 
+			You can create the instance of your custom projection class using argument constructor or a Map.	
+			
+		Projection with argument constructor:
+		-------------------------------------
+			In argument constructor way, we create the instance of projection class in the JPQL itself. 
+			Consider your projection class is as follows:
+
+				public class CustomEmployeeRs implements Serializable {
+
+					private String firstName;
+					private String lastName;
+					private String departmentName;
+
+					public CustomEmployeeRs(String firstName, String lastName, String departmentName) {
+						this.firstName = firstName;
+						this.lastName = lastName;
+						this.departmentName = departmentName;
+					}
+				}
+
+			In JPA Repository we will use above constructor in JPQL to return its object as a response to repository method:
+
+				@Repository
+				public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+
+					@Query("select 
+				new com.bytestree.restful.dto.CustomEmployeeRs(e.firstName, e.lastName, e.department.name) " +
+						   "from Employee e")
+					List<CustomEmployeeRs> findAllWithCustomObject();
+
+				}	
+				
+				
+		Result in Map format:
+		---------------------
+			In some cases, our Projection class contains a large number of properties and we may want to use the same class for different requirements which requires different sets of properties. 
+			Creating a new constructor with a number of arguments for all such requirements may not be a good practice. 
+			In such situations, we add a constructor in our Projection class with a Map. 
+			The Map contains alias of selected property as a key(string) and its value. 
+			Though we use the same projection class, only interested properties will be set here.		
+			
+			
+			public class CustomEmployeeRs implements Serializable {
+				public static final String FIRST_NAME = "firstName";
+				public static final String LAST_NAME = "lastName";
+				public static final String DEPARTMENT_NAME = "departmentName";
+
+				private String firstName;
+				private String lastName;
+				private String departmentName;
+
+				public CustomEmployeeRs(Map<String, Object> values) {
+					this.firstName = values.get(FIRST_NAME) != null ? (String) values.get(FIRST_NAME): null;
+					this.lastName = values.get(LAST_NAME) != null ? (String) values.get(LAST_NAME) : null;
+					this.departmentName = values.get(DEPARTMENT_NAME) != null ? (String) values.get(DEPARTMENT_NAME) : null;
+			   }
+			}
+			
+			In JPQL of repository method, use the alias while selecting a property of Entity and define the List of Map as return type.
+
+				@Repository
+				public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+
+					@Query("select e.firstName as "+ CustomEmployeeRs.FIRST_NAME +"," +
+							" e.lastName as " + CustomEmployeeRs.LAST_NAME + ", " +
+							" d.name as " + CustomEmployeeRs.DEPARTMENT_NAME +
+							" from Employee e join e.department d")
+					List<Map<String, Object>> findAllWithMapResult();
+				}
+				
+			The service method will get the projection class’s objects from the result of a repository method using a constructor with Map as follows:
+
+				public List<CustomEmployeeRs> getAllWithMapResult() {
+					List<Map<String, Object>> results = employeeRepository.findAllWithMapResult();
+					return results.stream().map(result -> new CustomEmployeeRs(result))
+					.collect(Collectors.toList());
+				}	
+							
+							
+		That’s all about Projections in Spring Data JPA.
+
+Source Code: https://github.com/bytestree/spring-data-jpa-projections/tree/master					
+
+
+Choosing between interface-based and class-based projections:
+-------------------------------------------------------------
+	Choosing between interface-based and class-based projections in Spring Data JPA depends on your use case, performance needs, and flexibility requirements.
+
+	Interface-Based Projection:
+	---------------------------
+		Use When:
+		---------
+			- You want simple, read-only views of your entity.
+			- You need nested projections (e.g., projecting related entities).
+			- You prefer less boilerplate—just define getter methods.
+			- You want to use dynamic projections (return different views from the same method).
+			
+		Example:
+		--------
+			public interface UserView {
+				String getName();
+				AddressView getAddress(); // nested projection
+			}
+
+		Spring will generate a proxy behind the scenes and fetch only the required fields.
+		
+		Limitations:
+		------------
+			- No custom logic or constructors.
+			- May fetch full entities in some cases if not optimized properly.
+
+
+	Class-Based Projection (DTO):
+	-----------------------------
+		Use When:
+		---------
+			- You need custom logic in constructors or methods.
+			- You want immutable objects (e.g., using records).
+			- You prefer explicit control over data mapping.
+			- You’re using native queries or JPQL with constructor expressions.
+		
+		Example:
+		--------
+			public class UserDTO {
+				private final String name;
+				private final String city;
+
+				public UserDTO(String name, String city) {
+					this.name = name;
+					this.city = city;
+				}
+			}
+
+		Used with:
+		----------
+			@Query("SELECT new com.example.UserDTO(u.name, a.city) FROM User u JOIN u.address a")
+			List<UserDTO> findUsers();
+
+		Limitations:
+		------------
+			- No nested projections.
+			- Requires constructor matching query fields.
+
+
+	Decision Guide:
+	---------------
+		Scenario 							Recommended Projection 
+		--------							----------------------
+		Simple field selection 				Interface
+		Nested entity projection 			Interface 
+		Dynamic projection flexibility 		Interface
+		Custom logic or transformation 		Class (DTO)
+		Native or JPQL constructor query 	Class (DTO)  
+		Performance-critical reads 			Class (DTO)
+
+->
+Spring Boot JPA Batch Insert:
+-----------------------------
+	To perform the batch insert, use the "saveAll" method provided by Spring Data JPA:
+
+		@Transactional
+		public List<Person> savePersons(List<Person> persons) {
+			return personRepository.saveAll(persons);
+		}
+
+
+
+
+->
+https://www.baeldung.com/spring-data-jpa-max-value
+
+JPA code returning max salary employees:
+----------------------------------------
+	1. Using Derived Queries in a Repository
+	2. Using JPQL
+	3. Using a Native Query
+	4. Implementing a Default Repository Method
+	5. Using Pagination
+	6. Using Criteria API
+	
+	
+	Entity Example:
+	---------------
+		@Entity
+		public class Employee {
+		
+			@Id
+			@GeneratedValue
+			private Integer id;
+			private String name;
+			private Long salary;
+
+			// constructors, getters, setters, equals, hashcode
+		}
+
+	1. Using Derived Queries in a Repository:
+	----------------------------------------
+		
+		public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
+		
+			Optional<Employee> findTopByOrderBySalaryDesc();
+		}
+		
+		//We just implemented a method that uses the 'query derivation mechanism' to generate the appropriate SQL. 
+		
+		//According to the method name, we’re sorting all employees by their salary in descending order and then returning the first one, which is the employee with the highest salary.
+		
+		
+	Improvement:
+	------------
+		Notably, this approach always returns an entity with all eager properties set. However, if we just want to retrieve a single salary value, we can slightly modify our code by implementing a projection feature.
+		
+			public interface EmployeeSalary {
+				Long getSalary();
+			}
+			
+			public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
+				Optional<EmployeeSalary> findTopSalaryByOrderBySalaryDesc(); 
+			}
+			
+			//This solution is useful when we need to return only specific parts of the entity.
+
+
+	2. Using JPQL:
+	--------------
+		Unlike SQL, which operates on tables and columns in a database, JPQL operates on Java entities and their attributes.
+		It abstracts the underlying database so that developers can write queries without being tied to a specific database's syntax or structure. 
+		
+		public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
+		
+			@Query("SELECT MAX(e.salary) FROM Employee e")
+			Optional<Long> findTopSalaryJQPL();
+		}
+		
+		//As we can see, we can easily retrieve a single column of an entity without any additional projections.
+		
+		
+	3. Using a Native Query:	
+	------------------------
+		
+		public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
+		
+			@Query(value = "SELECT MAX(salary) FROM Employee", nativeQuery = true)
+			Optional<Long> findTopSalaryNative();
+		}
+		
+		//The solution is similar to JPQL. Using native queries can be useful to leverage specific SQL features or optimizations.
+
+			
+	4. Implementing a Default Repository Method:
+	--------------------------------------------
+		We can also use custom Java code to find the maximum value. 
+		
+		public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
+		
+			default Optional<Long> findTopSalaryCustomMethod() {
+				return findAll().stream()
+				  .map(Employee::getSalary)
+				  .max(Comparator.naturalOrder());
+			}
+		}
+		
+		//Unlike previous approaches, all filtering logic occurs at the application layer, not the database.
+		
+		
+	5. Using Pagination:
+	--------------------
+		
+		public Optional<Long> findTopSalary() {
+			return findAll(PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "salary")))
+			  .stream()
+			  .map(Employee::getSalary)
+			  .findFirst();
+		}
+		
+		
+	6. Using Criteria API:
+	----------------------
+		It’s a more dynamic and type-safe way to build complex queries without using raw SQL.
+		
+		@Service
+		public class EmployeeMaxValueService {
+		
+			@Autowired
+			private EntityManager entityManager;
+			
+			public Optional<Long> findMaxSalaryCriteriaAPI() {
+			
+				CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+				CriteriaQuery<Long> query = cb.createQuery(Long.class);
+
+				Root<Employee> root = query.from(Employee.class);
+				query.select(cb.max(root.get("salary")));
+
+				TypedQuery<Long> typedQuery = entityManager.createQuery(query);
+				return Optional.ofNullable(typedQuery.getSingleResult());
+			}
+		}
+		
+	//this approach is more complex than the previous one, so it may be a bit overwhelming if we need to implement a simple query. This solution may be useful if we have more complex structures that cannot be handled by simply expanding the repository.
+
+
+	Conclusion:
+	-----------
+		we’ve explored various methods to find the maximum value of a column using Spring Data JPA.
+
+		We started with derived queries, which provide a simple and intuitive way to define queries just by method naming conventions. Then, we looked into using JPQL and native queries with the @Query annotation, offering more flexibility and direct control over the SQL being executed.
+
+		We also implemented a custom default method in the repository to leverage Java’s Stream API for processing data at the application level. Additionally, we checked how to use pagination and sorting to find the result using only built-in API.
+
+		Finally, we utilized the Criteria API for a more programmatic and type-safe approach to building complex queries. By understanding these different approaches, we can choose the most suitable one for a specific use case, balancing simplicity, control, and performance.	
+		
+		
+top 5 employees ordered by salary in descending order:
+------------------------------------------------------
+	
+	@Entity
+		public class Employee {
+			
+			@Id
+			@GeneratedValue(strategy = GenerationType.IDENTITY)
+			private Long id;
+
+			private String name;
+			private Double salary;
+
+			// Getters and setters
+		}
+		
+	1. Derived Query Methods:
+	-------------------------
+		To get the top 5 employees, you can use findTop5By... or findFirst5By... followed by an OrderBy clause for sorting.
+		
+		public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+
+			List<Employee> findTop5ByOrderBySalaryDesc();
+		}
+		
+		//This method uses Spring Data JPA's query derivation mechanism to automatically generate a query that fetches the top 5 employees ordered by salary in descending order.	
+		
+		
+	
+	2. @Query Annotation with JPQL/Native SQL:
+	------------------------------------------
+		For more complex scenarios or when derived queries become too long, you can use the @Query annotation to define a custom JPQL or native SQL query.
+		
+		Unlike SQL, which operates on tables and columns in a database, JPQL operates on Java entities and their attributes.
+		It abstracts the underlying database so that developers can write queries without being tied to a specific database's syntax or structure. 
+		
+		
+		Using JPQL:
+		-----------
+			public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+			
+				@Query("SELECT e FROM Employee e ORDER BY e.salary DESC LIMIT 5")
+				List<Employee> findTop5EmployeesBySalary();
+			}
+			
+		Using native SQL:
+		-----------------
+			public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+				@Query(value = "SELECT * FROM Employee ORDER BY salary DESC LIMIT 5", nativeQuery = true)
+				List<Employee> findTop5EmployeesNative();
+			}
+			
+			
+	3. Pageable Parameter:
+	----------------------
+		
+		public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+			List<Employee> findAll(Pageable pageable);
+		}
+		
+		Then, when calling this method, you would create a PageRequest object:
+		
+			Pageable topFive = PageRequest.of(0, 5, Sort.by("salary").descending());
+			List<Employee> employees = employeeRepository.findAll(topFive);
+			
+			
+	
+https://www.javaguides.net/2023/08/jpql-join-queries-with-spring-data-jpa.html
+https://www.baeldung.com/spring-jpa-joining-tables
+https://www.baeldung.com/jpa-join-types
+	
+JPA Joins:
+----------
+	For this example, we'll use two entities: Author and Book.
+
+		
+	1. Create JPA Entities
+	----------------------
+		
+		@Entity
+		public class Author {
+			@Id
+			@GeneratedValue(strategy = GenerationType.IDENTITY)
+			private Long id;
+			private String name;
+
+			@OneToMany(mappedBy = "author")
+			private Set<Book> books = new HashSet<>();
+
+			// Constructors, getters, setters...
+		}	
+	
+	
+		@Entity
+		public class Book {
+			@Id
+			@GeneratedValue(strategy = GenerationType.IDENTITY)
+			private Long id;
+			private String title;
+
+			@ManyToOne
+			@JoinColumn(name = "author_id")
+			private Author author;
+
+			// Constructors, getters, setters...
+		}
+		
+		
+	Creating Join Queries with JPQL:
+	--------------------------------
+
+		2.1. Basic Inner Join:
+		----------------------	
+		To fetch all books with their corresponding authors:
+
+			public interface BookRepository extends JpaRepository<Book, Long> {
+				@Query("SELECT b FROM Book b JOIN b.author a")
+				List<Book> findAllWithAuthors();
+			}
+			
+			
+		2.2. Left Join:
+		---------------	
+		To fetch all authors and any books they've written (even if an author hasn't written any books):
+
+			public interface AuthorRepository extends JpaRepository<Author, Long> {
+				@Query("SELECT a FROM Author a LEFT JOIN FETCH a.books")
+				List<Author> findAllWithBooks();
+			}
+
+
+		2.3. Join with Conditions:
+		--------------------------	
+		To fetch books written by authors named "John":
+
+			public interface BookRepository extends JpaRepository<Book, Long> {
+				@Query("SELECT b FROM Book b JOIN b.author a WHERE a.name = 'John'")
+				List<Book> findAllByAuthorNamedJohn();
+			}
+			
+		3. Multiple Joins:
+		------------------	
+		JPQL allows for multiple joins. Let's assume books have a Publisher entity:
+
+			public interface BookRepository extends JpaRepository<Book, Long> {
+				@Query("SELECT b FROM Book b JOIN b.author a JOIN b.publisher p WHERE p.name = 'Penguin'")
+				List<Book> findAllByPublisherNamedPenguin();
+			}
+	
+	
+		4. Avoiding The N+1 Problem:
+		----------------------------
+		A common pitfall is inadvertently causing an "N+1" select issue, where the application performs unnecessary additional queries. One way to mitigate this is using the FETCH JOIN:
+
+			public interface AuthorRepository extends JpaRepository<Author, Long> {
+				@Query("SELECT a FROM Author a JOIN FETCH a.books")
+				List<Author> findAllAuthorsAndBooks();
+			}
+		
+		By using FETCH, we're ensuring that the associated books are loaded immediately, rather than being lazily fetched later.

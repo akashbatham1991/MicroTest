@@ -1,0 +1,980 @@
+What is Scalability?:
+---------------------
+	Scalability in System Design refers to a system’s ability to handle increased load gracefully. It’s about making sure that as your user base or data grows, your system doesn’t crumble—ideally, it thrives.
+
+	What Scalability Really Means:
+	------------------------------
+		Vertical Scalability:
+		---------------------
+			Adding more power (CPU, RAM) to a single server.
+		
+		Horizontal Scalability: 
+		-----------------------
+			Adding more machines to distribute the load—think of it as cloning servers to share the work.
+		
+		Elastic Scalability: 
+		--------------------
+			Dynamically growing or shrinking resources based on demand (common in cloud architectures).
+
+
+	Why It Matters:
+	---------------
+		Ensures consistent performance during traffic spikes.
+		Reduces bottlenecks in high-demand scenarios.
+		Futureproofs the system for growth and expansion.
+		Supports business continuity and reliability.
+
+	
+	Key Design Principles:
+	----------------------
+		Load Balancing: 		Distributes traffic to prevent server overload.
+		Caching: 				Speeds up data access and reduces server strain.
+		Decoupling Services: 	Using microservices or queues so parts of your system can scale independently.
+		Asynchronous Processing:Offloading tasks so the system remains responsive.
+		Database Replication:	copying data from one database to another in real-time.
+		Database Sharding:		partitioning a database into smaller, more manageable parts called shards.
+
+		Data Partitioning:		
+			dividing data into smaller, more manageable parts based on certain criteria(geographic location or user ID). 
+
+		Microservices Architecture:	
+			breaking down a monolithic application into smaller, more independent services. 
+
+		CDN:	
+			improve scalability by caching and delivering content from servers that are geographically closer to users, reducing latency and improving performance.
+
+		Queueing Systems:	
+			improve scalability by decoupling components and allowing requests to be processed asynchronously.
+
+	
+	Real-World Example:
+	-------------------
+		If you’re designing an e-commerce platform, scalability means it shouldn't crash during a Black Friday sale when a million users log in simultaneously. Instead, it should handle the surge smoothly—like a digital ninja.
+
+		Google: Google's infrastructure is highly scalable, allowing it to handle billions of search queries and serve millions of users worldwide. Google uses a distributed system architecture and technologies like Bigtable, MapReduce, and Spanner to achieve scalability.
+		
+		
+	
+	Challenges and Trade-offs in Scalability:
+	-----------------------------------------
+		Challenges and trade-offs in scalability are important considerations when designing and implementing scalable systems. Some of the key challenges and trade-offs include:
+
+		Cost vs. Scalability: 
+			Adding extra resources is a common step in system scaling, which might raise expenses. A trade-off exists between the advantages of increased performance and availability and the expense of scaling.
+		
+		Complexity: 
+			Systems typically get more complex as they grow in size. Because of its complexity, the system may be more difficult to maintain and debug, which could result in higher operating cost.
+		
+		Latency vs. Throughput: 
+			There is often a trade-off between latency and throughput. Optimizing for low latency may reduce throughput, and vice versa.
+		
+		Data Partitioning Trade-offs: 
+			Partitioning data can improve scalability by distributing it across multiple nodes. However, choosing the right partitioning strategy involves trade-offs, such as balancing the size of partitions, minimizing data movement, and ensuring data locality.	
+			
+			
+	When to Use Vertical Scaling:
+	-----------------------------
+		When you need to enhance a single server's performance by adding more resources (CPU, RAM, storage).
+		Ideal for applications that require significant processing power.
+		Easier to implement since it involves upgrading existing hardware rather than managing multiple servers.
+	
+	
+	Use Horizontal Scaling when:
+	----------------------------
+		When you need to manage growing demands by adding more servers or nodes.
+		Best for applications designed to operate across multiple servers for better performance.
+		Provides redundancy and minimizes the risk of a single point of failure.
+		Effective for applications with variable demand, allowing for flexible scaling.		
+			
+			
+	How to Test Your App's Scalability?:
+	------------------------------------
+		Load Testing: 
+			Use special tools to pretend lots of people are using your app at once. Watch how your app handles it – you want it to stay fast and error-free.
+		
+		Stress Testing: 
+			Push your app to its limits. How many users can it handle before things start breaking? Find out where it breaks and why.		
+			
+	
+	Scalability Bottlenecks:
+	------------------------
+		Scalability Bottlenecks are the hidden roadblocks that prevent a system from growing smoothly as demand increases. Identifying and resolving them is key to building robust, high-performance architectures.
+		
+		Common Bottlenecks in Scalable Systems:
+			Here’s a breakdown of typical trouble spots:
+	
+		Database Bottlenecks:
+		---------------------
+			Slow queries, poor indexing, or limited hardware can throttle performance.
+			Example: An e-commerce site with sluggish order processing during peak sales due to inefficient database queries.
+		
+		Network Bottlenecks:
+		--------------------	
+			Limited bandwidth or high latency can choke data flow.
+			Example: A video streaming app buffering during high traffic because of inadequate content delivery infrastructure.
+
+		Server Bottlenecks:
+		-------------------
+			CPU, RAM, or disk I/O limitations can cause delays.
+			Example: A social media post going viral overwhelms the server, making the app unresponsive.
+
+		Authentication Bottlenecks:
+		---------------------------
+			High login traffic or inefficient auth systems can slow access.
+			Example: Banking apps struggling with login delays during peak hours
+
+		Third-party Service Bottlenecks:
+		--------------------------------
+			External APIs (e.g., maps, payments) can become single points of failure.
+			Example: A ride-sharing app lagging due to slow responses from a mapping service.
+	
+		Code Execution Bottlenecks:
+		---------------------------
+			Inefficient algorithms or poor resource usage can drag performance.
+			Example: A web app with slow front-end rendering due to bloated JavaScript.
+
+		Data Storage Bottlenecks:
+		-------------------------
+			Slow file access or poor disk utilization can hinder scalability.
+			Example: A cloud file-sharing platform struggling to retrieve files quickly as usage grows.
+
+		
+	How to Tackle Them:
+	-------------------
+		Use profiling tools to pinpoint slow components.
+		Apply load balancing to distribute traffic evenly.
+		Optimize queries and indexing for databases.
+		Implement caching to reduce repeated computations.
+		Use asynchronous processing to keep systems responsive.
+		Choose scalable cloud infrastructure with auto-scaling features.
+	
+		
+	Conclusion:
+	-----------
+		Achieving scalability involves using strategies like vertical scaling, horizontal scaling, and distributed architectures, which help distribute workloads efficiently and improve overall system resilience.
+
+
+============================================================================================================================
+
+Availability:
+-------------
+	Availability refers to the proportion of time that a system or service is operational and accessible for use. 
+	It is a critical aspect of designing reliable and resilient systems.	
+	Redundancy, fault tolerance, and effective recovery techniques are usually used to achieve high availability.
+	
+	How to achieve high availability:
+	---------------------------------
+		Redundancy: 				Duplicate resources (like servers) so if one fails, others take over.
+		Failover Systems: 			Automatic switching to backup components during failure.
+		Load Balancing: 			Distributes incoming traffic across multiple servers to avoid overload.
+		Health Checks: 				Regular monitoring to detect and recover from failures.
+		Monitoring and Alerting: 	Identify problems instantly and alert administrators so they can act quickly.
+	
+	Design Strategies to Improve Availability:
+	------------------------------------------
+		Use stateless services that can easily be restarted or redistributed.
+		Keep data replicated across multiple nodes.
+		Apply circuit breakers and retry logic to handle transient failures.
+		Deploy across multiple zones or regions to minimize impact from local outages.
+
+============================================================================================================================
+
+Reliability in System Design:
+-----------------------------
+	Reliability in System Design is all about making sure a system consistently performs its intended function—even when things go wrong. It's the foundation that ensures users can trust the system day in and day out.
+
+	What Reliability Means:
+	-----------------------
+		A reliable system performs correctly over time, under expected and unexpected conditions.
+		It’s not just about uptime (like availability)—it’s about delivering correct results every time.
+		Even if the system is up, if it's giving wrong data or behaving erratically, it's not reliable.
+
+	Design Strategies to Boost Reliability:
+	---------------------------------------
+		Use stateless architectures where possible (less context to lose).
+		Implement graceful degradation—core features stay up even if some fail.
+		Apply backups and version control for data safety.
+		Choose mature technologies with proven track records.
+	
+	Core Strategies for High Reliability:
+	-------------------------------------
+		Redundancy:
+			Duplicate critical components (servers, databases, etc.) so if one fails, others take over seamlessly.
+		
+		Fault Tolerance:
+			Design systems to detect and recover from failures automatically. Use architectures like active-active or active-passive setups.
+		
+		Load Balancing:
+			Spread traffic across multiple nodes to prevent overload and ensure smooth performance.
+		
+		Monitoring & Alerting:
+			Use tools like Prometheus, Grafana, or Datadog to track system health and trigger alerts before issues escalate.
+		
+		Failover Mechanisms:
+			Automatically switch to backup systems when a primary one fails—e.g., DNS failover or database replication.
+		
+		Chaos Engineering:
+			Intentionally introduce failures to test system resilience (Netflix’s Chaos Monkey is a classic example).
+
+
+	Diff b/w Reliability and Availability:
+	--------------------------------------
+		A system can be available but unreliable: It’s up and running, but gives incorrect results.
+		A system can be reliable but unavailable: It works perfectly when it’s up—but it’s often down.
+
+		Real-World Analogy:
+		-------------------
+
+		Imagine a car:
+			Availability: 	The car starts when you need it.
+			Reliability: 	The car runs smoothly without breaking down or giving false dashboard alerts.
+
+	
+	Core Differences:
+	-----------------
+	Feature 	Availability 										Reliability
+	-------		------------										-----------
+	Definition 	Measures if the system is accessible when needed 	Measures if the system performs correctly over time
+	Focus 		Uptime and responsiveness 							Accuracy and consistency of results
+	Metric 		Uptime % (e.g. 99.9%) 								MTBF (Mean Time Between Failures), Error Rate
+	Time Frame 	Snapshot at a given moment 							Performance over a longer duration
+	Example 	A website is online 99.9% of the time 				A website always loads the correct data without errors
+
+
+===========================================================================================================================
+
+Consistency:
+------------
+	Consistency in System Design refers to the guarantee that all parts of a system—especially in distributed environments—see the same data at the same time. It ensures that users and services interact with a coherent and predictable system state, even when multiple operations happen concurrently.
+	
+	What Consistency Really Means:
+	------------------------------
+		If two users access the same bank account, they should both see the same balance.
+		In distributed systems, consistency ensures that updates to data are reflected across all nodes in a coordinated way.
+		It’s one of the three pillars of the CAP Theorem: Consistency, Availability, and Partition Tolerance—you can only fully achieve two at a time.
+
+	
+	Types of Consistency Models:
+	----------------------------
+		Model 					Description 										Example Use Case
+		-----					-----------											----------------
+		Strong Consistency 		Every read reflects the most recent write. 			Traditional SQL databases
+		Eventual Consistency 	Data updates eventually propagate to all nodes. 	Amazon DynamoDB, DNS systems
+		Causal Consistency 		Related operations are seen in the correct order. 	Collaborative editing tools
+		Read-Your-Writes 		A user always sees their own updates immediately. 	Social media profile updates
+		Monotonic Consistency 	Once a user sees a value, they won’t see an older one later. | Distributed key-value stores
+		Weak Consistency 		No guarantees on when updates will be visible. 		Caching systems like Redis or Memcached
+
+
+	Challenges in Maintaining Consistency:
+	--------------------------------------
+		Network Latency:	Delays can cause stale reads.
+		Concurrency: 		Simultaneous updates can lead to conflicts.
+		Partitioning: 		Network splits make it hard to synchronize data.
+		Scalability: 		More nodes = more complexity.
+		Trade-offs: 		Strong consistency can reduce availability or increase latency
+
+	
+	Strategies to Achieve Consistency:
+	----------------------------------
+		Quorum-Based Replication: 	Require a majority of nodes to agree on reads/writes.
+		Consensus Algorithms: 		Use protocols like Paxos or Raft to maintain a single source of truth.
+		Conflict Resolution: 		Apply rules like “last write wins” or use vector clocks.
+		Two-Phase Commit (2PC): 	Coordinate transactions across nodes—though it can block during failures.
+
+============================================================================================================================
+
+Fault Tolerance:
+----------------
+	Fault Tolerance in System Design is the art of building systems that keep working—even when parts of them fail.
+	Fault tolerance refers to a system’s ability to continue operating correctly even when one or more components fail.
+	
+	Example: If a server crashes, traffic is automatically rerouted to a backup server without affecting users.
+		
+	What Fault Tolerance Means:
+	---------------------------
+		A fault-tolerant system detects, isolates, and recovers from failures without disrupting service.
+		It ensures graceful degradation—the system may slow down or lose non-essential features, but core functionality remains intact.
+		Faults can be hardware failures, software bugs, network issues, or even human errors.
+
+	Key Techniques to Achieve Fault Tolerance:
+	------------------------------------------
+		Technique 						Description
+		---------						-----------
+		Redundancy 						Duplicate components (servers, disks, services) to take over on failure
+		Failover Mechanisms 			Automatically switch to backup systems when a fault is detected
+		Error Detection & Correction 	Use checksums, parity bits, and monitoring to catch and fix errors
+		Isolation 						Prevent faults in one module from affecting others (e.g., microservices)
+		Graceful Degradation 			Maintain partial functionality when full service isn’t possible
+		Load Balancing 					Distribute traffic to avoid overloading any single component
+		Checkpointing & Rollback 		Save system state periodically to recover from failures
+		Monitoring & Alerting 			Detect anomalies early using tools like Prometheus, Grafana, or ELK stack
+
+============================================================================================================================
+
+Resilience:
+-----------
+	Resilience is broader—it’s about a system’s ability to "recover from failures and adapt to changing conditions".
+		
+		Goal: 				Maintain acceptable service levels and recover gracefully.
+		Mechanism: 			Monitoring, graceful degradation, self-healing, dynamic adaptation.
+		User Experience: 	Users might notice reduced functionality, but the core service remains available.
+		
+		Example: 
+			If a recommendation engine fails on a streaming platform, users can still watch movies, but suggestions might be missing.
+			
+		Example-2:
+			In WFD-WFTS UI, we send auth_code from two places, so that if 1st time it failed to send auth_code, send it again whenever user accessing the WFTS page.
+
+
+============================================================================================================================
+
+Maintainability:
+----------------
+	Maintainability in System Design is all about how easily a system can be: 
+		modified, 
+		updated, 
+		extended, or 
+		repaired over time. 
+
+	What Maintainability Really Means:
+	----------------------------------
+		Ease of Modification: 	Can you change features or fix bugs without breaking other parts?
+		Scalability of Updates: Can the system evolve with new requirements?
+		Low Technical Debt: 	Is the codebase clean and well-structured?
+		Team-Friendly: 			Can new developers onboard quickly and contribute effectively?
+
+	Key Characteristics of a Maintainable System:
+	---------------------------------------------
+		Attribute 			Description
+		---------			-----------
+		Modularity 			System is broken into independent, well-defined components
+		Readability 		Code is clear, concise, and easy to understand
+		Testability 		Easy to write and run tests to validate changes
+		Documentation 		Clear guides, API references, and architectural decisions are documented
+		Version Control 	Uses tools like Git for tracking changes and collaboration
+		Error Handling 		Provides meaningful messages and avoids catastrophic failures
+
+
+	How to Measure Maintainability:
+	-------------------------------
+		Maintainability Index: 	Combines metrics like cyclomatic complexity, lines of code, and code comments.
+		Code Duplication: 		Less duplication = easier maintenance.
+		Test Coverage: 			High coverage helps prevent regressions.
+		Code Churn: 			Frequent changes may signal instability.
+		Cyclomatic Complexity: 	Lower complexity = easier to understand and modify.
+
+
+	Strategies to Achieve High Maintainability:
+	-------------------------------------------
+		Follow Design Patterns: 		Use proven patterns like MVC, SOLID principles.
+		Consistent Coding Standards: 	Naming conventions, formatting, and style guides.
+		Code Reviews: 					Peer reviews catch issues early and promote shared understanding.
+		Test-Driven Development (TDD): 	Write tests before code to ensure reliability.
+		Automated Testing & Deployment: Reduces human error and speeds up updates.
+		Plan for Change: 				Design with flexibility in mind, expect evolving requirements.
+
+	Real-World Impact:
+	------------------
+		Maintainability is crucial in systems like:
+			Banking apps: 			Frequent updates and strict compliance.
+			E-commerce platforms: 	Rapid feature rollouts and bug fixes.
+			Enterprise software: 	Long lifecycles and multiple teams.
+
+
+============================================================================================================================
+
+CAP Theorem:
+------------
+	The CAP Theorem—also known as Brewer’s Theorem.
+	
+	The Three Pillars of CAP:
+	-------------------------
+		Property 					Description
+		--------					-----------
+		Consistency (C) 			Every read receives the most recent write or an error 
+		Availability (A) 			Every request receives a response—even if it's not the latest data
+		Partition Tolerance (P) 	The system continues to operate despite network failures or partitions
+		
+		
+	The Trade-Off:
+	--------------
+		In the presence of a network partition, a distributed system can guarantee only two of the three properties.
+
+		So systems must choose between:
+		-------------------------------
+			CP (Consistency + Partition Tolerance): Sacrifices availability
+			Example: MongoDB, Redis in strict mode
+			
+			AP (Availability + Partition Tolerance): Sacrifices consistency
+			Example: Cassandra, DynamoDB
+			
+			CA (Consistency + Availability): Not feasible in distributed systems with partitions
+			Only possible in centralized or tightly coupled systems
+	
+	
+	Real-World Examples:
+	--------------------
+		Use Case 				Preferred CAP Combo 	Why?
+		--------				-------------------		----
+		Banking Transactions 	CP 						Accuracy is critical—even if it means temporary delay
+		Social Media Feeds 		AP 						Users prefer fast access—even if data is slightly stale
+		Online Shopping Cart 	Hybrid (AP + CP) 		Browsing is AP; checkout is CP for correctness
+
+
+	Why It Matters:
+	---------------
+		Understanding CAP helps you:
+			Choose the right database or architecture for your needs
+			Design systems that gracefully handle failures
+			Balance trade-offs between speed, accuracy, and resilience.
+
+============================================================================================================================
+
+Concurrency vs. Parallelism:
+----------------------------
+	
+	Core Differences:
+	-----------------
+	Aspect 			Concurrency 										Parallelism
+	------			-----------											-----------
+	Definition 		Managing multiple tasks at once  					Executing multiple tasks exactly at the same time.
+					(not necessarily simultaneously)
+	
+	Execution 		Tasks are interleaved—one starts  					Tasks run simultaneously on multiple 
+					before another finishes								cores/processors.
+	
+	Resource Usage 	Can be done on a single core via context switching 	Requires multiple cores or processors.
+	
+	Goal 			Improve responsiveness and resource utilization 	Improve throughput and computation speed.
+	
+	Example 		Web server handling multiple requests 				Data processing using multiple threads on separate 
+																		cores.
+																		
+																		
+	Real-World Analogy:
+	-------------------
+	Imagine you’re cooking and doing laundry:
+		
+		Concurrency: 
+			You start cooking, then switch to laundry while something simmers, then back to cooking. You’re juggling tasks.
+		
+		Parallelism: 
+			You and a friend cook and do laundry at the same time—two tasks, two people, no switching.
+																	
+
+	Can They Coexist?:
+	------------------
+	Absolutely! A system can be:
+	
+		Concurrent but not parallel: 	One processor switches between tasks.
+		Parallel but not concurrent: 	Multiple processors run tasks that don’t interact.
+		Both: 							Multiple tasks run simultaneously and are managed concurrently.
+
+============================================================================================================================
+
+Latency and Throughput:
+-----------------------
+	It defines how well a system performs.
+	
+	What Is Latency?:
+	-----------------
+		Latency is the time it takes for a single request to travel through the system and return a response.
+	
+		Key Points:
+		-----------
+			Measured in milliseconds (ms) or microseconds (µs)
+			Represents delay or responsiveness
+			Includes network transmission time, processing time, and queuing delays
+	
+		Example:
+			Clicking “Buy” on an e-commerce site and waiting for the confirmation page to load—that delay is latency.
+
+	
+	What Is Throughput?:
+	--------------------
+		Throughput is the number of requests or operations a system can handle in a given time.
+		
+		Key Points:
+		-----------
+			Measured in requests/sec, transactions/sec, or bits/sec
+			Represents capacity or volume
+			Indicates how much work the system can do over time
+			
+			Example:
+				An API that handles 10,000 requests per second has high throughput.
+
+
+	Relationship Between Latency and Throughput:
+	--------------------------------------------
+		Aspect 		Latency 							Throughput
+		------		-------								----------
+		Focus 		Time per request 					Requests per unit time
+		Goal 		Minimize delay 						Maximize volume
+		Trade-off 	Lower latency may reduce throughput Higher throughput may increase latency
+		Analogy 	Time to deliver one pizza 			Number of pizzas delivered per hour
+
+	
+	How to Optimize:
+	----------------
+	
+		Reduce Latency:
+		---------------
+			Use caching (e.g. Redis, CDN)
+			Optimize database queries
+			Minimize network hops
+			Use asynchronous processing
+		
+		Increase Throughput:
+		--------------------
+			Scale horizontally (add more servers)
+			Use load balancing
+			Optimize I/O operations
+			Apply parallel processing
+			Hardware upgrades.
+
+	Real-World Impact:
+	------------------
+		Gaming & VR: 		Low latency is critical for real-time responsiveness
+		Streaming Services: High throughput ensures smooth delivery to millions
+		Financial Systems: 	Need both—fast and high-volume processing
+
+============================================================================================================================
+
+What is Time-To-Live (TTL)?:
+----------------------------
+	It controls how long data remains valid or active before it’s discarded or refreshed. It’s like an expiration timer for packets or cached information.
+	
+	TTL in Caching (DNS, CDN, HTTP):
+	--------------------------------
+		DNS TTL: 	Determines how long a DNS record is cached before refreshing from the authoritative server.
+		CDN TTL: 	Controls how long content is served from edge servers before fetching a fresh copy.
+		HTTP TTL: 	Set via headers like Cache-Control: max-age=60, meaning the resource is valid for 60 seconds.
+		
+		Why It Matters:
+		---------------
+			Short TTL = fresher data, more frequent updates.
+			Long TTL = better performance, less load on origin servers.
+
+	TTL is a small field with a big impact—balancing freshness, performance, and reliability across systems.
+
+===========================================================================================================================
+
+Proxies: The Middlemen of the Internet:
+---------------------------------------
+	Proxies are intermediary servers that sit between clients and backend services. They enhance performance, security, and scalability.
+
+	Types of Proxies:
+	-----------------
+		Type 				Acts On Behalf Of 	Purpose 									Example Use
+		----				-----------------	-------										-----------
+		Forward Proxy 		Client 				Anonymity, content filtering 				VPNs, school firewalls
+		Reverse Proxy 		Server 				Load balancing, caching, SSL termination 	NGINX, HAProxy
+		Web Proxy 			Client 				URL-based filtering 						Browser-based proxies
+		Transparent Proxy 	Client 				Invisible routing 							ISP-level filtering 
+
+
+	Benefits of Proxies:
+	--------------------
+		Security: 				Hide internal server details, block malicious traffic
+		Caching: 				Store frequently accessed content to reduce latency
+		Load Distribution: 		Spread traffic across multiple servers
+		Access Control: 		Filter requests based on rules or IPs
+		Protocol Translation: 	Convert HTTPS to HTTP for backend simplicity
+
+	How They Work Together:
+	-----------------------
+		In a typical architecture:
+			Client sends a request to a reverse proxy (e.g., NGINX).
+			Proxy handles SSL, caching, and load balancing.
+			Proxy forwards request to a web server or application server.
+			Web server processes or delegates to backend logic.
+			Response flows back through the proxy to the client.
+
+	Real-World Analogy:
+	-------------------
+		Think of a web server as the kitchen preparing meals, and 
+		a reverse proxy as the waiter who takes orders, manages seating, and ensures smooth service. 
+		The forward proxy is like a customer using a middleman to place an anonymous order.
+
+============================================================================================================================
+
+Comparison Table:
+-----------------
+	Feature					Web Server			Servlet(Web) Container	Application Server
+	-------					----------			----------------------	------------------
+	Serves static content	Yes					Yes						Yes
+	Handle Http Request		Yes					Yes						Yes
+	Support Servlet/JSP		No					Yes						Yes
+	Supports EJB/JMS/JTA	No					No						Yes
+	Protocols supported		HTTP				HTTP					HTTP, RMI, JMS, SOAP, etc.
+	Deployment format		N/A					WAR						WAR or EAR
+	Use case				Hosting websites	Java web apps			Enterprise-grade applications
+	Example					NGINX, Node.js		Tomcat,Jetty			WebLogic, JBoss
+
+Summary:
+--------
+	A web server is great for serving static files and basic dynamic content.
+	A servlet container is ideal for Java-based web applications using Servlets and JSP.
+	An application server is built for complex, enterprise-level applications that require full Java EE support.
+	This separation improves scalability, security, and performance.
+	
+	
+Summary:
+--------
+	Think of a Servlet Container as a focused tool for web apps, while an Application Server is a full-service platform for enterprise applications. 
+	If you're building a lightweight REST API, Tomcat might be perfect. 
+	If you're building a banking system with distributed transactions, you'd want WildFly or WebLogic.
+
+
+Real-World Setup:
+-----------------
+	In many systems, a web server acts as a reverse proxy to an application server:
+		Web server handles static assets and routes requests.
+		Application server processes dynamic requests and returns responses.
+	
+
+	
+	
+Web Server:
+-----------
+	A web server is software or hardware that handles HTTP/HTTPS requests from clients (like browsers) and serves content such as HTML, CSS, JavaScript, or dynamic data.
+	
+	Key Responsibilities:
+	---------------------
+		Serve Static Content: 		HTML pages, images, stylesheets
+		Handle Dynamic Requests: 	Forward to application servers for processing
+		Manage Sessions: 			Track user interactions across requests
+		SSL/TLS Termination: 		Encrypt/decrypt traffic for secure communication
+		Load Balancing: 			Distribute traffic across multiple backend servers
+	
+	Popular Web Servers:
+	--------------------
+		Server 			Description
+		------			-----------
+		Apache HTTP 	Most widely used, flexible and extensible
+		NGINX 			Lightweight, high-performance, great for reverse proxy
+		Microsoft IIS 	Integrated with Windows, supports ASP.NET
+		Node.js 		JavaScript-based, ideal for real-time apps 
+		
+
+Application Server:
+-------------------
+	Purpose:
+	--------
+		Executes business logic and serves dynamic content by interacting with databases, messaging systems, and other backend services.
+	
+	Key Traits:
+	-----------
+		Provides a runtime environment for applications.
+		Supports protocols beyond HTTP (e.g., RMI, JMS, SOAP).
+		Includes features like transaction management, connection pooling, and security.
+		
+		Examples: JBoss (WildFly), WebLogic, GlassFish.
+
+
+Servlet Container (Web Container):
+----------------------------------
+	Purpose:
+		Executes Java web components like Servlets and JSPs. It handles HTTP requests and responses.
+	
+	Key Traits:
+		Supports Servlet API, JSP, JSTL
+		Manages web application lifecycle (init, service, destroy)
+		Lightweight and fast
+		
+		Examples: Apache Tomcat, Jetty, Undertow
+	
+	Use Case:
+		Ideal for simple web apps or REST APIs that don’t require full enterprise features.
+
+
+
+What Tomcat Really Is:
+----------------------
+	Web Server:
+	-----------
+		Tomcat can handle HTTP requests and responses, serving static content like HTML, CSS, and JS.
+	
+	Servlet Container (Web Container):
+	----------------------------------
+		It implements the Java Servlet and JavaServer Pages (JSP) specifications, allowing it to run Java-based web applications.
+	
+	Not a Full Application Server:
+	------------------------------
+		Tomcat does not support the full Java EE stack—it lacks built-in support for technologies like:
+			EJB (Enterprise JavaBeans)
+			JTA (Java Transaction API)
+			JMS (Java Messaging Service)
+	
+	So while some people loosely call Tomcat an "application server," it's more accurate to say it's a web application server or servlet container.
+
+	If you're building lightweight web apps or REST APIs, Tomcat is often more than enough. But for enterprise-grade applications needing full Java EE features, you'd want something like WildFly, GlassFish, or Payara.
+
+
+How SSL/TLS Termination Works:
+------------------------------
+	1. Client Request:
+		A user visits a secure site (e.g., https://example.com) and initiates an SSL/TLS handshake.
+	
+	2. Termination Point:
+		The encrypted traffic reaches a load balancer or proxy server that holds the SSL certificate.
+	
+	3. Decryption:
+		The termination point decrypts the traffic, converting it from HTTPS to HTTP.
+	
+	4. Forwarding:
+		The decrypted data is forwarded to backend servers for processing, without the overhead of encryption.
+
+
+
+============================================================================================================================
+
+Unified Modeling Language (UML) Diagrams:
+-----------------------------------------
+	"visual representations" used to model the structure and behavior of software systems. 
+	Think of them as the blueprints for software architecture—helping developers, analysts, and stakeholders understand, design, and communicate complex systems.
+
+	What Is UML?
+	------------
+		UML stands for Unified Modeling Language.
+		It’s not a programming language, but a visual modeling language.
+		Created to unify various object-oriented modeling techniques into one standard.
+		Widely used across industries—from software engineering to business process modeling.
+
+	Why Use UML?:
+	-------------
+		Visual clarity: Easier to understand than raw code.
+		Collaboration: 	Bridges communication between technical and non-technical teams.
+		Documentation: 	Serves as a living reference for system design.
+		Planning: 		Helps anticipate design flaws and scalability issues.
+
+	Real-World Impact:
+	------------------
+		UML is used in:
+			Software development (e.g. Java, C#, Python projects)
+			Enterprise systems (ERP, CRM)
+			Embedded systems (IoT, automotive)
+			Business process modeling
+
+	Types of UML Diagrams:
+	----------------------
+		UML diagrams are grouped into two main categories:
+			1. Structural Diagrams (Static View)
+			2. Behavioral Diagrams (Dynamic View)
+		
+		
+		1. Structural Diagrams (Static View):
+		-------------------------------------
+		These show the architecture of the system.
+		
+			Diagram Type 			Purpose
+			------------			-------
+			Class Diagram 			Shows classes, attributes, methods, and relationships 
+			Object Diagram 			Snapshot of object instances at a specific time
+			Component Diagram 		Visualizes software components and dependencies 
+			Deployment Diagram 		Maps software to hardware nodes
+			Package Diagram 		Organizes elements into packages 
+			Composite Structure 	Internal structure of classes
+			Profile Diagram 		Custom extensions to UML
+
+
+		2. Behavioral Diagrams (Dynamic View):
+		-----------------------------------
+			These show interactions and workflows.
+
+				Diagram Type 			Purpose
+				------------			-------
+				Use Case Diagram 		Describes system functionality from user perspective
+				Activity Diagram 		Models workflows and business processes
+				State Machine Diagram 	Shows object states and transitions
+				Sequence Diagram 		Time-ordered interactions between objects
+				Communication Diagram 	Object interactions with focus on relationships
+				Timing Diagram 			Object behavior over time
+				Interaction Overview 	High-level view of interactions
+
+============================================================================================================================
+
+Communication Protocols:
+------------------------
+	Communication Protocols in System Design are the rulebooks that govern how different components of a system exchange data. Whether it's microservices talking to each other, devices syncing across a network, or APIs serving client requests—protocols ensure that communication is smooth, secure, and predictable.
+
+	What Are Communication Protocols?:
+	----------------------------------
+		A communication protocol is a set of rules that define:
+			Data formatting: 		How data is structured and encoded
+			Transmission methods: 	How data is sent and received
+			Error handling: 		How faults are detected and corrected
+			Security: 				How data is protected during transit
+	
+		They’re essential for interoperability, reliability, and scalability in distributed systems.
+	
+	
+	Types of Communication Protocols:
+	---------------------------------
+		1. Synchronous Protocols:
+		-------------------------
+			HTTP/HTTPS: Request-response model; used in REST APIs and web services
+			RPC/gRPC: 	Remote procedure calls with structured data exchange
+			WebSockets: Full-duplex communication for real-time apps
+
+		2. Asynchronous Protocols:
+		--------------------------
+			Message Queues: 		RabbitMQ, Kafka	—decouple services and enable background processing
+			Event-Driven Systems: 	Publish-subscribe models for scalable, reactive architectures
+			MQTT: 					Lightweight protocol for IoT devices
+
+		3. Security Protocols:
+		----------------------
+			TLS/SSL:	Encrypts data in transit
+			SSH: 		Secure remote access
+			IPSec: 		Secures IP communications
+		
+	Note:
+		RabbitMQ and Apache Kafka implement or rely on specific protocols to enable messaging.
+		
+		What They Really Are:
+		---------------------
+			Tool		Type									Protocol Used
+			----		-----									-------------
+			RabbitMQ	Message broker / framework				Implements AMQP, supports STOMP, MQTT
+			Kafka		Distributed event streaming platform	Uses its own Kafka protocol (not AMQP)
+
+		
+	Choosing the Right Protocol:
+	----------------------------
+		Factor 			Synchronous Protocols 	Asynchronous Protocols
+		------			---------------------	----------------------
+		Response Time 	Immediate 				Delayed or eventual
+		Scalability 	Limited by blocking 	Highly scalable
+		Complexity 		Easier to debug 		Harder to trace and monitor
+		Fault Tolerance Sensitive to failures 	More resilient via decoupling
+		Use Cases 		Payments, auth, search 	Logging, notifications, IoT 
+		
+		
+	Real-World Examples:
+	--------------------
+		WhatsApp: 	Uses synchronous protocols for chat delivery, asynchronous for media uploads
+		Netflix: 	Relies on Kafka for asynchronous event streaming
+		Stripe: 	Combines synchronous APIs with asynchronous webhooks for payment processing
+
+============================================================================================================================
+
+Secure Communication in Distributed System:
+-------------------------------------------
+	Secure Communication in Distributed Systems is all about protecting data as it moves between components spread across networks—often across geographic regions. Since distributed systems rely heavily on inter-node communication, securing these channels is critical to prevent data breaches, impersonation, and service disruption.
+
+	Why It Matters:
+	---------------
+		Confidentiality: 	Prevents unauthorized access to sensitive data in transit.
+		Integrity: 			Ensures data isn’t tampered with during transmission.
+		Authentication: 	Verifies the identity of communicating parties.
+		Non-repudiation: 	Guarantees that senders and receivers can't deny their actions.
+		Availability: 		Protects against denial-of-service and replay attacks.
+
+	Key Techniques for Secure Communication:
+	----------------------------------------
+		1. Encryption:
+		--------------
+			TLS/SSL:	Encrypts data between services (used in HTTPS, gRPC, etc.)
+			VPNs: 		Secure tunnels over public networks
+			IPSec: 		Encrypts IP packets for secure network-level communication
+		
+		2. Authentication & Authorization:
+		----------------------------------
+			Mutual TLS (mTLS): 			Both client and server authenticate each other
+			OAuth2 / OpenID Connect: 	Token-based identity verification
+			API Keys & JWTs: 			Lightweight authentication for services
+		
+		3. Message Integrity:
+		---------------------
+			Hashing (SHA-256, etc.): 	Detects tampering
+			Digital Signatures: 		Verifies sender and message authenticity
+		
+		4. Secure Messaging Protocols:
+		------------------------------
+			HTTPS: 					Secure web communication
+			AMQP / MQTT with TLS: 	Secure message queues for IoT and event-driven systems
+			Kafka with SASL + TLS: 	Secure event streaming
+
+============================================================================================================================
+
+Data Backup and Disaster Recovery (BDR):
+----------------------------------------
+	Data Backup and Disaster Recovery (BDR) are two essential strategies in system design that protect organizations from data loss and ensure business continuity during unexpected events like cyberattacks, hardware failures, or natural disasters.
+	
+	Why It Matters:
+	---------------
+		Minimizes Downtime: 		Keeps operations running during crises.
+		Protects Reputation: 		Avoids customer trust issues from data loss.
+		Ensures Compliance: 		Meets legal and regulatory requirements.
+		Reduces Financial Impact: 	Prevents costly outages and recovery delays.
+
+
+	1. What Is Data Backup?:
+	------------------------
+		Data Backup is the process of creating copies of data and storing them in a separate location to safeguard against accidental loss, corruption, or deletion.
+		
+	
+		Key Features:
+		-------------
+			Redundancy: Multiple copies stored on different media (e.g., cloud, disk, tape).
+		
+		Types of Backups:
+		-----------------
+			Full Backup: 			Entire dataset copied.
+			Incremental Backup: 	Only changes since the last backup.
+			Differential Backup: 	Changes since the last full backup.
+		
+		Storage Options: 
+		----------------
+			On-premises, off-site, or cloud-based
+
+	2. What Is Disaster Recovery?:
+	------------------------------
+		Disaster Recovery (DR) is a broader strategy that includes restoring systems, applications, and data after a disruptive event to resume normal operations.
+		
+		Key Components:
+		---------------
+			Disaster Recovery Plan (DRP): 	A documented process outlining recovery steps.
+			Recovery Time Objective (RTO): 	Maximum acceptable downtime.
+			Recovery Point Objective (RPO): Maximum acceptable data loss.
+			Failover Systems: 				Backup infrastructure ready to take over during outages.
+
+		
+	Backup vs. Disaster Recovery:
+	-----------------------------
+		Aspect 			Backup 					Disaster Recovery
+		------			------					-----------------
+		Purpose 		Preserve data copies 	Restore full system functionality
+		Scope 			Data-level protection 	System-wide recovery
+		Speed 			May be slower 			Designed for rapid recovery
+		Infrastructure 	Storage-focused 		Includes servers, networks, applications
+
+
+	
+
+	
+
+
+
+
+	
+	
+
+
+	
+
+
+
+
+
+
+	
+
+
+
+
+
+
+

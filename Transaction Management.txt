@@ -1,0 +1,833 @@
+https://www.marcobehler.com/guides/spring-transaction-management-transactional-in-depth
+https://www.postgresql.org/docs/9.5/transaction-iso.html
+
+Remember, transaction management simply means: 
+----------------------------------------------
+	How does Spring start, commit or rollback JDBC transactions? 
+	
+	In an enterprise application, a transaction is a "sequence of actions" performed by the application that together are pipelined to perform a single operation. 
+	
+	For example, 
+		booking a flight ticket is also a transaction where the end user has to enter his information and then make a payment to book the ticket.	
+		
+	
+Why Do We Need Transaction Management?
+--------------------------------------
+	A transaction is a "sequence of actions" like in hotel/flight booking, fill user info and then do payment and it's not good practice to store a single action of the transaction. 
+	If the payment is successful, then it will complete the transaction; otherwise, it will roll back the transaction, and the user information will not be stored in the database.	
+	
+Propagation:
+	is crucial for managing how transactions behave when multiple methods call each other. 
+	It dictates whether a method should run within an existing transaction or start a new one. 
+	
+	Physical Transactions: Are your actual JDBC transactions.
+	Logical Transactions: Are the (potentially nested) @Transactional-annotated (Spring) methods.
+
+Isolation:
+	Different isolation levels can affect how and when changes made within one transaction are visible to others, preventing issues like: dirty reads, non-repeatable reads, and phantom reads. 
+
+@Transactional
+	To configure Spring Transaction, this annotation can be applied at the class level or method level. 
+
+
+@EnableTransactionManagement
+	However, if you are using spring-boot-starter-data-jpa, Spring Boot auto-configures transaction management, and you do not need to explicitly add @EnableTransactionManagement. 
+
+The @Transactional annotation makes use of the attributes: 
+	rollbackFor or 
+	rollbackForClassName to rollback on listed exceptions.		(in Hystrix, ignoreException property is used.)
+	
+and the attributes: 
+	noRollbackFor or 
+	noRollbackForClassName to avoid rollback on listed exceptions.
+	
+By default, the @Transactional annotation rolls back only on unchecked exceptions (such as RuntimeException):
+	@Transactional(rollbackFor = RuntimeException.class)	
+	
+If you want to ensure that the transaction also rolls back for checked exceptions, you can specify it like this:
+	@Transactional(rollbackFor = Exception.class)
+			
+Java Dynamic Proxy: 
+	Spring create proxy of the class where we used @Transactional to wrap that code around jdbc boilerplate code, It does that through a method called proxy-through-subclassing with the help of the Cglib library.
+
+the proxy has one job:
+----------------------
+	Opening and closing database connections/transactions.
+	And then delegating to the real UserService, the one you wrote.
+	And other beans, like your UserRestController will never know that they are talking to a proxy, and not the real thing.	
+
+				
+Spring offers you a PlatformTransactionManager / TransactionManager interface, which, by default, comes with a couple of handy implementations. One of them is the datasource transaction manager. the datasource transaction manager uses exactly the same code that you saw in the JDBC section, when managing transactions.
+
+Make sure you specify a 'Transaction Manager' in your Spring Configuration (this you need to do anyway).
+
+@Transactional(propagation = Propagation.REQUIRED)
+  // or
+@Transactional(propagation = Propagation.REQUIRES_NEW)
+			
+	The full list:
+	--------------
+		REQUIRED		(default)
+		REQUIRES_NEW
+		MANDATORY
+		SUPPORTS
+		NOT_SUPPORTED
+		NEVER
+		NESTED
+
+no of transactions opens are depend on no of proxies created by spring.
+
+
+@Transactional(isolation = Isolation.REPEATABLE_READ)
+
+Levels of Isolation:
+--------------------
+	1. Read uncommitted
+	2. Read committed			(resolve dirty read issue)
+	3. Repeatable read			(resolve non-repeatable issue)	(default isolation level) (higher level of isolation)
+	4. Serializable				(resolve phantom read issue)	((highest level of isolation))
+	
+	
+
+@Transactional annotation supports further configuration as well:
+-----------------------------------------------------------------	
+	Propagation
+	Isolation	
+	Timeout
+	readOnly flag
+	Rollback rules
+			
+@Transactional(readOnly = true):
+--------------------------------
+	indicate that the method is read-only. 
+	This hints to the underlying persistence framework (e.g., Hibernate) to optimize the transaction by avoiding unnecessary locks and flushing operations. It improves performance by minimizing the overhead of transaction management.
+
+	If you don't explicitly set readOnly to true, you will have read/write transactions. 
+
+	If you accidentally perform a write operation inside a readOnly = true transaction, some databases (like PostgreSQL) may throw an error, while others may ignore the flag.
+	
+	It’s not a security feature—it’s a performance hint. So use it wisely.
+
+
+@Transactional(timeout = 30):
+-----------------------------
+
+	@Transactional(timeout = 30) 					// Timeout set to 30 seconds
+	public void someTransactionalMethod() {
+		// Transactional operations
+	}		
+
+	In this example, if the someTransactionalMethod takes longer than 30 seconds to complete, the transaction will be automatically rolled back. 
+
+
+
+=====================================================================START==============================================================
+
+																				
+Remember, transaction management simply means: 
+----------------------------------------------
+	How does Spring start, commit or rollback JDBC transactions? 
+	
+	Compared with the plain JDBC example:
+	-------------------------------------
+		You do not have to mess with opening or closing database connections yourself (try-finally). Instead you use Transaction Callbacks.
+		You also do not have to catch SQLExceptions, as Spring converts these exceptions to runtime exceptions for you.
+
+
+Transaction Management Using @Transactional Annotation:
+------------------------------------------------------
+	The @Transactional annotation is the metadata used for managing transactions in the Spring Boot application. 
+	To configure Spring Transaction, this annotation can be applied at the class level or method level. 
+	
+	In an enterprise application, a transaction is a "sequence of actions" performed by the application that together are pipelined to perform a single operation. 
+	For example, 
+		booking a flight ticket is also a transaction where the end user has to enter his information and then make a payment to book the ticket.
+	
+	Why Do We Need Transaction Management?
+	--------------------------------------
+	A transaction is a "sequence of actions" like fill user info and then do payment and it's not good practice to store a single action of the transaction.
+	
+		Let's understand transactions with the above example. 
+			If a user has entered his information, the user's information gets stored in the user_info table. 
+			Now, to book a ticket, he makes an online payment, and due to some reason(system failure), the payment has been canceled, so the ticket is not booked for him. But, 
+			the problem is that his information gets stored on the user_info table. On a large scale, more than thousands of these things happen within a single day. 
+			So, it is not good practice to store a single action of the transaction(Here, only user info is stored, not the payment info).
+
+		To overcome these problems, Spring provides transaction management, which uses annotation to handle these issues. In such a scenario, the spring stores the user information in temporary memory and then checks for payment information. If the payment is successful, then it will complete the transaction; otherwise, it will roll back the transaction, and the user information will not be stored in the database.
+	
+		When a method is indicated with @Transactional annotation, it indicates that the particular method should be executed within the context of that transaction. If the transaction becomes successful, then the changes made to the database are committed; if any transaction fails, all the changes made to that particular transaction can be rollback and it will ensure that the database remains in a consistent state.
+		
+	EnableTransactionManagement:
+	---------------------------
+		To use @Transactional annotation, you need to configure transaction management. 
+		
+		However, if you are using spring-boot-starter-data-jpa, Spring Boot auto-configures transaction management, and you do not need to explicitly add @EnableTransactionManagement. 
+		
+		If you are not using spring-boot-starter-data-jpa or need custom transaction management, you can enable it by adding @EnableTransactionManagement to your main class of the Spring Boot application.	
+		
+	Service Layer:
+	--------------
+		You can use @Transactional annotation in service layer which will result interacting with the database. 	
+		
+	
+	Problem Without Transaction Management:
+	--------------------------------------
+			@Service
+			public class EmployeeService {
+
+				@Autowired
+				private EmployeeRepository employeeRepository;
+				
+				@Autowired
+				private AddressService addressService;
+				
+				public Employee addEmployee(Employee employee) throws Exception {
+					Employee employeeSavedToDB = this.employeeRepository.save(employee);
+					
+					// we will initialize the address object as null
+						Address address = null;
+						address.setId(123L);
+						address.setAddress("Varanasi");
+						address.setEmployee(employee);
+					
+					// calling addAddress() method of AddressService class
+						this.addressService.addAddress(address);
+						return employeeSavedToDB;
+				}
+			}
+			
+		In the EmployeeService class, we initialize the address object to NULL. Consequently, the employee’s details cannot be stored in the database due to the null address object. However, as we are not employing transaction management, the employee basic information will persisted in the database. The address details are omitted because of the null value.
+			
+		Note: 
+			Applying the @Transactional annotation to a method will not trigger a rollback of any operation if @EnableTransactionManagement is not used.	
+			
+		
+	Transaction Management:
+	-----------------------
+		To overcome this problem, we need to use @EnableTransactionManagement in the main class of our spring boot application and also, and we need to annotate our addEmployee() method in EmployeeService class with @Transactional annotation.
+		
+			
+			@SpringBootApplication
+			@EnableTransactionManagement
+			public class TransactionManagementApplication {
+				public static void main(String[] args) {
+					SpringApplication.run(TransactionManagementApplication.class, args);
+				}
+			}
+			
+			
+			@Service
+			public class EmployeeService {
+
+				@Autowired
+				private EmployeeRepository employeeRepository;
+				
+				@Autowired
+				private AddressService addressService;
+				
+				@Transactional
+				public Employee addEmployee(Employee employee) throws Exception {
+					Employee employeeSavedToDB = this.employeeRepository.save(employee);
+					
+					// we will initialize the 
+					// address object as null
+					Address address = null;
+					address.setId(123L);
+					address.setAddress("Varanasi");
+					address.setEmployee(employee);
+					
+					// calling addAddress() method
+					// of AddressService class
+					this.addressService.addAddress(address);
+					return employeeSavedToDB;
+				}
+			}
+			
+		Note: 
+			By default, the @Transactional annotation rolls back only on unchecked exceptions (such as RuntimeException). If you want to ensure that the transaction also rolls back for checked exceptions, you can specify it like this:
+
+			@Transactional(rollbackFor = Exception.class)	
+			
+			This will trigger a rollback for any kind of exception including both checked and unchecked exceptions ensuring 
+			the transaction is rolled back regardless of the exception type.
+			
+			Make sure you specify a 'Transaction Manager' in your Spring Configuration (this you need to do anyway).
+			
+
+	@Transactional annotation supports further configuration as well:
+	-----------------------------------------------------------------	
+		Propagation Type of the transaction
+		Isolation Level of the transaction
+		Timeout for the operation wrapped by the transaction
+		readOnly flag – a hint for the persistence provider that the transaction should be read only
+		Rollback rules for the transaction
+			
+		
+	Potential Pitfalls:
+	-------------------
+		Another caveat of using proxies is that only public methods should be annotated with @Transactional. Methods of any other visibilities will simply ignore the annotation silently as these are not proxied.
+		
+		Transactions and Proxies:
+		-------------------------
+			At a high level, Spring creates proxies for all the classes annotated with @Transactional, either on the class or on any of the methods. 
+			The proxy allows the framework to inject transactional logic before and after the running method, mainly for starting and committing the transaction.
+			What’s important to keep in mind is that, if the transactional bean is implementing an interface, by default the proxy will be a 'Java Dynamic Proxy'. This means that only external method calls that come in through the proxy will be intercepted. Any self-invocation calls will not start any transaction, even if the method has the @Transactional annotation.
+			
+			
+		How to use Spring’s @Transactional annotation ( Declarative Transaction Management ):
+		-------------------------------------------------------------------------------------
+			Now let’s have a look at what modern Spring transaction management usually looks like:
+			
+				public class UserService {
+					
+					@Transactional
+					public Long registerUser(User user) {
+					   // execute some SQL that e.g.
+						// inserts the user into the db and retrieves the autogenerated id
+						// userDao.save(user);
+						return id;
+					}
+				}
+			
+			
+			The @Transactional UserService code above translates (simplified) directly to this:
+				
+				public class UserService {
+
+					public Long registerUser(User user) {
+						Connection connection = dataSource.getConnection(); // (1)
+						try (connection) {
+							connection.setAutoCommit(false); // (1)
+
+							// execute some SQL that e.g.
+							// inserts the user into the db and retrieves the autogenerated id
+							// userDao.save(user); <(2)
+
+							connection.commit(); // (1)
+						} catch (SQLException e) {
+							connection.rollback(); // (1)
+						}
+					}
+				}		
+				
+				1. This is all just standard opening and closing of a JDBC connection. That’s what Spring’s transactional annotation does for you automatically, without you having to write it explicitly.
+
+				2. This is your own code, saving the user through a DAO or something similar.
+
+			This example might look a bit magical, but let’s have a look at how Spring inserts this connection code for you:
+			----------------------------------------------------------------------------------------------------------------
+				Spring cannot really rewrite your Java class, like I did above, to insert the connection code (unless you are using advanced techniques like bytecode weaving, but we are ignoring that for now).
+
+				Your registerUser() method really just calls userDao.save(user), there’s no way to change that on the fly.
+
+				But Spring has an advantage. At its core, it is an IoC container. It instantiates a UserService for you and makes sure to autowire that UserService into any other bean that needs a UserService.
+
+				Now whenever you are using @Transactional on a bean, Spring uses a tiny trick. It does not just instantiate a UserService, but also a transactional proxy of that UserService.
+
+				It does that through a method called proxy-through-subclassing with the help of the Cglib library. There are also other ways to construct proxies (like Dynamic JDK proxies).
+			
+			
+			As you can see from that diagram, the proxy has one job:
+			--------------------------------------------------------
+				Opening and closing database connections/transactions.
+				And then delegating to the real UserService, the one you wrote.
+				And other beans, like your UserRestController will never know that they are talking to a proxy, and not the real thing.			
+			
+			
+			Quick Exam:
+			-----------
+				Have a look at the following source code and tell me what type of UserService Spring automatically constructs, assuming it is marked with @Transactional or has a @Transactional method.
+
+					@Configuration
+					@EnableTransactionManagement
+					public static class MyAppConfig {
+
+						@Bean
+						public UserService userService() {  // (1)
+							return new UserService();
+						}
+					}
+
+				Spring constructs a dynamic CGLib proxy of your UserService class here that can open and close database transactions for you. You or any other beans won’t even notice that it is not your UserService, but a proxy wrapping your UserService.
+				
+				Your UserService gets proxied on the fly, and the proxy manages transactions for you.
+				But it is not the proxy itself handling all this transactional state (open, commit, close), the proxy delegates that work to a transaction manager.
+				
+			To sum things up:
+			-----------------
+				If Spring detects the @Transactional annotation on a bean, it creates a dynamic proxy of that bean.
+				
+				The proxy has access to a transaction manager and will ask it to open and close transactions / connections.
+				
+				The transaction manager itself will simply do what you did in the plain Java section: Manage a good, old JDBC connection.	
+
+			
+			Transaction Manager:
+			-------------------
+				Spring offers you a PlatformTransactionManager / TransactionManager interface, which, by default, comes with a couple of handy implementations. One of them is the datasource transaction manager.
+					
+				So, the datasource transaction manager uses exactly the same code that you saw in the JDBC section, when managing transactions.
+				
+				Let’s look at the needed Spring configuration:
+
+					@Bean
+					public DataSource dataSource() {
+						return new MysqlDataSource(); // (1)
+					}
+
+					@Bean
+					public PlatformTransactionManager txManager() {
+						return new DataSourceTransactionManager(dataSource()); // (2)
+					}
+				
+				1. You create a database-specific or connection-pool specific datasource here. MySQL is being used for this example.
+
+				2. Here, you create your transaction manager, which needs a data source to be able to manage transactions.
+
+
+			
+	Transaction Logging:
+	-------------------
+		A helpful method to understand transactional-related issues is fine-tuning logging in the transactional packages. The relevant package in Spring is “org.springframework.transaction”, which should be configured with a logging level of TRACE.		
+		
+	
+	Transaction Rollback:
+	---------------------
+		The @Transactional annotation is the metadata that specifies the semantics of the transactions on a method. 
+		
+		We have two ways to rollback a transaction: 
+		------------------------------------------
+			declarative,	(using @Transactional)
+			programmatic.	(using TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();)
+
+		In the declarative approach, 
+			We annotate the methods with the @Transactional annotation. 
+			The @Transactional annotation makes use of the attributes: 
+				rollbackFor or 
+				rollbackForClassName 
+				
+			to rollback the transactions, 
+				
+			and the attributes: 
+				noRollbackFor or 
+				noRollbackForClassName 
+				
+			to avoid rollback on listed exceptions.
+
+		The default rollback behavior in the declarative approach will rollback on runtime exceptions.
+		
+		@Transactional(rollbackFor = { SQLException.class })
+		@Transactional(noRollbackFor = { SQLException.class })
+
+		The declarative rollback strategy should be favored over the programmatic rollback strategy.
+
+
+What are @Transactional Propagation Levels used for?:
+-----------------------------------------------------
+	
+	What is the difference between physical and logical transactions?:
+	------------------------------------------------------------------
+		Imagine the following two transactional classes:
+			
+			@Service
+			public class UserService {
+
+				@Autowired
+				private InvoiceService invoiceService;
+
+				@Transactional
+				public void invoice() {
+					invoiceService.createPdf();
+					// send invoice as email, etc.
+				}
+			}
+
+			@Service
+			public class InvoiceService {
+
+				@Transactional
+				public void createPdf() {
+					// ...
+				}
+			}
+
+		UserService has a transactional invoice() method. Which calls another transactional method, createPdf() on the InvoiceService.
+
+		Now in terms of database transactions: 
+			this should really just be one database transaction. 
+			(Remember: getConnection(). setAutocommit(false). commit().) 
+			Spring calls this physical transaction, even though this might sound a bit confusing at first.
+
+		From Spring’s side however:
+			there’s two logical transactions happening: 
+				First in UserService, 
+				the other one in InvoiceService. 
+				
+			Spring has to be smart enough to know that both @Transactional methods, should use the same underlying, physical database transaction.
+
+		How would things be different, with the following change to InvoiceService?
+			
+			@Service
+			public class InvoiceService {
+
+				@Transactional(propagation = Propagation.REQUIRES_NEW)
+				public void createPdf() {
+					// ...
+				}
+			}
+		
+		Changing the propagation mode to requires_new is telling Spring that createPDF() needs to execute in its own transaction, independent of any other, already existing transaction. 
+		
+		Which basically means your code will open two (physical) connections/transactions to the database. (Again: getConnection() x2. setAutocommit(false) x2. commit() x2) Spring now has to be smart enough that the two logical transactional pieces (invoice()/createPdf()) now also map to two different, physical database transactions.
+		
+		So, to sum things up:
+			Physical Transactions: Are your actual JDBC transactions.
+			Logical Transactions: Are the (potentially nested) @Transactional-annotated (Spring) methods.
+		
+		What are @Transactional Propagation Levels used for?
+		----------------------------------------------------
+			When looking at the Spring source code, you’ll find a variety of propagation levels or modes that you can plug into the @Transactional method.
+
+			@Transactional(propagation = Propagation.REQUIRED)
+			  // or
+
+			@Transactional(propagation = Propagation.REQUIRES_NEW)
+			 // etc
+			
+			The full list:
+			--------------
+				REQUIRED
+				SUPPORTS
+				MANDATORY
+				REQUIRES_NEW
+				NOT_SUPPORTED
+				NEVER
+				NESTED
+
+			Required (default): 
+				My method needs a transaction, either open one for me or use an existing one → getConnection(). setAutocommit(false). commit().
+			
+			Require_new: 
+				I want my completely own transaction → getConnection(). setAutocommit(false). commit().
+				
+			Mandatory: 
+				I’m not going to open up a transaction myself, but I’m going to cry if no one else opened one up → nothing to do with JDBC.
+				
+			Supports: 
+				I don’t really care if a transaction is open or not, i can work either way → nothing to do with JDBC.
+
+			Not_Supported: 
+				I really don’t like transactions, I will even try and suspend a current, running transaction → nothing to do with JDBC
+
+			Never: 
+				I’m going to cry if someone else started up a transaction → nothing to do with JDBC
+
+			Nested: 
+				It sounds so complicated, but we are just talking savepoints! → connection.setSavepoint().
+				
+			As you can see, most propagation modes really have nothing to do with the database or JDBC, but more with how you structure your program with Spring and how/when/where Spring expects transactions to be there.
+
+			Look at this example:
+
+				public class UserService {
+
+					 @Transactional(propagation = Propagation.MANDATORY)
+					 public void myMethod() {
+						// execute some sql
+					 }
+
+				}	
+				
+			In this case, Spring will expect a transaction to be open, whenever you call myMethod() of the UserService class. It does not open one itself, instead, if you call that method without a pre-existing transaction, Spring will throw an exception. Keep this in mind as additional points for "logical transaction handling".
+
+		The most common @Transactional pitfall:
+		---------------------------------------
+			Have a look at the following code:
+
+			@Service
+			public class UserService {
+
+				@Transactional
+				public void invoice() {
+					createPdf();
+					// send invoice as email, etc.
+				}
+
+				@Transactional(propagation = Propagation.REQUIRES_NEW)
+				public void createPdf() {
+					// ...
+				}
+			}
+			
+			You have a UserService class with a transactional invoice method. Which calls createPDF(), which is also transactional.
+
+			How many physical transactions would you expect to be open, once someone calls invoice()?
+
+			Nope, the answer is not two, but one. Why?
+
+			Let’s go back to the proxies' section of this guide. Spring creates that transactional UserService proxy for you, but once you are inside the UserService class and call other inner methods, there is no more proxy involved. This means, no new transaction for you.
+
+				
+	What are @Transactional Isolation Levels used for?
+	--------------------------------------------------
+	https://www.postgresql.org/docs/9.5/transaction-iso.html
+	https://www.marcobehler.com/guides/spring-transaction-management-transactional-in-depth
+		 you configure the @Transactional annotation like so?
+
+			@Transactional(isolation = Isolation.REPEATABLE_READ)
+			
+	Transaction Isolation:
+	----------------------
+		ACID-compliant databases need to make sure that each transaction is carried out in isolation. This means that the results of the transaction is only visible after a commit to the database happens. Other processes should not be aware of what’s going on with the records while the transaction is carried out.
+
+
+		What happens when a transaction tries to read a row, updated by another transaction?
+		------------------------------------------------------------------------------------
+			It depends on what isolation level the database is operating on w.r.t. that particular transaction. Let’s explore the problems that can occur.
+
+	
+	Problems when transaction isolation is not done:
+	------------------------------------------------
+		1. Dirty Read — 
+		----------------
+			Let’s take a situation where one transaction updates a row or a table but does not commit the changes. If the database lets another transaction read those changes (before it’s committed) then it’s called a dirty read. Why? 
+			Let’s say the first transaction rolls back its changes. The other transaction which read the row/table has stale data. This happens in concurrent systems where multiple transactions are going on in parallel. But this can be prevented by the database and we will explore how later.
+
+		2. Non-repeatable read — 
+		------------------------
+			Another side effect of concurrent execution of transactions is that consecutive reads can retrieve different results if you allow another transaction to do "updates" in between. So, if a transaction is querying a row twice, but between the reads, there is another transaction updating the same row, the reads will give different results.
+			
+		3. Phantom read — 
+		-----------------
+			In a similar situation as above, if one transaction does two reads of the same query, but another transaction "inserts or deletes" new rows leading to a change in the number of rows retrieved by the first transaction in its second read, it’s called a Phantom read. This is similar to a non-repeatable read. The only difference is that while in a non-repeatable read, there will be inconsistency in the values of a row, in phantom reads, the number of rows retrieved by the queries will be different.	
+			
+		
+	How do databases deal with this?
+	--------------------------------
+		They implement "levels of isolation" to avoid such problems.
+
+		The solution to this is having different "levels of isolation". Let’s discuss the most common ones. These are mentioned in increasing order of isolation levels.
+
+		Levels of Isolation:
+		--------------------
+			1. Read uncommitted — 
+			---------------------
+				This level of isolation lets other transactions read data that was not committed to the database by other transactions. There is no isolation happening here. So, if transaction 1 performs an update and before it’s able to commit, if transaction 2 tries to access the updated data, it will see the new data. This does not solve any issues mentioned above.
+		
+			2. Read committed — 	(resolve dirty read issue)
+			-------------------
+				This, as the name suggests, lets other transactions only read data that is committed to the database. While this looks like an ideal level of isolation, it only solves the dirty read problem mentioned above. If a transaction is updating a row, and another transaction tries to access it, it won’t be able to. But this can still cause non-repeatable and phantom reads because this applies only to updates and not read queries.
+	
+			3. Repeatable read — 	(resolve non-repeatable issue)	(default isolation level) (higher level of isolation)
+			--------------------
+				To counter the transactions from getting inconsistent data, we need a higher level of isolation and that is offered by repeatable read. In this, the resource is locked throughout the transaction. So, if the transaction contains two select queries and in between, if another transaction tries to update the same rows, it would be blocked from doing so. This isolation level is not immune to phantom reads though it helps against non-repeatable reads. This is the default level of isolation in many databases.
+				
+			4. Serializable — 	(resolve phantom read issue) (highest level of isolation)
+			-----------------
+				This is the highest level of isolation. In this, all concurrent transactions “appear” to be executed serially. Pay attention to how I said it appears to be. That’s because it’s not truly serially or sequentially executed. This level works against phantom reads as well.	
+
+				
+				
+		How to use @Transactional with Spring Boot or Spring MVC:
+		---------------------------------------------------------
+			So far, we have only talked about plain, core Spring. But what about Spring Boot? Or Spring Web MVC? Do they handle transactions any differently?
+
+			The short answer is: No.
+
+			With either frameworks (or rather: all frameworks in the Spring ecosystem), you will always use the @Transactional annotation, combined with a transaction manager and the @EnableTransactionManagement annotation. There is no other way.
+
+			The only difference with Spring Boot is, however, that it automatically sets the @EnableTransactionManagement annotation and creates a PlatformTransactionManager for you - with its JDBC auto-configurations.		
+			
+			
+		How Spring and JPA / Hibernate Transaction Management works:
+		------------------------------------------------------------
+			At some point, you will want your Spring application to integrate with another database library, such as Hibernate (a popular JPA-implementation).
+			
+			Rewriting the UserService from before to Hibernate would look like this:
+				
+				public class UserService {
+
+					@Autowired
+					private SessionFactory sessionFactory; // (1)
+
+					public void registerUser(User user) {
+
+						Session session = sessionFactory.openSession(); // (2)
+
+						// lets open up a transaction. remember setAutocommit(false)!
+						session.beginTransaction();
+
+						// save == insert our objects
+						session.save(user);
+
+						// and commit it
+						session.getTransaction().commit();
+
+						// close the session == our jdbc connection
+						session.close();
+					}
+				}
+				
+			1. This is a plain, old Hibernate SessionFactory, the entry-point for all Hibernate queries.
+			2. Manually managing sessions (read: database connections) and transactions with Hibernate’s API.	
+			
+			There is one huge problem with the above code, however:
+				Hibernate would not know about Spring’s @Transactional annotation.
+				Spring’s @Transactional would not know anything about Hibernate’s transaction.
+				
+			But we’d actually love for Spring and Hibernate to integrate seamlessly, meaning that they know about each others' transactions.
+				@Service
+				public class UserService {
+
+					@Autowired
+					private SessionFactory sessionFactory; // (1)
+
+					@Transactional
+					public void registerUser(User user) {
+						sessionFactory.getCurrentSession().save(user); // (2)
+					}
+				}
+				
+			1. The same SessionFactory as before.
+			2. But no more manual state management. Instead, getCurrentSession() and @Transactional are in sync.	
+			
+			How to get there?
+			----------------
+				Using the HibernateTransactionManager
+				
+				There is a very simple fix for this integration problem:
+					Instead of using a DataSourcePlatformTransactionManager in your Spring configuration, you will be using a HibernateTransactionManager (if using plain Hibernate) or JpaTransactionManager (if using Hibernate through JPA).
+					
+				The specialized HibernateTransactionManager will make sure to:
+					Manage transactions through Hibernate, i.e. the SessionFactory.
+					Be smart enough to allow Spring to use that very same transaction in non-Hibernate, i.e. @Transactional Spring code.	
+				
+				
+@Transactional(readOnly = true):
+---------------------------------
+	Using transactions for read-only operations can help optimize performance and ensure data consistency. 
+	In a Spring application, we can annotate service layer methods with @Transactional(readOnly = true) to indicate that the method is read-only. 
+	This hints to the underlying persistence framework (e.g., Hibernate) to optimize the transaction by avoiding unnecessary locks and flushing operations.		
+	@Transactional(readOnly = true) is a default implementation of JpaRepository, has @Transactional(readOnly = true) on the top of class, so findAll() method has @Transactional(readOnly = true) by default).	
+	
+	Key Points:
+	-----------
+	Transactional Read-Only: 
+		By annotating the method with @Transactional(readOnly = true), the transaction is optimized for read operations.
+
+	Consistency: 
+		Ensures that data remains consistent during the transaction, even if other operations are modifying the data concurrently.
+	
+	Performance: 
+		Read-only transactions can improve performance by minimizing the overhead of transaction management.
+		
+	performance improvement: 
+		read-only entities are not dirty-checked
+	
+	memory saving: 
+		snapshots of persistent state are not maintained
+	
+	data consistency: 
+		the changes of read-only entities are not persisted
+	
+	database load: 
+		when we use master-slave , or read-write replica set(or cluster), @Transactional(readOnly = true) makes us enable to connect to read-only db	
+		
+		
+	Note:
+		If you don't explicitly set readOnly to true, you will have read/write transactions. 
+		
+		If a method in a read/write transaction calls a method that requires a readOnly transaction, the first one should be suspended, because otherwise a flush/commit would happen at the end of the second method.
+		
+		Conversely, if you call a method from within a readOnly transaction that requires read/write, again, the first one will be suspended, since it cannot be flushed/committed, and the second method needs that.
+		
+		In the readOnly-to-readOnly, and the read/write-to-read/write cases the outer transaction doesn't need to be suspended.
+		
+		
+	Should we always add @Transactional(readOnly = true) to the read-only method of Service layer when we use JPA? Is there any trade-off?
+	---------------
+		1. Unrestrained use of transactions might leads to database dead lock, worsen performance and throughput.
+		
+		2. Since one transaction occupies one DB connection, adding @Transactional(readOnly = true) to the method of Service layer might leads to DB connection starvation.
+		
+			The first issue is hard to reproduce, so I made some test to check the 2nd issue:
+		
+			I tested two methods: 
+				one is @Transactional(readOnly = true) in the method of service layer, and 
+				the other one is @Transactional(readOnly = true) in the repository layer.
+				
+				As you can see, @Transactional(readOnly = true) in the repository layer releases the connection as soon as query results are arrived.
+
+				However, @Transactional(readOnly = true) in the method of service layer does not release the connection until the end of method of service layer.
+
+				So, be careful when the method of service layer has logic that takes lots of time, since it can hold the db connection for a long time, which can cause db connection starvation.
+		
+		
+		
+@Transactional(timeout = 30):
+-----------------------------
+
+	@Transactional(timeout = 30) // Timeout set to 30 seconds
+	public void someTransactionalMethod() {
+		// Transactional operations
+	}		
+
+	In this example, if the someTransactionalMethod takes longer than 30 seconds to complete, the transaction will be automatically rolled back. 
+
+	Common Scenarios and Solutions:
+	-------------------------------
+	UPI Transactions:
+		UPI (Unified Payments Interface) transactions have a processing window, and if they don't complete within the specified time (often around 30 seconds), they time out. 
+	
+	Distributed Transactions:
+		When dealing with distributed transactions (across multiple databases or systems), timeouts become even more critical to prevent issues like network latency or resource contention from causing indefinite delays. 
+	
+	Microservices:
+		In microservices architectures, transaction management often involves coordinating multiple services, and timeouts are essential for ensuring that if one service is slow or unavailable, the overall transaction doesn't get stuck. 	
+
+	
+		
+-> Dao Layer 
+	-> Transactional Abstraction 
+		-> JPA Abstraction
+			-> ORM Framework
+				-> JDBC Driver
+					-> RDBMS
+					
+					
+
+Diff b/w Session management and Transaction management:
+-------------------------------------------------------
+	Session: 		You walk into the bank and interact with the teller.
+	Transaction: 	Each deposit or withdrawal you make during that visit.
+
+	Session is about "user continuity"—		keeping track of who the user is and what they’re doing.
+	Transaction is about "data integrity"—	making sure operations are completed correctly or not at all.
+
+	Real-World Example:
+	-------------------
+		Imagine a user placing an order:
+			Session keeps the user logged in and remembers their cart.
+			Transaction ensures the order is placed, payment is processed, and inventory is updated—all or nothing.
+
+	
+	
+Session: UI vs Backend:
+-----------------------
+	Aspect 		UI (Frontend) 										Backend
+	------		-------------										-------
+	Purpose 	Maintains user state across pages or interactions 	Manages user context and persistence across requests 
+	Examples 	Logged-in user info, shopping cart, theme settings 	Auth tokens, user ID, preferences, cache
+	Storage 	Browser cookies, localStorage, sessionStorage 		Server memory, Redis, database
+	Lifecycle 	Starts when user visits site, ends on logout/close 	Starts on login or request, ends on timeout/logout
+	Security 	Vulnerable to XSS, CSRF if not protected 			Secured via tokens, session IDs, HTTPS
+
+
+Transaction: UI vs Backend:
+---------------------------
+	Aspect 			UI (Frontend) 										Backend
+	------			-------------										-------
+	Purpose 		Rarely used directly; may show progress or status 	Ensures atomic operations on data (e.g. DB updates)
+	Examples 		“Processing payment…” message, spinner animation 	Bank transfer, order placement, inventory update
+	Control 		UI triggers transaction via API call 				Backend handles begin, commit, rollback
+	Error Handling 	Shows error message or retry option 				Rolls back changes if failure occurs					

@@ -1,0 +1,140 @@
+https://www.javaguides.net/2024/11/gradle-commands-cheat-sheet.html
+https://docs.gradle.org/current/userguide/command_line_interface.html
+
+Gradle:
+-------
+	Gradle is a popular build automation tool. 
+	As a build automation tool, it automates the source code compilation and dependency management, assembles binary codes into packages, and executes test scripts.
+	It translates and packages your source code so that it becomes an executable application.
+	It manages project builds, dependencies, and other tasks through a Groovy or Kotlin DSL.
+	
+	gradle init:					Initializes a new Gradle project.
+	gradle build:					Compiles, tests, and assembles the project.
+	gradle clean					Deletes the build directory.
+	gradle test:					Runs the unit tests.
+	gradle build -xtest				build the project without executing the test cases.
+	gradle publish:					Publishes all publications produced by this project to the specified repository.	
+	gradle help:					Displays help information about available tasks and options.
+	gradle projects:				Displays the sub-projects of the project.
+	gradle properties:				Displays the properties of the project.
+	gradle dependencies:			Displays the dependencies of the project.
+	gradle --refresh-dependencies:	Refreshes the dependency cache, forcing a check for updated dependencies.
+
+	gradle assemble:				Assembles the outputs of the project without running tests.
+	gradle check:					Runs all checks, including tests.
+	gradle buildDependents:			Assembles and tests this project and all projects that depend on it.
+	gradle dependencyInsight:		Provides insight into a specific dependency in the project.
+	gradle tasks:					Displays the tasks available in the project.
+	gradle wrapper:					Generates Gradle wrapper files.
+	gradle jar:						Assembles a JAR archive containing the main classes.
+	gradle war:						Assembles a WAR archive containing the web application.
+	gradle bootRun:					Runs a Spring Boot application.
+	gradle bootJar:					Assembles an executable JAR archive for a Spring Boot application.
+	gradle bootWar:					Assembles an executable WAR archive for a Spring Boot application.
+	gradle uploadArchives:			Uploads the project's artifacts to the specified repository.
+	gradle eclipse:					Generates Eclipse project files.
+	gradle idea:					Generates IntelliJ IDEA project files.
+	gradle --stop:					Stops the Gradle Daemon if it is running.
+	gradle --status:				Displays the status of the Gradle Daemon.
+	
+
+Basic Maven Commands:
+---------------------
+	mvn clean: 		Clears the target directory, removing previously compiled code and artifacts. 
+	mvn compile: 	Compiles the project's source code. 
+	mvn test: 		Runs the unit tests of the project. 
+	mvn package: 	Packages the compiled code into a distributable format, such as a JAR or WAR file. 
+	mvn install: 	Installs the package into the 'local Maven repository', making it available as a dependency in other 
+					projects.
+	mvn deploy: 	Deploys the package to a 'remote repository', for sharing with other developers. 
+	mvn help:effective-pom: Displays the effective POM of the project, including inherited properties. 
+	mvn dependency:tree: 	Shows the project's dependency tree, including transitive dependencies. 
+	mvn archetype:generate: Generates a new Maven project based on a template (archetype). 	
+	
+	
+	build.gradle File:
+	-----------------
+		plugins {
+			id 'java'
+			id 'application'
+		}
+
+		group = 'com.example'
+		version = '1.0-SNAPSHOT'
+
+		sourceCompatibility = '11'
+
+		repositories {
+			mavenCentral()
+		}
+
+		dependencies {
+			testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+			testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+		}
+
+		test {
+			useJUnitPlatform()
+		}
+
+		application {
+			mainClassName = 'com.example.App'
+		}			
+		
+		
+	settings.gradle File:
+	---------------------
+		rootProject.name = 'my-sample-project'	
+		
+		
+	
+	Project Structure:
+	------------------
+	
+		my-sample-project
+		│		
+		├── build.gradle
+		├── settings.gradle
+		├── src
+		│   ├── main
+		│   │   ├── java
+		│   │   │   └── com
+		│   │   │       └── example
+		│   │   │           └── App.java
+		│   │   └── resources
+		│	│
+		│   └── test
+		│       ├── java
+		│       │   └── com
+		│       │       └── example
+		│       │           └── AppTest.java
+		│       └── resources
+		│
+		└── gradle
+			└── wrapper
+				└── gradle-wrapper.properties
+				
+				
+	
+	After running these commands, your project directory will have the following additional content:
+		
+		my-sample-project
+		│
+		├── build
+		│   ├── classes
+		│   ├── distributions
+		│   ├── libs (jar)
+		│   ├── reports
+		│   ├── scripts
+		│   └── tmp
+		├── gradlew
+		├── gradlew.bat
+		└── gradle
+			└── wrapper
+				└── gradle-wrapper.properties
+				└── gradle-wrapper.jar
+				
+				
+
+	
+		

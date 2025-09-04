@@ -1,0 +1,76 @@
+https://www.geeksforgeeks.org/system-design/backend-for-frontend-pattern/
+
+Backend for Frontend (BFF):
+---------------------------
+	The Backend for Frontend (BFF) Pattern is an architectural design approach where separate backend services are created specifically for different frontend applications, such as web, mobile, or other clients.
+	Instead of a single backend trying to accommodate all types of clients, BFF allows each client to have a custom backend that caters to its specific needs. 
+	
+	By using a BFF, you can: 
+		optimize performance, 
+		simplify frontend logic, and 
+		improve the overall user experience. 	
+	
+	Example:
+	--------
+		Imagine an e-commerce application with a web frontend and a mobile app. 
+		The web app might display a lot of product information, including detailed descriptions and high-resolution images. 
+		The mobile app, however, might need a smaller, more concise view of the product with optimized images for faster loading. 
+		Using a BFF, you could create a separate backend for each frontend, allowing them to receive only the data they need in the format that is most appropriate for their platform. 
+		
+		Amazon has numerous frontends: 
+			web browsers, mobile apps, Kindle devices, and voice assistants like Alexa. 
+			Each client type has different user interaction patterns, and Amazon uses the BFF pattern to provide customized backends that handle the distinct needs of each client efficiently, improving both performance and user satisfaction.
+			
+		
+How the BFF Pattern Works?
+--------------------------		
+	1. Separate Frontend Applications: 
+		Different types of clients (e.g., web, mobile, IoT) each require specific data and functionality to work efficiently.	
+		
+	2. Custom Backend Creation: 
+		For each client, a separate backend is created. 
+		Each BFF acts as a mediator between the client and the core services, consolidating or transforming data tailored to that client’s needs.	
+		The BFF should communicate with existing microservices or monolithic backends to fetch, transform, and combine data. Ensure that your core services remain client-agnostic, while "BFF handles frontend-specific needs".
+		
+	3. API Requests: 
+		The frontend sends API requests to its dedicated BFF, rather than a shared monolithic backend.	
+		
+	4. Data Aggregation and Transformation: 
+		The BFF gathers data from multiple internal or third-party services, formats it as needed, and sends back optimized responses to the frontend.
+
+	5. Optimized Client Responses: 
+		Each BFF delivers only the relevant data in a format suited for the specific client (e.g., JSON for web, reduced data payload for mobile).		
+		
+	6. Frontend-Specific Logic Handling: 
+		Business logic or transformations that would otherwise be handled by the frontend are managed within the BFF, reducing client complexity.	
+		
+		
+When to Use the Backend for Frontend Pattern Pattern?
+-----------------------------------------------------
+	Diverse Client Requirements: 
+		When your application has multiple types of frontends (e.g., web, mobile, smart devices) with distinct data, performance, or interaction needs. Each client can have a customized backend to cater to its specific requirements.
+
+	Security and Authorization: 
+		When different clients require varying levels of data access or security, BFFs can enforce client-specific authentication, data filtering, and permission rules, ensuring appropriate access control.	
+		
+		
+When not to use the Backend for Frontend Pattern Pattern?
+---------------------------------------------------------
+	Simple Applications: 
+		If your application has only one type of frontend (e.g., only a web app) or minimal differences between frontends, creating multiple backends adds unnecessary complexity.		
+		
+	Microservices Already Handle Customization: 
+		If your application follows a microservices architecture with services already designed to meet the specific needs of different frontends, the BFF pattern may be unnecessary.	
+		
+		
+Challenges with the Backend for Frontend Pattern:
+-------------------------------------------------
+	Increased Complexity
+	Higher Maintenance Costs
+	Duplication of Logic
+	Versioning and Dependency Management
+	Scalability and Performance
+	Latency and Overhead
+	Communication Complexity
+	
+		

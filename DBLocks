@@ -1,0 +1,333 @@
+https://medium.com/inspiredbrilliance/what-are-database-locks-1aff9117c290
+
+Locking:
+--------
+	Locking Prevents data from being overwritten when multiple users concurrently access and modify it.
+	
+ways of Locking:
+---------------		
+	Optimistic locking		(all transactions can execute concurretly, no waiting time)
+	Pessimistic locking		(other transaction has to wait)
+
+For Optimistic Locking:
+----------------------
+	1. @Version
+	2. LockModeType.OPTIMISTIC
+	
+	entityManager.find(Student.class, studentId, LockModeType.OPTIMISTIC);	
+
+	Optimistic Lock Mode:
+	--------------------
+		We could use two different optimistic lock modes:
+			OPTIMISTIC : 					lock for entities that contain a version attribute.
+			OPTIMISTIC_FORCE_INCREMENT : 	automatically increments the version attribute.	
+
+	Normally when you look into optimistic locking you also use a library like Hibernate or an other JPA-Implementation with @Version support.
+	Hibernate checks the version field. If the version in the database is higher than the version of the entity being updated, it indicates that another transaction has already updated the record, leading to a OptimisticLockException.	
+	We should be aware that due to the exception the active transaction is always marked for rollback.
+
+	
+
+For Pessimistic Locking:
+-----------------------
+	We could use the @Lock annotation.
+		@Repository
+		public interface ItemRepository extends CrudRepository<Item, Long> {
+			
+			@Lock(LockModeType.PESSIMISTIC_READ)
+			@Query("Select cound(*) from item i")
+			long getItemCount();
+		}
+		
+		OR
+		
+		entityManager.find(Item.class, id, LockModeType.PESSIMISTIC_WRITE);
+
+		
+	Pessimistic Lock Modes:
+	----------------------	
+		Same as optimistic locking, JPA defines pessimistic lock modes in the LockModeType class:
+			PESSIMISTIC_READ : 				prevents data from being modified.
+			PESSIMISTIC_WRITE : 			prevents other transactions from reading or modifying the data.
+			PERRIMISTIC_FORCE_INCREMENT : 	uses the version attribute.		
+	
+	
+Preferred Optimistic Locking over Pessimistic Locking:
+------------------------------------------------------
+	In a transaction with multiple steps, having a pessimistic lock may not be a good idea since if the transaction locking the rows fails in between, the time that it spent has gone to waste. While in such scenarios if you have optimistic locking, other processes might be able to complete their transactions.	
+	
+
+
+
+========================================START===============================================================================	
+Locking:
+--------
+	Locking Prevents data from being overwritten when multiple users concurrently access and modify it.
+
+	There are various techniques for concurrency control. And one of them is using locks.
+	
+	when operations are executed concurrently, how do we make sure that the results are consistent?: Locking.
+	
+	All you have to know is that locks are a mechanism to ensure data integrity. 
+
+
+
+Locking in Databases:
+--------------------
+	In a large application accessed by thousands of users, concurrency is inevitable. 
+	Your application should be able to "handle multiple requests simultaneously".
+	
+	When you execute operations concurrently, the results can be conflicting. 
+	For e.g. 
+		if you are reading a row while someone else is writing to it simultaneously, then you are bound to get inconsistent data.
+	
+	If we execute these transactions sequentially, then we don’t need concurrency control. But sequential execution affects scaling of systems. Hence, we cannot avoid concurrent transactions.
+	
+	But when operations are executed concurrently, how do we make sure that the results are consistent?
+	
+	There are various techniques for concurrency control. And one of them is using locks.
+	
+	So what are locks exactly? 
+	--------------------------
+		All you have to know is that locks are a mechanism to ensure data integrity. 
+		
+	So, how do they work? 
+	---------------------
+		Locks work by letting only one transaction modify or access a certain row or table. This makes it look like the transactions are executed one after the other and hence maintaining data integrity.	
+	
+	Different types of locks:
+	-------------------------
+		There are majorly 2 types of locks; 
+			exclusive locks and 
+			shared locks.
+			
+	Shared locks or Read Lock:
+	---------------------------
+		Let you read the row or the table that is being locked. Hence, it’s also called a read lock. 
+		Multiple transactions (you can think of each transaction as a separate process) can acquire a shared lock on the same resource and read from it. 
+		No transaction is allowed to update the resource while it has a shared lock.		
+		
+	Exclusive locks:
+	----------------
+		lock the row or table entirely and let the transaction update the row in isolation. Unlike shared locks, only one transaction can acquire an exclusive lock on a certain resource at one point in time. And while it acquires the lock on that resource, other processes that want to acquire the lock on the same resource will have to wait. Once the lock is released, the remaining processes can acquire it and make modifications.	
+		
+	Note:	
+		You should note that multiple shared locks can be acquired on a resource at one time. But if the resource already has a shared lock then another process cannot acquire an exclusive lock on it.
+
+		Similarly, a process cannot acquire a shared lock on a resource that is locked by an exclusive lock.
+
+
+	There are other types of locks that are modifications to the above. 
+	For e.g. write locks that let you read a resource while it has been updated.
+
+
+	Optimistic vs pessimistic locking:
+	----------------------------------
+		All the parallel processes that want to do database transactions will have to sequentially execute them in order to maintain data integrity. But that can slow things down quite a lot, especially when the transactions involve multiple steps or updates.
+		
+		So there are two ways of going ahead with it:
+		
+		optimistic locking:		(no need to wait)
+		------------------
+			1. One approach is to let the processes update the same records in parallel. Only when one process successfully commits its changes, the other process is told that there exists a conflict due to which the other process will have to attempt the transaction again.
+			This approach is named "optimistic locking". It’s letting everyone have a chance at updating the records.
+
+		pessimistic locking:	(waiting)
+		--------------------	
+			2. Another approach is to lock the row as soon as one process attempts to modify it (or delete it) and ask the other processes to wait before doing anything.
+			This approach is called "pessimistic locking" wherein the first one to attempt gets the chance to update the record.
+
+		
+		Preferred Optimistic Locking over Pessimistic Locking:
+		------------------------------------------------------
+			Remember that a transaction can have a single step where it updates a row, or it can have multiple steps where it fetches a column from a row, queries another table, deletes a couple of rows, etc. 
+			
+			In a transaction with multiple steps, having a pessimistic lock may not be a good idea since if the transaction locking the rows fails in between, the time that it spent has gone to waste. While in such scenarios if you have optimistic locking, other processes might be able to complete their transactions.
+
+
+	Problems associated with locks:
+	-------------------------------
+	Fail to Release Lock:
+	---------------------
+		Locks can cause tricky issues at times. What if the process that acquired the lock fails to release it, locking the entity from being accessed by other processes? It often happens that transactions go idle. If you haven’t set a timeout for transactions, they may acquire a lock and not release it.
+		
+	Lock Contentions:
+	-----------------
+		Imagine single checkout counters in stores where everyone has to wait for their turn!
+		
+		Another issue is with lock contentions. There might be resources in your database that are accessed a lot. A number of transactions might try to acquire locks on these resources. As subsequent transactions have to wait for others to finish, there might be a delay in executing these transactions. This leads to the contention of these resources or locks.
+		
+	Deadlock in acquiring Lock:
+	---------------------------
+		Another issue that usually occurs with locks is a deadlock situation. In this scenario, 
+		one transaction acquires a lock on a resource (resource A) and tries to access the lock on another resource (resource B) before releasing the lock on the first resource. 
+		At the same time, another resource acquires the lock on resource B while aiming to acquire the lock on resource A. 
+		
+		Now both the processes are not complete without acquiring these locks.
+		
+		But since resource B is locked by the second process, the first process cannot capture a lock on it. Similarly, 
+		since the first process has acquired a lock on resource A, the second process cannot acquire a lock on it. These two processes keep fighting for each other’s locks leading to a deadlock situation.
+
+		Let’s look at another issue associated with locks.
+
+		Row-level locks are the most common and safest form of locking. But as locks are maintained in the memory of the database, storing them comes with a cost. If there are too many locks on row-level and your database is running out of memory, it might escalate the lock to table-level to free up some memory. This can have implications you may not have anticipated!		
+		
+		
+Optimistic Locking | Pessimistic Locking:
+------------------------------------------
+	
+	For Optimistic Locking:
+	-----------------------
+	1. @Version
+	2. LockModeType.OPTIMISTIC
+	
+	Way-1)
+		We need to have an entity including a property with "@Version" annotation, as below:	
+
+		@Entity
+			public class Student {
+
+				@Id
+				private Long id;
+
+				private String name;
+				private String lastName;
+				
+				@Version
+				private Integer version;
+
+				// getters and setters
+			}
+			
+		We should remember that for versioned entities optimistic locking is available by default. 
+		
+	Way-2)	
+		But there are several ways of requesting it explicitly.	To request optimistic locking, we can pass the proper LockModeType as an argument to find method of EntityManager:
+			
+			entityManager.find(Student.class, studentId, LockModeType.OPTIMISTIC);	
+			
+			
+	Normally when you look into optimistic locking you also use a library like Hibernate or an other JPA-Implementation with @Version support.	
+	
+	It is important to note we should never update the version attribute by ourselves. Otherwise, we could end up with inconsistent data.
+	
+	This version field is crucial for optimistic locking, as Hibernate uses it to track changes to the entity.
+	
+	Hibernate checks the version field. If the version in the database is higher than the version of the entity being updated, it indicates that another transaction has already updated the record, leading to a OptimisticLockException.
+	
+	We should be aware that due to the exception the active transaction is always marked for rollback.
+	
+	Optimistic Locking will just prevent processes from accidentally overwriting changes by another process.
+	
+	Optimistic Locking actually is no real DB-Lock. It just works by comparing the value of the version column. You don't prevent other processes from accessing any data, so expect that you get OptimisticLockExceptions.
+		
+		
+	Optimistic Lock Mode:
+	---------------------
+	We could use two different optimistic lock modes:
+
+		OPTIMISTIC : 					lock for entities that contain a version attribute.
+		OPTIMISTIC_FORCE_INCREMENT : 	automatically increments the version attribute.		
+
+
+	It is important to note, we should never update the version attribute by ourselves. Otherwise, we could end up with inconsistent data.
+
+	So no collision:
+	----------------
+		1. Process A reads Person
+		2. Process A writes Person thereby incrementing version
+		3. Process B reads Person
+		4. Process B writes Person thereby incrementing version
+		
+
+	Collision:
+	----------
+		1. Process A reads Person
+		2. Process B reads Person
+		3. Process A writes Person thereby incrementing version
+		4. Process B receives an exception when trying to save as the version changed since Person was read
+
+	
+	What isn't Optimistic Locking?:
+	-------------------------------
+		Optimistic Locking is no magic to merge conflicting changes. Optimistic Locking will just prevent processes from accidentally overwriting changes by another process.
+		Optimistic Locking actually is no real DB-Lock. It just works by comparing the value of the version column. You don't prevent other processes from accessing any data, so expect that you get OptimisticLockExceptions.
+
+	There are several rules that we should follow while declaring version attributes:
+	---------------------------------------------------------------------------------
+		1. Each entity class must have only one version attribute.
+		2. It must be placed in the primary table for an entity mapped to several tables.
+		3. Type of a version attribute must be one of the following: int, Integer, long, Long, short, Short, Timestamp.
+
+	Conclusion:
+	-----------
+		Optimistic locking uses version attributes included in entities to control concurrent modifications on them.
+		
+		Therefore, it ensures that any updates or deletes won’t be overwritten or lost silently. Opposite to pessimistic locking, it doesn’t lock entities on the database level, and consequently, it isn’t vulnerable to DB deadlocks.
+
+
+
+For Pessimistic Locking:
+------------------------
+	We could use the @Lock annotation, as below:
+
+		@Repository
+		public interface ItemRepository extends CrudRepository<Item, Long> {
+			
+			@Lock(LockModeType.PESSIMISTIC_READ)
+			@Query("Select cound(*) from item i")
+			long getItemCount();
+		}
+		
+	Optimistic locking allows conflict to happen.
+	
+	Pessimistic locking, on the other hand, doesn’t allow conflict to happen. It avoids conflicts using locking. It requests a lock on a record before performing any modification on it. This way, we are sure the record will not be modified by some other transaction.	
+	the pessimistic locking mechanism involves locking entities on the database level.
+	Each transaction can acquire a lock on data. As long as it holds the lock, no transaction can read, delete or make any updates on the locked data.
+			
+		
+	Pessimistic Lock Modes:
+	-----------------------
+	Same as optimistic locking, JPA defines pessimistic lock modes in the LockModeType class:
+		PESSIMISTIC_READ : 				prevents data from being modified.
+		PESSIMISTIC_WRITE : 			prevents other transactions from reading or modifying the data.
+		PERRIMISTIC_FORCE_INCREMENT : 	uses the version attribute.
+		
+
+	We could use pessimistic locking in situations where two or more transactions would like to access the same record at the same time.
+	
+	
+	1)	
+	If we’re using the JPA repository, we could use the @Lock annotation:
+		@Repository
+		public interface ItemRepository extends CrudRepository<Item, Long> {
+			
+			@Lock(LockModeType.PESSIMISTIC_READ)
+			@Query("Select cound(*) from item i")
+			long getItemCount();
+		}
+	
+	2)
+	we can use the LockModeType as an argument:
+	
+		public Item findBy(Long id) {
+			retrun entityManager.find(Item.class, id, LockModeType.PESSIMISTIC_WRITE);
+		}
+		
+	3)
+	Additionally, pessimistic locking can be enabled using the lock() method on EntityManager:
+		
+		public Item findBy(Long id) {
+			Item item = entityManager.find(Item.class, id);
+			entityManager.lock(item, LockModeType.PESSIMISTIC_READ);
+		}
+	
+	
+	Conclusion:
+	-----------
+		Both, pessimistic and optimistic locking, are useful mechanisms.
+		
+		To sum up, we could use optimistic locking when we have multiple transactions since it doesn’t lock records. Pessimistic locking, on the other hand, can come in handy when implementing the retrying mechanisms would be too expensive.
+		
+		
+		

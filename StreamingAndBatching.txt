@@ -1,0 +1,138 @@
+Diff b/w streaming and batching:
+--------------------------------
+
+	Analogy:
+	--------
+		Batching: 	Like doing laundry once a week, you wait until there’s enough to process.
+		Streaming: 	Like washing each item as soon as it gets dirty instant but resource-intensive.
+
+
+	Batching:
+	---------
+		Definition: Processes large volumes of data at scheduled intervals.
+		Data Flow: 	Data is collected, stored, and processed in chunks.
+		Latency: 	Higher latency—results are available after processing completes.
+		
+		Use Cases:
+			Payroll systems
+			Monthly reports
+			ETL jobs
+		
+		Pros:
+			Efficient for large datasets
+			Easier to debug and audit
+			Lower infrastructure cost
+		
+		Cons:
+			Delayed insights
+			Not suitable for real-time needs
+
+
+	Streaming:
+	----------
+		Definition: Processes data in real time as it arrives.
+		Data Flow: 	Continuous flow—each event is processed immediately.
+		Latency: 	Low latency—results are available within milliseconds or seconds.
+		
+		Use Cases:
+			Fraud detection
+			IoT sensor data
+			Live dashboards
+		
+		Pros:
+			Real-time insights
+			Ideal for time-sensitive decisions
+			Scales with data velocity
+		
+		Cons:
+			More complex to implement
+			Higher infrastructure demands
+
+
+What are the implementation ways of batching and streaming ?
+------------------------------------------------------------
+	To implement batching and streaming, you’ll need to choose the right tools, architectures, and strategies based on your data needs. Here’s a practical breakdown of how each is typically implemented:
+
+	Batching Implementation:
+	------------------------
+		Batch processing handles large volumes of data at scheduled intervals. It’s ideal for tasks like reporting, ETL jobs, and data warehousing.
+	
+		Tools & Frameworks:
+		--------------------
+			Apache Spark: 		Distributed processing for large-scale batch jobs.
+			Hadoop MapReduce: 	Classic batch processing for big data.
+			Apache Airflow: 	Workflow orchestration for scheduled jobs.
+			AWS Glue / Azure Data Factory: Cloud-native ETL pipelines.
+		
+		Architecture:
+		-------------
+			Data is collected and stored (e.g., in S3, HDFS, or a database).
+			Jobs are triggered on a schedule (e.g., nightly or hourly).
+			Processing happens in bulk, often using parallel computation.
+
+		Use Cases:
+		----------
+			Monthly billing reports
+			Historical data analysis
+			Data migration
+
+
+	Streaming Implementation:
+	-------------------------
+		Streaming processes data in real time as it arrives. It’s perfect for time-sensitive applications like fraud detection or live analytics.
+	
+		Tools & Frameworks:
+		-------------------
+			Apache Kafka: Message broker for real-time data ingestion.
+			Apache Flink / Spark Streaming: Real-time data processing engines.
+			Amazon Kinesis / Azure Event Hubs: Cloud-native streaming platforms.
+			Apache NiFi: Visual flow-based stream processor.
+		
+		Architecture:
+		-------------
+			Producers send data to a stream (e.g., Kafka topic).
+			Consumers process data continuously using stream processors.
+			State management and windowing handle time-based aggregations.
+
+		Use Cases:
+		----------
+			Real-time dashboards
+			IoT sensor data
+			Social media monitoring
+			Stock market feeds
+
+
+Can we use spring batch library for batch processing in place of Apache Spark ?
+--------------------------------------------------------------------------------
+	Yes, you can use Spring Batch instead of Apache Spark for batch processing—but it depends heavily on your use case. Here's a breakdown to help you decide:
+	
+	When Spring Batch Is a Good Fit:
+	--------------------------------
+		Enterprise workloads: Ideal for traditional batch jobs like payroll, billing, or data migration.		
+		Example: Processing 2 million rows from a database and exporting to JSON—Spring Batch handles this well.
+
+
+	When Apache Spark Is Better:
+	----------------------------
+		Big data workloads: Designed for distributed processing across clusters.		
+		Example: Aggregating logs from millions of IoT devices in real time—Spark is built for this.
+
+	
+	Can They Work Together?:
+	------------------------
+		Yes, You can use Spring Batch to orchestrate Spark jobs:
+			Spring Batch handles job scheduling, retries, and monitoring.
+			Spark performs the heavy lifting for data transformation and analytics.
+
+	Summary:
+	--------
+		Criteria 			Spring Batch 				Apache Spark
+		--------			------------				------------
+		Data Volume 		Moderate 					Massive
+		Architecture 		Single JVM 					Distributed Cluster
+		Use Case 			ETL, reporting, migration 	Big data, ML, stream processing
+		Learning Curve 		Easier for Spring devs 		Steeper, requires ecosystem knowledge
+		Real-Time Support 	No 							Yes
+
+
+	If you're working within the Spring ecosystem and don’t need distributed computing, Spring Batch is a great choice. But if you're dealing with big data or real-time analytics, Spark is the better tool.
