@@ -1,0 +1,142 @@
+https://springhow.com/spring-async/
+
+Spring @Async to increase performance in 3 steps:
+-------------------------------------------------
+	
+	Spring Boot @Async annotation and use it to achieve Async (asynchronous) method execution in Spring Boot.
+	
+	Introduction to @Async annotation:
+	----------------------------------
+		Normally, A program would run from top to bottom. But sometimes, one operation or method may take time and it would cause other methods to wait. In these cases, it makes sense to run few methods parallely when we can. This is also called asynchronous invocation or in short Async.
+	
+		For example, 
+			There may be an API that needs to wait for payment to complete. In this case, If the payment process takes time, The customer won’t get confirmation.
+			To handle this, we can initiate payment process in a separate thread and then provide an incomplete order details. If the payment fails, the order can still be retried later and marked as SUCCESS or FAIL.
+			
+		This is where Java shines with its multi threading capabilities. 
+		However, maintaining threads is pain to program. For this reason, Spring Boot provides @Async annotation.	
+		
+		
+	Enabling @Async support in Spring Boot:
+	---------------------------------------
+		To enable asynchronous processing, You need to add @EnableAsync to a Spring Boot main class. This async annotation is responsible for creating a thread pool executor for methods to run.
+		
+			@EnableAsync
+			@SpringBootApplication
+			public class HelloWorldSpringBootApplication {
+
+			   public static void main(String[] args) {
+				  SpringApplication.run(HelloWorldSpringBootApplication.class, args);
+			   }
+
+			}
+			
+		
+		With @Async in Spring Boot:
+		----------------------------
+			We are going to add the @Async annotation from spring boot to the long running method.
+
+				@Async
+				public void processSomethingForLong() {
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					return "Hello World Took " + (end - start) + " milliseconds ! and the current Thread is : "+Thread.currentThread().getName();
+				}
+				
+				With this one line change, The rest controller from the spring boot application should complete the API call quickly.
+				
+				
+		Async methods with Return Types:
+		--------------------------------
+			Previously, The async method only used a void return type. And in my opinion, that is the best way to write self sufficient asynchronous functions. 
+			
+			However, If you want to handle the results from an @Async function, you are in luck. Because Spring framework provides out of the box support for these situations using Future type. This is possible by wrapping the result inside of an AsyncResult class:
+			
+				@Async
+				public Future<String> longRunningProcessThatReturns() {
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					return new AsyncResult<>("I take 10 seconds to return on a Thread named : " + Thread.currentThread().getName());
+				}
+								
+								
+	Configuring Task Executor:
+	--------------------------
+		The @EnableAsync annotation creates a handly SimpleAsyncTaskExecutor by default. 
+		Unfortunately,This implementation has no practical upper limit for its thread pool size. This means that The Spring boot application may crash if there were too many @Async methods running at the same time. 
+		
+			To avoid this , we need to provide our own Executor. And let’s see how:
+			
+				Spring Boot auto-configuration looks for an AsyncConfigurer which could supply an Executor. By extending this interface, We can supply an implementation of AsyncUncaughtExceptionHandler that handles exceptions from Async tasks.
+				
+					@Component
+					public class HelloAsyncConfigurer implements AsyncConfigurer {
+
+						@Override
+						public Executor getAsyncExecutor() {
+							return Executors.newFixedThreadPool(50);
+						}
+
+						@Override
+						public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+							return (ex, method, params) -> {
+								System.out.println("Exception with message :" + ex.getMessage());
+								System.out.println("Method :" + method.toString());
+								System.out.println("Number of parameters :" + params.length);
+							};
+						}
+					}
+					
+					
+					If you don’t want to handle any exceptions, You are good with just defining a bean of type Executor. As long as there is only one Bean of this type, you are good to go.
+
+						@Bean
+						Executor executor() {
+							return Executors.newFixedThreadPool(100);
+						}
+						
+	
+	Multiple Async Executors in Spring Boot:
+	----------------------------------------
+		In some cases, few operations are important than others. 
+		
+		For example, 
+			You may need to process the payments and deliveries in different thread groups so that you can assign more threads to payment and less to deliveries. 
+			In this case, you need to map the executor beans using the @Async annotation.
+
+			For instance, 
+				let’s define two executor beans:
+					
+					@Bean("paymentExecutor")
+					Executor paymentExecutor() {
+						return Executors.newFixedThreadPool(100);
+					}
+					
+					@Bean("deliveryExecutor")
+					Executor deliveryExecutor() {
+						return Executors.newFixedThreadPool(10);
+					}
+					
+					
+					We can now map these to different service methods as shown below.
+
+					
+						@Async(value = "paymentExecutor")
+						public void doPayment(){
+							//perform payment
+						}
+						
+						@Async(value = "deliveryExecutor")
+						public void doDeliveryArrangements(){
+							//perform delivery arrangements
+						}
+						
+						
+						As you see, This approach lets you define worker processes depending on the type of requests you get.
+						

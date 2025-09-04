@@ -1,0 +1,818 @@
+https://www.geeksforgeeks.org/completablefuture-in-java/
+https://www.baeldung.com/java-completablefuture
+https://medium.com/javarevisited/java-completablefuture-c47ca8c885af
+https://www.callicoder.com/java-8-completablefuture-tutorial/
+https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html
+
+https://salithachathuranga94.medium.com/completablefuture-in-java-97b0b392657
+https://www.codeburps.com/post/completable-future-in-java
+
+
+Synchronous		= Sequential 	= Blocking
+
+Asynchronous	= Parallel 		= Non-Blocking
+
+
+Future				(future.get())
+CompletableFuture	(thenApply(), thenAccept(), thenRun())
+
+You use the Future when you want the executing thread to wait for async computation response.
+You use a CompleteableFuture when you want some action executed, with the result after completion, asynchronously from the executed thread. 
+
+Attaching "callback" to the CompletableFuture using: 
+---------------------------------------------------
+	thenApply(), 			(Function)
+	thenAccept(),			(Consumer)
+	thenRun()				(Runnable)
+			
+		Each of this kind of method has 3 versions. For ex:
+		--------------------------------------------------
+			thenApply(fn)						:executed in the same thread
+			thenApplyAsync(fn)					:executed in a different thread obtained from ForkJoinPool.commonPool()
+			thenApplyAsync(fn, executor);		:runs fn on given executor instead of ForkJoinPool executor.
+				
+			thenAccept(fn), 
+			thenAcceptAsync(fn), 
+			thenAcceptAsync(fn, executor);	
+				
+			thenRun(fn),
+			thenRunAsync(fn),
+			thenRunAsync(fn, executor),
+			
+
+Async Methods:
+-------------
+	runAsync:		do not return any result.		CompletableFuture<Void>				(Runnable)
+	supplyAsync:	will return result.				CompletableFuture<String>			(Supplier)
+
+	By default, CompletableFuture executes these tasks in a thread obtained from the global ForkJoinPool.commonPool().
+					 
+	But you can also create a Thread Pool and pass it to runAsync() and supplyAsync() methods to let them execute their tasks in a thread obtained from your thread pool.
+	
+			static CompletableFuture<Void>	runAsync(Runnable runnable)
+			static CompletableFuture<Void>	runAsync(Runnable runnable, Executor executor)
+			
+			static <U> CompletableFuture<U>	supplyAsync(Supplier<U> supplier)
+			static <U> CompletableFuture<U>	supplyAsync(Supplier<U> supplier, Executor executor)
+		
+		
+		Note:
+		-----
+			runAsync(Runnable runnable)							:thread obtained from the global ForkJoinPool.commonPool()
+			runAsync(Runnable runnable, Executor executor)		:thread obtained from the executor thread pool
+			
+			supplyAsync(Supplier<U> supplier)					::thread obtained from the global ForkJoinPool.commonPool()
+			supplyAsync(Supplier<U> supplier, Executor executor)::thread obtained from the executor thread pool
+	
+			
+Chain multiple asynchronous operations:
+---------------------------------------
+		thenCompose(), 
+		thenCombine(), and 
+		allOf()
+
+			
+Handling Exception in CompletableFuture:
+----------------------------------------
+		CompletableFuture provides methods like: 
+			"exceptionally" and 
+			"handle"
+		
+			
+You can also manually complete/cancel completableFuture tasks by explicitly calling methods: 
+--------------------------------------------------------------------------------------------
+	complete(), 
+	completeExceptionally(), or cancel().
+
+	You can use CompletableFuture.complete() method to manually complete a Future. All the clients waiting for this Future will get the specified result.
+	Subsequent calls to completableFuture.complete() will be ignored.
+							
+
+								Future 						vs 		CompletableFuture:
+----------------------------	--------------------------	--		--------------------------------------
+	Blocking vs non-blocking: 	(get()						Vs  	thenApply(), thenAccept(), thenRun())
+	Composition: 				(Difficult 					Vs 		thenCompose(), thenCombine(), and allOf())
+	Exception Handling:			(Need to Catch explicitly  	Vs 		exceptionally() and handle(). )
+	Completion: 				(No Way 					Vs 		complete(), completeExceptionally() or cancel())
+	
+
+	CompletableFuture is a class in "java.util.concurrent" package that implements the Future and CompletionStage Interface. 
+	It represents a future result of an asynchronous computation. 
+
+	Code Syntax:
+	------------
+		To create an instance of CompletableFuture, we can use the static method supplyAsync provided by CompletableFuture class which takes Supplier as an argument. 
+		
+		1)
+			CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+					return "Hello, world!";
+				});
+
+			future.thenAccept(result -> System.out.println(result));
+
+	
+		Here’s how you can create a thread pool and pass it to one of these methods -
+		----------------------------------------------------------------------------	
+		1)	
+			Executor executor = Executors.newFixedThreadPool(10);
+			
+			CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+				try {
+					TimeUnit.SECONDS.sleep(1);
+				} catch (InterruptedException e) {
+					throw new IllegalStateException(e);
+				}
+				return "Result of the asynchronous computation";
+			}, executor);
+
+
+		2)
+			ExecutorService threadPool = Executors.newFixedThreadPool(3);
+			
+			Runnable runnable = () -> {
+				//a long-running Job
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+				System.out.println(Thread.currentThread().getName() + " ... long running job completed !!!");
+			};
+
+			CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(runnable, threadPool);
+			
+			
+	Executor Vs CompletableFuture:
+	------------------------------
+		Functionality wise both are same, diff in terms of diff features they've provided.
+	
+
+	Executor (Future):
+	------------------
+			void execute(Runnable task)
+	<T> Future<T> submit(Callable<T> task)
+	
+	
+	CompletableFuture:
+	------------------
+		static CompletableFuture<Void>	runAsync(Runnable runnable)
+		static CompletableFuture<Void>	runAsync(Runnable runnable, Executor executor)
+			
+		static <U> CompletableFuture<U>	supplyAsync(Supplier<U> supplier)
+		static <U> CompletableFuture<U>	supplyAsync(Supplier<U> supplier, Executor executor)
+		
+		
+	Note:
+		Runnable interface does not throw an exception and does not return a value. 
+		Callable interface allows us to throw an exception and return a value.	
+
+	
+
+=====================================================START===============================================================
+
+Synchronous Vs Asynchronous Programming:
+----------------------------------------
+	In Synchronous programming, one task is executed at a time. After completion of that task, next task will be executed. So, it’s having blocking code.
+
+	But in Asynchronous programming, multiple tasks are executed at the same time simultaneously based on thread availability. Simply it’s non blocking code since we are not waiting one task to finish to start the next.
+
+	
+Future:
+-------	
+	The Future interface was added in Java 5 to serve as a result of an asynchronous computation, but it did not have any methods to combine these computations or handle possible errors.
+
+	Java 8 introduced the CompletableFuture class. Along with the Future interface, it also implemented the CompletionStage interface.
+	This(CompletionStage) interface defines the contract for an asynchronous computation step that we can combine with other steps.
+	It has many features along with combining result of diff asynchronous computations and also have error handling.
+
+
+CompletableFuture:			implements Future, CompletionStage
+------------------			----------------------------------
+	CompletableFuture provides a way to write asynchronous, non-blocking code. It was introduced as a Java 8 Concurrency API improvement.
+	
+	Asynchronous programming is a means of writing non-blocking code by running a task on a separate thread than the main application thread and notifying the main thread about its progress, completion or failure.
+	Having this kind of parallelism greatly improves the performance of your programs.
+	
+	CompletableFuture is a class in "java.util.concurrent" package that implements the Future and CompletionStage Interface. 
+	It represents a future result of an asynchronous computation. 
+	It can be thought of as a container that holds the result of an asynchronous operation that is being executed in a different thread. 
+	It provides a number of methods to perform various operations on the result of the async computation.
+	CompletableFuture can be used with any concurrency mechanism or API.
+	
+	
+	Creating a CompletableFuture:
+	-----------------------------
+		To create an instance of CompletableFuture, we can use the static method supplyAsync provided by CompletableFuture class which takes Supplier as an argument. 
+		Supplier is a Functional Interface that takes no value and returns a result.
+		
+		Here’s an example of how to use CompletableFuture in Java:
+		
+		1)
+			CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+					return "Hello, world!";
+				});
+
+			future.thenAccept(result -> System.out.println(result));
+			
+			
+			Note:
+				In the example above, we’re creating a CompletableFuture that will supply a result in the future. 
+				We're passing a lambda expression that simulates a long-running operation by sleeping for 5 seconds. 
+				After the operation is complete, it will return the string "Hello, world!".
+				
+				We’re then calling the thenAccept() method on the CompletableFuture object to specify what to do when the operation is complete. 
+				In this case, we're passing a lambda expression that simply prints the result to the console.
+				
+				When we run this code, it will print “Hello, world!” to the console after a delay of 5 seconds.
+
+				
+		2)
+			Here’s another example that shows how to use CompletableFuture to "chain" multiple asynchronous operations together:
+			
+				CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> 10)
+																		.thenApplyAsync(result -> result * 2)
+																			.thenApplyAsync(result -> result + 5);
+
+				future.thenAccept(result -> System.out.println(result));
+					
+				O/P: 25		How: ( 10 * 2 + 5 )
+				
+		
+		3)
+			
+				CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> { 	
+					return "Hello from CompletableFuture"; 
+				}); 
+  
+				System.out.println(future.get()); 
+			
+
+				O/P: Hello from CompletableFuture
+			
+			
+			Note:
+				This creates a CompletableFuture that will execute the lambda function passed to supplyAsync in a separate thread. And after the execution, the result lambda function is returned by CompletableFuture Object.
+				
+				
+		4)
+		
+			https://www.callicoder.com/java-8-completablefuture-tutorial/	
+			->Creating a CompletableFuture:
+			-------------------------------
+	
+				Simple way:
+				----------	
+					CompletableFuture<String> completableFuture = new CompletableFuture<String>();
+					
+						This is the simplest CompletableFuture that you can have. All the clients who want to get the result of this CompletableFuture can call CompletableFuture.get() method -
+
+					String result = completableFuture.get();
+					
+						The get() method blocks until the Future is complete. So, the above call will block forever because the Future is never completed.
+						You can use CompletableFuture.complete() method to manually complete a Future -
+
+					completableFuture.complete("Future's Result");
+					
+						All the clients waiting for this Future will get the specified result. And, Subsequent calls to completableFuture.complete() will be ignored.
+							
+
+							
+	Composing CompletableFuture:
+	----------------------------
+		One of the powerful features of CompletableFuture is its ability to compose multiple asynchronous operations. 
+		
+		We can use methods like: 
+		-----------------------
+			thenApply, 
+			thenCombine, 
+			thenCompose 
+			
+			1) thenCombine:
+			---------------
+				to perform operations on the result of one CompletableFuture and create a new CompletableFuture as a result.
+			
+				CompletableFuture<String> helloFuture 	 = CompletableFuture.supplyAsync(() -> "Hello"); 
+				CompletableFuture<String> greetingFuture = CompletableFuture.supplyAsync(() -> "World"); 
+				CompletableFuture<String> combinedFuture = helloFuture.thenCombine( greetingFuture, (r1, r2) -> r1 + " " + r2); 
+  
+					System.out.println(combinedFuture.get()); 
+
+				O/P: Hello World
+				
+				Note:
+					the result of both the CompletableFutures are concatenated and returned as a final result.
+					
+					
+			2) thenCompose:
+			---------------
+				combine CompletableFuture instances in a chain of computation steps. The argument of this function is the result of the previous computation step. This allows us to use this value inside the next CompletableFuture‘s lambda:
+				
+					CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> "Hello")
+														.thenCompose(s -> CompletableFuture.supplyAsync(() -> s + " World"));
+
+					assertEquals("Hello World", completableFuture.get());
+				
+				
+					
+			3)thenApply:		(takes args, return result type)
+			------------	
+				CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> "Hello");
+				
+				CompletableFuture<String> future = completableFuture.thenApply(s -> s + " World");
+				
+				assertEquals("Hello World", future.get());
+				
+				
+			
+			4)thenAccept:		(takes args, void return)
+			-------------
+				If we don’t need to return a value down the Future chain, we can use an instance of the Consumer functional interface. Its single method takes a parameter and returns void.
+
+				There’s a method for this use case in the CompletableFuture. The thenAccept method receives a Consumer and passes it the result of the computation. Then the final future.get() call returns an instance of the Void type:
+				
+					CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> "Hello");
+					
+					CompletableFuture<Void> future = completableFuture.thenAccept(s -> System.out.println("Computation returned: " + s));
+					
+					future.get();
+					
+					
+					
+			5)thenRun:	(takes no args, void return)
+			----------
+				Finally, if we neither need the value of the computation nor want to return some value at the end of the chain, then we can pass a Runnable lambda to the thenRun method. 
+				In the following example, we simply print a line in the console after calling the future.get():
+				
+					CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> "Hello");
+					
+					CompletableFuture<Void> future = completableFuture.thenRun(() -> System.out.println("Computation finished."));
+					
+					future.get();
+					
+					
+					
+	https://www.callicoder.com/java-8-completablefuture-tutorial/
+	https://www.codeburps.com/post/completable-future-in-java
+	
+	Attaching a callback to the CompletableFuture:
+	-----------------------------------------------
+		The CompletableFuture.get() method is blocking. It waits until the Future is completed and returns the result after its completion.
+		But, that’s not what we want right? 
+		
+		For building asynchronous systems we should be able to attach a "callback" to the CompletableFuture which should automatically get called when the Future completes.
+
+		That way, we won’t need to wait for the result, and we can write the logic that needs to be executed after the completion of the Future inside our callback function.
+
+		You can attach a "callback" to the CompletableFuture using: 
+		-----------------------------------------------------------
+			thenApply(), 
+			thenAccept(),
+			thenRun()
+			
+			Each of this kind of method has 3 versions. For ex:
+			--------------------------------------------------
+				thenApply(fn)
+				thenApplyAsync(fn)
+				thenApplyAsync(fn, exec)
+				
+				thenApply(fn) — 
+					runs fn on a thread defined by the CompleteableFuture on which it is called, so you generally cannot know where this will be executed. It might immediately execute if the result is already available.
+				
+				thenApplyAsync(fn) — 
+					runs fn on a environment-defined executor regardless of circumstances. For CompletableFuture this will generally be ForkJoinPool.commonPool().
+
+				thenApplyAsync(fn, executor) — 
+					runs fn on given executor instead of ForkJoinPool executor.
+					
+				Note:
+					The main difference in these 3 versions will be how they gain thread control and execute — on which thread it will be executed. But remember! There is nothing in thenApplyAsync that is more asynchronous than thenApply from the contract of these methods. Both does the same job.
+		
+	
+			Asynchronous Callback:
+			----------------------
+				In the above examples, the task inside thenApply() is executed in the same thread where the supplyAsync() task is executed, or in the main thread if the supplyAsync() task completes immediately. If we want to increase the parallelism of our program furthermore and want to run the callback task on a separate thread — asynchronous callbacks are the solution.
+
+				We can use thenApplyAsync() callback in place of thenApply(), then this task will be executed in a different thread obtained from ForkJoinPool.commonPool().				
+					
+	
+	Handling Exception in CompletableFuture:
+	----------------------------------------
+		CompletableFuture provides methods like "exceptionally" and "handle" to handle exceptions and errors that might happen during asynchronous computation and provide a "fallback value or perform some alternative operation".
+		
+		
+		1)	
+			CompletableFuture<Integer> resultFuture = CompletableFuture.supplyAsync(() -> 10 / 0).exceptionally(ex -> ex.getMessage()); 
+        
+				System.out.println(resultFuture.get()); 
+	
+			O/P: error msg...
+			
+		Note:
+			Inside supplyAsync, when 10 is divided by 0, It will throw ArithmeticException and control will go to exceptionally block and which in turn returns error message.
+			
+			
+		2)
+			CompletableFuture<Integer> resultFuture = CompletableFuture.supplyAsync(() -> 10 / 0).handle((res, ex) -> {
+				if(ex != null) {
+					System.out.println("Oops! We have an exception - " + ex.getMessage());
+					return "Unknown!";
+				}
+				return res;
+			});
+			
+	
+	Return combined result of Running Multiple Futures in Parallel:	(allOf)	(CompletableFuture::join)
+	--------------------------------------------------------------- ---------- -------------------------
+		When we need to execute multiple Futures in parallel, we usually want to wait for all of them to execute and then process their combined results.
+
+		The "CompletableFuture.allOf" static method allows to wait for the completion of all of the Futures provided as a var-arg:
+		
+			CompletableFuture<String> future1  = CompletableFuture.supplyAsync(() -> "Hello");
+			CompletableFuture<String> future2  = CompletableFuture.supplyAsync(() -> "Beautiful");
+			CompletableFuture<String> future3  = CompletableFuture.supplyAsync(() -> "World");
+
+			CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(future1, future2, future3);
+			
+			combinedFuture.get();
+
+			assertTrue(future1.isDone());
+			assertTrue(future2.isDone());
+			assertTrue(future3.isDone());
+			
+				
+				Notice: 
+					that the return type of the CompletableFuture.allOf() is a **CompletableFuture<Void>. 
+				
+				The limitation of this method is that it does not return the combined results of all Futures. Instead, we have to get results from Futures manually. 
+				
+				Fortunately, CompletableFuture.join() method and Java 8 Streams API makes it simple:
+				
+					String combined = Stream.of(future1, future2, future3).map(CompletableFuture::join).collect(Collectors.joining(" "));
+					assertEquals("Hello Beautiful World", combined);
+					
+						The CompletableFuture.join() method is similar to the get method, but it throws an unchecked exception in case the Future does not complete normally. This makes it possible to use it as a method reference in the Stream.map() method.
+						
+						
+	CompletableFuture.allOf():
+	---------------------------
+		CompletableFuture.allOf is used in scenarios when you have a List of independent futures that you want to run in parallel and do something after all of them are complete.
+	
+	
+	CompletableFuture.anyOf():
+	--------------------------
+		CompletableFuture.anyOf() as the name suggests, returns a new CompletableFuture which is completed when any of the given CompletableFutures complete, with the same result.	
+
+						
+						
+						
+	Async Methods:
+	--------------
+		These methods are usually intended for running a corresponding execution step in another thread.
+		The processing is done by a separate thread in the ForkJoinPool.commonPool().
+		
+		
+		supplyAsync:
+		-------------
+			CompletableFuture<String> completableFuture  = CompletableFuture.supplyAsync(() -> "Hello");
+			CompletableFuture<String> future = completableFuture.thenApplyAsync(s -> s + " World");
+			
+			assertEquals("Hello World", future.get());	
+			
+			O/P: Hello World
+			
+			
+		runAsync:
+		---------
+			runAsync() method is used to execute a task asynchronously, without returning a value. 
+			
+				CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+					System.out.println("Hello from async task");
+				});
+			
+		Note:	
+			runAsync:		do not return any result.		CompletableFuture<Void>
+			supplyAsync:	will return result.				CompletableFuture<String>
+		
+		Note:
+			I know that the runAsync() and supplyAsync() methods execute their tasks in a separate thread. But, we never created a thread right?
+				
+				By default, CompletableFuture executes these tasks in a thread obtained from the global ForkJoinPool.commonPool().
+				 
+				But you can also create a Thread Pool and pass it to runAsync() and supplyAsync() methods to let them execute their tasks in a thread obtained from your thread pool.
+			
+		
+		All the methods in the CompletableFuture API has two variants - One which accepts an Executor as an argument and one which doesn’t -
+		
+			// Variations of runAsync() and supplyAsync() methods:
+			------------------------------------------------------
+			static CompletableFuture<Void>	runAsync(Runnable runnable)
+			static CompletableFuture<Void>	runAsync(Runnable runnable, Executor executor)
+			
+			static <U> CompletableFuture<U>	supplyAsync(Supplier<U> supplier)
+			static <U> CompletableFuture<U>	supplyAsync(Supplier<U> supplier, Executor executor)
+		
+			
+			
+https://www.callicoder.com/java-8-completablefuture-tutorial/			
+A note about Executor and Thread Pool:
+--------------------------------------
+	I know that the runAsync() and supplyAsync() methods execute their tasks in a separate thread. But, we never created a thread right?
+
+		Yes! CompletableFuture executes these tasks in a thread obtained from the global ForkJoinPool.commonPool().
+
+			But hey, you can also create a Thread Pool and pass it to runAsync() and supplyAsync() methods to let them execute their tasks in a thread obtained from your thread pool.
+			
+		
+		Here’s how you can create a thread pool and pass it to one of these methods -
+		----------------------------------------------------------------------------	
+		1)	
+			Executor executor = Executors.newFixedThreadPool(10);
+			
+			CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+				try {
+					TimeUnit.SECONDS.sleep(1);
+				} catch (InterruptedException e) {
+					throw new IllegalStateException(e);
+				}
+				return "Result of the asynchronous computation";
+			}, executor);
+
+
+		2)
+			ExecutorService threadPool = Executors.newFixedThreadPool(3);
+			
+			Runnable runnable = () -> {
+				//a long-running Job
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+				System.out.println(Thread.currentThread().getName() + " ... long running job completed !!!");
+			};
+
+			CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(runnable, threadPool);
+			
+	
+Future vs CompletableFuture:
+----------------------------
+	Future and CompletableFuture are both abstractions for representing a result that will be available in the future, but there are some important differences between them:
+	
+	Blocking vs non-blocking: 
+	------------------------
+		One of the key differences between Future and CompletableFuture is that Future is a blocking API, whereas CompletableFuture is non-blocking. 
+		With a Future object, you must call the get() method to retrieve the result, but this method blocks until the result is available. 
+		In contrast, with a CompletableFuture object, you can use various non-blocking methods to retrieve the result, such as thenApply(), thenAccept(), or join().
+		
+	Composition: 
+	------------
+		CompletableFuture provides a more powerful composition API than Future. 
+		With Future, it is difficult to chain multiple asynchronous operations together or to combine the results of multiple operations. CompletableFuture, on the other hand, provides methods such as thenCompose(), thenCombine(), and allOf() that make it easy to compose multiple asynchronous operations and to handle their results in a non-blocking way.
+		
+	Exception Handling: 
+	------------------
+		CompletableFuture provides better exception handling than Future. 
+		With Future, you can only check if the computation completed successfully or not. If an exception occurs during the computation, you have to catch it explicitly. 
+		In contrast, with CompletableFuture, you can handle exceptions in a more declarative way using methods like exceptionally() and handle().
+		
+	Completion: 
+	----------
+		With a Future object, there is no way to explicitly complete the future. Once you submit a task to an executor service and get a Future object in return, you can only wait for the task to complete. 
+		With CompletableFuture, you have more control over the completion of the future. You can complete it explicitly by calling complete(), completeExceptionally(), or cancel() methods.
+		
+	In summary, CompletableFuture provides a more flexible and powerful API for working with asynchronous computations than Future. 
+	CompletableFuture offers: 
+		non-blocking methods, 
+		composition methods, 
+		better exception handling, and 
+		explicit completion methods, 
+		
+	which makes it easier to write robust and scalable concurrent code.
+	
+	
+	Note:
+		CompletableFuture has rich features like chaining multiple futures, combining the futures, executing some action after future is executed (both synchronously as well as asynchronously), etc.
+
+		However, CompletableFuture is no different than Future in terms of performance. 
+		Even when combine multiple instances of CompletableFuture (using .thenCombine and .join in the end), none of them get executed unless we call .get method and during this time, the invoking thread is blocked. I feel in terms of performance, this is not better than Future.
+	
+
+	
+	CompletableFuture vs. Future:
+	-----------------------------
+	1)	
+		The Future interface provides only the get() method to retrieve the result of the computation, but if the computation takes too long, we don’t have any way to complete it by returning a value that we can assign.
+		
+		To understand better, let’s look at some code:
+
+			class Demo {
+
+			 public static void main(String[] args) throws ExecutionException, InterruptedException {
+				ExecutorService executor = Executors.newSingleThreadExecutor();
+				Future<String> stringFuture = executor.submit(() -> neverEndingComputation());
+				System.out.println("The result is: " + stringFuture.get());
+				}
+			}
+	
+			Note:
+				We have created an instance of ExecutorService that we will use to submit a task that never ends - we call it neverEndingComputation().
+
+				After that we want to print the value of the stringFuture variable on the console by invoking the get() method. This method waits if necessary for the computation to complete, and then retrieves its result. But because we are calling neverEndingComputation() that never ends, the result will never be printed on the console, and we don’t have any way to complete it manually by passing a value.
+
+				
+			Now let’s see how to overcome this limitation by using the class CompletableFuture. We will use the same scenario, but in this case, we will provide our value by using the method complete() of the CompletableFuture class.
+			
+				class Demo {
+					public static void main(String[] args) {
+						CompletableFuture<String> stringCompletableFuture = CompletableFuture.supplyAsync(() -> neverEndingComputation());
+						stringCompletableFuture.complete("Completed");
+						System.out.println("Is the stringCompletableFuture done ? " + stringCompletableFuture.isDone());
+						}
+					}
+			
+		
+	2)
+		Reacting to Completion Without Blocking the Thread:
+		
+		Using the "Future" interface, we don’t have a way to react to the completion of an operation asynchronously. The only way to get the value is by using the get() method which blocks the thread until the result is returned:
+			
+			class Demo {
+			 public static void main(String[] args) throws ExecutionException, InterruptedException {
+				ExecutorService executor = Executors.newSingleThreadExecutor();
+				Future<String> stringFuture = executor.submit(() -> "hello future");
+				String uppercase = stringFuture.get().toUpperCase();
+				System.out.println("The result is: " + uppercase);
+				}
+			}
+			
+				The code above creates a Future by returning a String value. Then we transform it to uppercase by firstly calling the get() method and right after the toUpperCase() method of the String class.
+		
+		
+		Using "CompletableFuture" we can now create a pipeline of asynchronous operations. Let’s see a simple example of how to do it:
+
+			class Demo {
+			  public static void main(String[] args) {
+				CompletableFuture.supplyAsync(() -> "hello completable future")
+					.thenApply(String::toUpperCase)
+					.thenAccept(System.out::println);
+				}
+			}
+			
+			In the example above we can notice how simple is to create such a pipeline.
+			
+	
+
+https://stackoverflow.com/questions/52303472/executorservice-vs-completablefuture		
+ExecutorService vs CompletableFuture:
+-------------------------------------
+	I have been trying to implement an asynchronous process, where the parent method calls a child method which would in-turn call three different methods. I want all of this process to be done asynchronously i.e. after these three calls in the child method are made in parallel the control should go back to the parent method and continue with the rest of its execution.
+	
+	I have this code which when tested works fine.
+	
+		public ReturnSomething parent(){
+			child();
+			...//rest to UI
+		}
+
+		private void child(){
+		  ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+		  Runnable service1 = () -> {
+			 MyFileService.service1();
+		  };
+
+		  Runnable service2 = () -> {
+			  MyFileService.service2();
+		  };
+
+		  Runnable service3 = () -> {
+			  MyFileService.service3();
+		  };
+
+		  executorService.submit(service1);
+		  executorService.submit(service2);
+		  executorService.submit(service3);
+		}
+		
+		
+		Now, my lead is asking me to use this rather.
+
+			public ReturnSomething parent(){
+				child();
+				...//rest to UI
+			}
+
+			private void child(){
+				CompletableFuture.supplyAsync(() ->  MyFileService.service1();
+				CompletableFuture.supplyAsync(() ->  MyFileService.service2();
+				CompletableFuture.supplyAsync(() ->  MyFileService.service3();
+			}
+			
+			
+		I understand that that CompletableFuture is new from Java 8, but how is the 2nd code better than the 1st? Since, for ExecutorService, I am not calling the "get()" method I would not be waiting for the aysnc response. So, can some one please explain what is the difference?
+		
+			Functionally, the two approaches are more or less the same:
+				you submit your tasks for execution;
+				you don't wait for the result.
+
+			
+			Technically, however, there are some subtle differences:
+
+				In the second approach, you didn't specify an executor, so it will use the common ForkJoinPool. You would have to pass an executor as second argument of supplyAsync() if you don't want that;
+				
+				The CompletableFuture API allows to easily chain more calls with thenApply(), thenCompose() etc. It is thus more flexible than the simple Future returned by ExecutorService.submit();
+				
+				Using CompletableFuture allows to easily return a future from your child() method using return CompletableFuture.allOf(the previously created futures).
+		
+		Concerning readability, it's a matter of preference, but if you want equivalent code the CompletableFuture approach might be considered a bit less readable once you have formatted it similarly. Compare:
+
+			executorService.submit(MyFileService::service1);
+			executorService.submit(MyFileService::service2);
+			executorService.submit(MyFileService::service3);
+			
+			with
+
+			CompletableFuture.supplyAsync(MyFileService::service1, executorService);
+			CompletableFuture.supplyAsync(MyFileService::service2, executorService);
+			CompletableFuture.supplyAsync(MyFileService::service3, executorService);
+		
+			
+https://stackoverflow.com/questions/51962025/completablefuture-runasync-vs-executing-each-runnable-with-an-executor			
+CompletableFuture runAsync vs Executing each Runnable with an Executor:
+-----------------------------------------------------------------------
+	Recently I'm trying to implement an email service that sends email to each user concurrently. My current implementation current looks like this:
+
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		tasks.forEach(executor::execute); // Each task sends an email to an user
+		executorService.shutdown(); // Reclaim all the resources
+
+	After some research I've found a new way, using Java 8 CompletableFuture.runAsync(...) method. Using this approach I've did:
+
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		tasks.forEach(task -> CompletableFuture.runAsync(task, executor));
+		executor.shutdown(); // Reclaim all resources
+
+	
+	Now I'm a little confused what is the best approach for my problem in terms of correctness, scalability and what is the most modern/current approach that solves my problem.
+	
+	A:
+		Executor.execute will execute your task asynchronously.
+
+		CompletableFuture.runAsync(Runnable, Executor) also execute your task asynchronously, but, in additionally, return a CompletableFuture 	object, which you can use to chain / plug more dependent tasks.
+		
+		
+https://stackoverflow.com/questions/39472061/executorservice-submittask-vs-completablefuture-supplyasynctask-executor
+ExecutorService.submit(Task) vs CompletableFuture.supplyAsync(Task, Executor):
+------------------------------------------------------------------------------
+	To run some stuff in parallel or asynchronously I can use either: 
+	
+	an ExecutorService: <T> Future<T> submit(Runnable task, T result);  (OR)
+	
+	the CompletableFuture Api:static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier, Executor executor); 
+	
+	(Lets assume I use in both cases the same Executor)
+
+		Besides the return type Future vs. CompletableFuture are there any remarkable differences. Or When to use what?
+		And what are the differences if I use the CompletableFuture API with default Executor (the method without executor)?
+			You use the Future when you want the executing thread to wait for async computation response.
+			You use a CompleteableFuture when you want some action executed, with the result after completion, asynchronously from the executed thread. 
+			
+			
+https://stackoverflow.com/questions/47750763/completablefuture-from-executorservice			
+
+
+Executor Vs CompletableFuture:
+------------------------------
+	Functionality wise both are same, diff in terms of diff features they've provided.
+	
+
+	Executor (Future):
+	------------------
+			void execute(Runnable task)
+	<T> Future<T> submit(Callable<T> task)
+	
+	
+	CompletableFuture:
+	------------------
+		static CompletableFuture<Void>	runAsync(Runnable runnable)
+		static CompletableFuture<Void>	runAsync(Runnable runnable, Executor executor)
+			
+		static <U> CompletableFuture<U>	supplyAsync(Supplier<U> supplier)
+		static <U> CompletableFuture<U>	supplyAsync(Supplier<U> supplier, Executor executor)
+		
+		
+	Note:
+		Runnable interface does not throw an exception and does not return a value. 
+		Callable interface allows us to throw an exception and return a value.	
+	
+		

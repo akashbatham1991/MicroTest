@@ -1,0 +1,208 @@
+https://www.baeldung.com/java-fork-join
+
+->Here is a Java ForkJoinPool creation example:
+-----------------------------------------------
+	1-	
+		ForkJoinPool forkJoinPool = new ForkJoinPool(4);
+	
+			This example creates a ForkJoinPool with a parallelism level of 4.
+
+	2- 		
+		You can also use the static factory method ForkJoinPool.commonPool(). 
+		
+			This returns the shared ForkJoinPool instance.	
+			
+	You can submit two types of tasks. 
+	----------------------------------
+		A task that does not return any result (an "action"), and 
+		A task which does return a result (a "task").
+	
+	These two types of tasks are represented by: 
+		RecursiveAction and 
+		RecursiveTask classes. 
+	
+	Both the RecursiveAction and the RecursiveTask classes are subclasses of the ForkJoinTask class, by the way.
+	
+	
+	RecursiveAction:
+	----------------
+	
+		You implement a RecursiveAction by subclassing it and override it's compute method:
+		-----------------------------------------------------------------------------------	
+			public class MyRecursiveAction extends RecursiveAction {
+			
+				@Override
+				protected void compute() {
+					.....
+				}
+				
+			Now you can schedule a MyRecursiveAction for execution with a Java ForkJoinPool like this:
+				MyRecursiveAction myRecursiveAction = new MyRecursiveAction(24);
+				forkJoinPool.invoke(myRecursiveAction);	
+		
+		
+	RecursiveTask:
+	--------------
+	
+		You implement a RecursiveTask by subclassing it and override it's compute method:
+		-----------------------------------------------------------------------------------	
+			public class MyRecursiveTask extends RecursiveTask<Long> {
+			
+				@Override
+				protected void compute() {
+					.....
+				}
+				
+			Nou you can schedule a MyRecursiveTask for execution with a Java ForkJoinPool like this:
+				MyRecursiveTask myRecursiveTask = new MyRecursiveTask(24);
+				forkJoinPool.invoke(myRecursiveTask);	
+	
+=================================================( START )==============================================================================
+
+
+Fork and Join:
+--------------
+	In the context of parallel computing and concurrency, "fork and join" refers to a paradigm where a task is broken down into smaller, parallel subtasks (the "fork"), which are then executed concurrently, and finally, their results are combined (the "join") to produce the final result. 
+	
+	1-	Splitting a task into sub-tasks.
+	
+	2-	Solving sub-tasks in parallel
+		Sub-tasks can run in parallel on different cores.
+		Sub-tasks can also run concurrently in different threads on a single core.
+	
+	3-	Waiting for them to complete
+		join() waits for a sub-task to finish
+	
+	4-	Merging the results.
+		A task uses calls to join() to merge the sub-task results together.
+		
+	Note:
+		The fork() method submits a task to a pool, but it doesn’t trigger its execution. We must use the join() method for this purpose.
+	
+	
+	Here's a more detailed explanation:
+	-----------------------------------
+
+	Fork:
+		This involves splitting a large task into multiple smaller, independent subtasks that can be executed concurrently. 
+
+	Join:
+		This involves waiting for all the forked subtasks to complete their execution and then combining their results to produce the final result. 
+
+	Parallelism:
+		The fork-join model is designed to leverage the power of multi-core processors and other parallel computing resources by enabling the concurrent execution of subtasks. 
+
+	Divide and Conquer:
+		The fork-join model is often used in conjunction with the "divide and conquer" approach, where a problem is recursively broken down into smaller subproblems until they are simple enough to be solved sequentially, and then the solutions are combined to solve the original problem. 
+
+	Examples:
+		Java ForkJoinPool: 
+		------------------
+			The Java ForkJoinPool is a framework for implementing the fork-join model, allowing developers to easily parallelize tasks that can be recursively divided into subtasks. 
+			
+	
+		To provide effective parallel execution, the fork/join framework uses a pool of threads called the ForkJoinPool. 
+		It is an implementation of the ExecutorService .
+		
+		In Java 8, the most convenient way to get access to the instance of the ForkJoinPool is to use its static method commonPool().
+		
+			ForkJoinPool commonPool = ForkJoinPool.commonPool();
+		
+			We can use submit() or execute() method to submit tasks to the thread pool.
+			
+			Then the invokeAll() method submits the subtasks to the common pool and returns a list of Future.
+			The invoke() method forks the task and waits for the result, and doesn’t need any manual joining:
+			
+			Note:
+				Alternatively, we can use separate fork() and join() methods. The fork() method submits a task to a pool, but it doesn’t trigger its execution. We must use the join() method for this purpose. Here we used the invokeAll() method to submit a sequence of subtasks to the pool. 
+				
+->Here is a Java ForkJoinPool creation example:
+-----------------------------------------------
+	1-	
+		ForkJoinPool forkJoinPool = new ForkJoinPool(4);
+	
+			This example creates a ForkJoinPool with a parallelism level of 4.
+
+	2- 		
+		You can also use the static factory method ForkJoinPool.commonPool(). 
+		
+			This returns the shared ForkJoinPool instance.			
+
+			
+https://jenkov.com/tutorials/java-util-concurrent/java-fork-and-join-forkjoinpool.html#:~:text=Here%20is%20a%20Java%20ForkJoinPool,the%20static%20factory%20method%20ForkJoinPool.
+	
+->Submitting Tasks to the ForkJoinPool:
+---------------------------------------
+	You submit tasks to a ForkJoinPool similarly to how you submit tasks to an ExecutorService. 
+	You can submit two types of tasks. 
+	----------------------------------
+		A task that does not return any result (an "action"), and 
+		A task which does return a result (a "task").
+	
+	These two types of tasks are represented by: 
+		RecursiveAction and 
+		RecursiveTask classes. 
+	
+	Both the RecursiveAction and the RecursiveTask classes are subclasses of the ForkJoinTask class, by the way.
+	
+	RecursiveAction:
+	----------------
+	
+		You implement a RecursiveAction by subclassing it and override it's compute method:
+		-----------------------------------------------------------------------------------	
+			public class MyRecursiveAction extends RecursiveAction {
+			
+				@Override
+				protected void compute() {
+					.....
+				}
+				
+			Now you can schedule a MyRecursiveAction for execution with a Java ForkJoinPool like this:
+				MyRecursiveAction myRecursiveAction = new MyRecursiveAction(24);
+				forkJoinPool.invoke(myRecursiveAction);	
+		
+		
+	RecursiveTask:
+	--------------
+	
+		You implement a RecursiveTask by subclassing it and override it's compute method:
+		-----------------------------------------------------------------------------------	
+			public class MyRecursiveTask extends RecursiveTask<Long> {
+			
+				@Override
+				protected void compute() {
+					.....
+				}
+				
+			Nou you can schedule a MyRecursiveTask for execution with a Java ForkJoinPool like this:
+				MyRecursiveTask myRecursiveTask = new MyRecursiveTask(24);
+				forkJoinPool.invoke(myRecursiveTask);	
+				
+		
+	This example is similar to the RecursiveAction example except it returns a result. 
+	The class MyRecursiveTask extends RecursiveTask<Long> which means that the result returned from the task is a Long.		
+
+	Notice how you get the final result out from the ForkJoinPool.invoke() method call.
+	
+	
+		
+->Differences between Fork/Join Framework and ExecutorService which ais as follows: 
+----------------------------------------------------------------------------------
+		Fork/Join Framework 												ExecutorService			
+		--------------------												---------------
+	Fork Join is an implementation of ExecuterService. 		Executor service creates asked number of thread,and apply a "blocking
+	The main difference is that this implementation 		queue" to store all the remaining waiting task.
+	creates a "DEQUE worker" pool.	
+	
+	Fork/Join Framework makes use of Work Stealing 			Unlike Fork/Join Framework, when a task is waiting for the
+	Algorithm. In the Fork/Join framework, when a task 		completion of the sub-tasks it has created using
+	is waiting for the completion of the sub-tasks 			the join operation,  the worker thread that is executing that 
+	it has created using the join operation, the 			waiting task doesn’t look for another task.   
+	worker thread that is executing that task looks 
+	for another task that has not been executed yet 
+	and steals them to start their execution.
+	
+	Fork-join is wonderful for recursive problems, 			If you try to solve a recursive problem like this using
+	where a task involves running subtasks and then 		ExecutorService, you end up with threads tied up waiting for other
+	processing their results. 								threads to deliver results to them.
+	

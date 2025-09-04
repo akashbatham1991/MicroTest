@@ -1,0 +1,230 @@
+It is a programming situation that occurs when two or more threads wait for each other to release the resource(lock) they need and get stuck for an infinite time..
+
+Synchronized keyword is the only reason for deadlock situation hence while using synchronized keyword we have to take special care.
+Look at the code to see if a nested synchronized block is calling a synchronized method from another or if it is trying to get a lock on a different object. If that is the case, there is a good chance of deadlock, if the developer is not careful.
+
+Java provides various methods to avoid thread deadlock, such as: 
+	using synchronized blocks, 
+	using thread-safe collections, and 
+	using atomic operations.
+		
+We can also use jConsole or VisualVM to detect deadlock. It shows us which threads are getting locked and on which object.	
+You can detect a deadlock in Java by examining the application's thread dump.
+	
+*Recovery from deadlock is either to abort or retry.		
+		
+
+---------------------------------------------------START-------------------------------------------
+Multithreading:
+	Executing multiple threads at once is known as "multithreading,"
+	This is important for efficiency and speed in a Java application, but when handled incorrectly, issues can arise.
+
+
+What is deadlock in Java
+-------------------------
+	The deadlock is a situation when two or more threads try to access the same object that is acquired by another thread. Since the threads wait for releasing the object, the condition is known as deadlock. 
+	
+	If two threads are waiting for each other forever such type of infinite waiting is called deadlock in java. 
+	Synchronized keyword is the only reason for deadlock situation hence while using synchronized keyword we have to take special care.
+	
+	It is a programming situation that occurs when two or more threads wait for each other to release the resource(lock) they need and get stuck for an infinite time.
+
+	
+
+The following conditions must be met for a deadlock to occur:
+-------------------------------------------------------------
+	1-Mutual Exclusion:
+	-------------------
+		At least one resource must be mutually exclusive so that only one thread can access it simultaneously.
+		This condition states that at least one resource must be exclusively allocated to one thread at a time. It means that when a thread uses a particular resource, other threads are prevented from concurrently accessing or using the same resource. 
+	
+	2-Hold and wait: 
+	----------------
+		Hold and wait refers to a situation where a thread holds a resource while waiting for another resource currently held by a different thread.
+		If the threads do not release their held resources, a deadlock can occur as they wait indefinitely for the resources to become available.
+	
+	3-No preemption: 
+	----------------
+		You cannot forcibly remove a lock on a resource once it has been acquired by a thread (i.e., the lock cannot be preempted).
+	
+	4-Circular wait: 
+	----------------
+		Each thread must wait on another for a resource in a circular fashion.		
+		
+		
+How to detect deadlock in Java?:
+--------------------------------
+	Deadlock Detection is only possible at run-time.  
+	There are many ways to detect deadlock. 
+	
+	Few are listed below:
+	
+		1. Look at the code to see if a nested synchronized block is calling a synchronized method from another or if it is trying to get a lock on a different object. If that is the case, there is a good chance of deadlock, if the developer is not careful.
+		
+		2. You can detect a deadlock in Java by examining the application's thread dump.
+		
+		3. We can also use jConsole or VisualVM to detect deadlock. It shows us which threads are getting locked and on which object.
+
+	*Recovery from deadlock is either to abort or retry.
+	
+How to avoid deadlock in Java?:
+-------------------------------
+	We can prevent a Deadlock by eliminating any of the above four conditions. 
+	
+	Java provides various methods to avoid thread deadlock, such as: 
+	----------------------------------------------------------------
+		using synchronized blocks, 
+		using thread-safe collections, and 
+		using atomic operations.
+	
+	Deadlocks can be cleared by: 
+	----------------------------
+		releasing held resources, 
+		restarting affected threads, or 
+		redesigning the program's synchronization and resource usage to break the circular dependency causing the deadlock.
+	
+	Avoid Unnecessary Locks:
+	------------------------
+		We should use locks only for those members on which it is required. Unnecessary use of locks leads to a deadlock situation. 
+		We recommend you to use a lock-free data structure. If possible, keep your code free form locks. For example, instead of using synchronized ArrayList use the ConcurrentLinkedQueue.
+		
+	Avoid Nested Locks: 
+	-------------------
+		Another way to avoid deadlock is to avoid giving a lock to multiple threads if we have already provided a lock to one thread. Since we must avoid allocating a lock to multiple threads.
+		Deadlocks can be avoided by always locking the locks in the same order.
+
+	Using Thread.join() Method: 
+	---------------------------
+		You can get a deadlock if two threads are waiting for each other to finish indefinitely using thread join. 
+		A deadlock usually happens when one thread is waiting for the other to finish. In this case, we can use Thread.join with a maximum time that a thread will take.
+		
+	Use Lock Ordering: 
+	-----------------
+		Always assign a numeric value to each lock. Before acquiring the lock with a higher numeric value, acquire the locks with a lower numeric value.
+	
+	Lock Time-out: 
+	--------------
+		We can also specify the time for a thread to acquire a lock. If a thread does not acquire a lock, the thread must wait for a specific time before retrying to acquire a lock.
+	
+
+
+Deadlock Example in Java:
+--------------------------
+
+1) 
+
+	public class Scaler
+	{
+    final static String R1 = "Hello Welcome to Scaler!";
+    final static String R2 = "Visit Scaler!";
+
+    public static void main(String[] args)
+    {
+    	    // creating thread T1
+ 	    Thread T1 = new Thread(){
+                // implementing run method
+ 		public void run(){
+
+ 	            // thread T1 locking the R1 resource
+ 		    synchronized (R1){
+ 		        System.out.println("Thread T1 locked ->   Resource R1");
+
+ 		        // thread T1 locking the R2 resource
+ 			synchronized (R2){
+ 			    System.out.println("Thread T1 locked -> Resource R2");
+ 		        }
+ 		    }
+ 		}
+ 	    };
+
+ 	    // creating thread T2
+ 	    Thread T2 = new Thread(){
+ 		// implementing run method
+ 		public void run(){
+
+ 		    // thread T2 locking the R2 resource
+ 		    synchronized (R2){
+ 		        System.out.println("Thread T2 locked -> Resource R2");
+
+ 			// thread T2 locking the R1 resource
+ 			synchronized (R1){
+ 			        System.out.println("Thread T1 locked -> Resource R1");
+ 			}
+ 		    }
+ 		}
+ 	};
+
+ 	// starting both the threads
+ 	T1.start();
+ 	T2.start();
+    }
+}
+
+
+O/P:
+	Thread T1 locked -> Resource R1
+	Thread T2 locked -> Resource R2
+	
+	
+2)
+		class DeadlockExample {
+			private static final Object resourceA = new Object();
+			private static final Object resourceB = new Object();
+
+			public static void methodA() {
+			
+				synchronized (resourceA) {
+					// Critical section A
+					
+					synchronized (resourceB) {
+						// Critical section B
+					}
+				}
+			}
+
+			public static void methodB() {
+			
+				synchronized (resourceB) {
+					// Critical section B
+					
+					synchronized (resourceA) {
+						// Critical section A
+					}
+				}
+			}
+		}
+	
+	
+How to resolve the Deadlock Problem in Java?:
+---------------------------------------------
+	I believe, the solution to any problem lies in identifying the root of the problem. 
+	In our case, it is the pattern of accessing resources R1 and R2, which is the main issue. 
+	So, to solve it, we will simply re-order the statements where the code is accessing shared resources. Both should be as R1 -> R2.
+
+
+		class DeadlockExample {
+			private static final Object resourceA = new Object();
+			private static final Object resourceB = new Object();
+
+			public static void methodA() {
+			
+				synchronized (resourceA) {
+				
+					// Critical section A
+					synchronized (resourceB) {
+						// Critical section B
+					}
+				}
+			}
+
+			public static void methodB() {
+			
+				synchronized (resourceA) {					//Re-ordered:  resourceB -> resourceA
+					// Critical section B
+					
+					synchronized (resourceB) {				//Re-ordered:  resourceA -> resourceB
+						// Critical section A
+					}
+				}
+			}
+		}

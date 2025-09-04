@@ -1,0 +1,583 @@
+https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CountDownLatch.html
+https://stackoverflow.com/questions/17827022/how-is-countdownlatch-used-in-java-multithreading
+https://www.concretepage.com/java/java-countdownlatch
+https://ducmanhphan.github.io/2020-02-12-CountDownLatch-in-Java's-multithreading/
+
+
+Java Concurrency – Synchronizers:
+---------------------------------	
+	Below are few concurrency utilities that controls access to a shared resource, allowing you to limit the number of threads that can access it concurrently and also preventing race conditions and ensuring thread safety. 
+
+	The java.util.concurrent package contains several classes that help manage a set of threads that collaborate with each other. 
+	
+	Some of these include:
+		CyclicBarrier
+		CountDownLatch
+		Semaphore
+		Phaser
+		Exchanger
+		SynchronousQueue
+
+	These classes offer out of the box functionality for common interaction patterns between threads.
+
+	If we have a set of threads that communicate with each other and resemble one of the common patterns, we can simply reuse the appropriate library classes (also called Synchronizers) instead of trying to come up with a custom scheme using a set of locks and condition objects and the synchronized keyword.
+		
+
+Let's understand CountDownLatch and CyclicBarrier:
+--------------------------------------------------
+	Goal: "blocking the execution of a thread until a certain condition is met".
+
+		
+CountDownLatch:	(This class enables a Java thread to wait until the other set of threads completes their tasks.)
+---------------
+	Sometimes we might need to start our application only when a particular set of tasks are complete. And these tasks might be running in parallel and getting completed together or maybe at different times. We can achieve this using CountDownLatch.
+		If needed, we can also implement the same functionality using the wait and notify mechanism in Java, but it requires a lot of code, and getting it correct on the first attempt is a bit tricky. With CountDownLatch it can be done in just a few lines.
+	
+
+	CountDownLatch was introduced with JDK 1.5 along with other concurrent utilities like CyclicBarrier, Semaphore, ConcurrentHashMap and BlockingQueue in java.util.concurrent package. 
+	
+	*This class enables a Java thread to wait until the other set of threads completes their tasks.
+	
+	If we were doing some parallel processing, *we could instantiate the CountDownLatch with the same value for the counter as a number of threads we want to work across. 
+	Then, we could just call countdown() after each thread finishes, guaranteeing that a dependent thread calling await() will block until the worker threads are finished.
+
+	Main Thread waits on Latch by calling: 
+		CountDownLatch.await()   
+		
+		WHILE
+		
+	The other thread calls: 
+		CountDownLatch.countDown() to inform that they have completed.
+
+	
+	A CountDownLatch is initialized with a given count. 
+	The "await" methods block until the current count reaches "zero" due to invocations of the "countDown()" method, after which all waiting threads are released and any subsequent invocations of await return immediately.
+	
+	*Note:
+		The count cannot be reset. If you need a version that resets the count, consider using a CyclicBarrier.
+	
+
+
+https://www.concretepage.com/java/java-countdownlatch	
+The CountDownLatch is used for multiple purposes based on the count value:
+--------------------------------------------------------------------------
+	If we initialize the CountDownlatch with count value "1", it will work as a simple on/off latch or gate.
+	
+	If we initialize the CountDownLatch with count value "N", it will be used to make one thread wait until N threads have completed some action or some action has been completed N times.	
+
+
+Join:
+-----	
+	It is used when we want to wait for more than one thread to complete its task. It is similar to join in threads:
+
+	Limitation of JOIN: 
+	-------------------
+		Above example can also be achieved with JOIN, but JOIN can not be used in two scenarios:
+
+			When we use ExecutorService instead of Thread class to create threads.
+			
+			Modify above example where Manager wants to handover code to QA team as soon as Development completes their 80% task. It means that CountDownLatch allow us to modify implementation which can be used to wait for another thread for their partial execution.
+
+	
+https://stackoverflow.com/questions/17827022/how-is-countdownlatch-used-in-java-multithreading
+
+Where we can use CountDownLatch:
+-------------------------------
+	Consider a scenario where we have requirement where we have three threads "A", "B" and "C" and we want to start thread "C" only when "A" and "B" threads completes or partially completes their task.	
+	
+		It can be applied to real world IT scenario:
+		-------------------------------------------
+			Consider a scenario where manager divided modules between development teams (A and B) and he wants to assign it to QA team for testing only when both the teams completes their task.
+			
+	CountDownLatch is useful for starting an application on the completion of different initializations.
+	
+
+Example of CountDownLatch in JAVA:
+----------------------------------
+		
+		import java.util.concurrent.CountDownLatch; 
+
+		public class CountDownLatchDemo 
+		{ 
+			public static void main(String args[]) throws InterruptedException 
+			{ 
+				// Let us create task that is going to wait for four threads before it starts 
+				
+				CountDownLatch latch = new CountDownLatch(4); 
+
+				// Let us create four worker threads and start them. 
+				
+				Worker first = new Worker(1000, latch, "WORKER-1"); 
+				Worker second = new Worker(2000, latch, "WORKER-2"); 
+				Worker third = new Worker(3000, latch, "WORKER-3"); 
+				Worker fourth = new Worker(4000, latch, "WORKER-4"); 
+				
+				first.start(); 
+				second.start(); 
+				third.start(); 
+				fourth.start(); 
+
+				// The main task waits for four threads 
+				latch.await(); 
+
+				// Main thread has started 
+				System.out.println(Thread.currentThread().getName() + 
+								" has finished"); 
+			} 
+		} 
+
+		// A class to represent threads for which the main thread waits. 
+		class Worker extends Thread 
+		{ 
+			private int delay; 
+			private CountDownLatch latch; 
+
+			public Worker(int delay, CountDownLatch latch, 
+											String name) 
+			{ 
+				super(name); 
+				this.delay = delay; 
+				this.latch = latch; 
+			} 
+
+			@Override
+			public void run() 
+			{ 
+				try
+				{ 
+					Thread.sleep(delay); 
+					latch.countDown(); 
+					System.out.println(Thread.currentThread().getName() 
+									+ " finished"); 
+				} 
+				catch (InterruptedException e) 
+				{ 
+					e.printStackTrace(); 
+				} 
+			} 
+		} 
+
+	
+->How below program works.:
+--------------------------- 
+	As I understand all three threads start at once and each Thread will call CountDownLatch after 3000ms. So count down will decrement one by one. After latch becomes zero the program prints "Completed". 
+
+	import java.util.concurrent.CountDownLatch;
+	import java.util.concurrent.ExecutorService;
+	import java.util.concurrent.Executors;
+
+	class Processor implements Runnable {
+		private CountDownLatch latch;
+
+		public Processor(CountDownLatch latch) {
+			this.latch = latch;
+		}
+
+		public void run() {
+			System.out.println("Started.");
+
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			latch.countDown();
+		}
+	}
+	
+	
+	public class App {
+
+		public static void main(String[] args) {
+
+			CountDownLatch latch = new CountDownLatch(3); // coundown from 3 to 0
+
+			ExecutorService executor = Executors.newFixedThreadPool(3); // 3 Threads in pool
+
+			for(int i=0; i < 3; i++) {
+				executor.submit(new Processor(latch)); // ref to latch. each time call new Processes latch will count down by 1
+			}
+
+			try {
+				latch.await();  // wait until latch counted down to 0
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			System.out.println("Completed.");
+		}
+	}
+	
+	
+	Any thread, usually the main thread of the application, which calls "CountDownLatch.await()" will wait until count reaches zero or it's interrupted by another thread. 
+	All other threads are required to count down by calling "CountDownLatch.countDown()" once they are completed or ready.
+	
+	As soon as count reaches zero, the waiting thread continues.
+
+	
+	One of the disadvantages/advantages of CountDownLatch is that:
+	--------------------------------------------------------------
+		it's not reusable: once count reaches zero, you cannot use CountDownLatch any more.
+	
+	
+CountDownLatch and CyclicBarrier:
+---------------------------------			
+	CountDownLatch and CyclicBarrier are two classes in the Java concurrency library that are used to synchronize the execution of multiple threads. 
+	They both have different use cases and are used to achieve different goals, but they share the same basic principle of "blocking the execution of a thread until a certain condition is met".		
+	
+	Note that we can use CyclicBarrier instead of CountDownLatch but vice-versa is not possible because the latch cannot be reused when the count reaches zero.
+	
+	A CyclicBarrier is useful when you need N workers to all reach the same 'checkpoint' before proceeding, and the workers themselves are the only ones who care. However, you have an N + 1 user here, the main thread, who wants to know when they're all done, and CyclicBarrier doesn't support that use case.
+
+Difference between a CyclicBarrier and a CountDownLatch:
+--------------------------------------------------------
+	A CountDownLatch can be used only once in a program(until it’s count reaches 0).
+	A CyclicBarrier can be used again and again once all the threads in a barriers is released.	
+	
+
+
+	
+	
+	
+	
+	
+
+==================================================================================================================================	
+
+==================================================================================================================================		
+	
+==================================================================================================================================
+
+https://jenkov.com/tutorials/java-util-concurrent/cyclicbarrier.html
+https://www.javatpoint.com/java-cyclicbarrier	
+https://medium.com/@sainathbatthala/java-multi-threading-cyclicbarrier-use-case-and-example-6958d5a945a2
+https://www.concretepage.com/java/java-cyclicbarrier
+https://www.educba.com/java-cyclicbarrier/
+
+
+CyclicBarrier:
+--------------
+	CyclicBarriers are used in programs in which we have a fixed number of threads that must wait for each other to reach a common point (barrier) before continuing execution.
+	
+
+Working:
+--------
+	The thread invokes the Await() method after reaching the barrier point. These methods indicate that the thread has reached the barrier point and is waiting for the other thread to reach the barrier point before going to another phase.
+
+	Once await() is called by all the specific number of threads, the barrier gets tripped. 
+	
+	Once the barrier trips, all parties proceed for further execution process synchronously. 
+	
+	We can also define an optional runnable method during initialization, which will perform some action after tripping the barrier, 
+	and then CyclicBarrier is rest for the next synchronization cycle. 
+	
+	The barrier is called cyclic because it can be re-used after the waiting threads are released.
+	
+	
+	
+When to use cyclic barrier?:
+---------------------------
+	A CyclicBarrier is used when multiple thread carry out different sub tasks and the output of these sub tasks need to be combined to form the final output.
+	
+	It can be used to break a large task into smaller sub-task in which each task is performed by a separate thread. After performing the same, the result of all the threads is combined in the final task of the barrier.
+	
+	It is also used in a multi-player game where the game starts when all the players have reached.
+	
+	Let’s say there is a set of bikers are planning a trip and all of them wanted to assemble at a specific point before continuing their further journey.
+
+	Consider a scenario, in which an application needs to read five files using five threads. Parse the read lines and only after reading and parsing all the five files, the application must call another thread for further processing. In this case, we can use CyclicBarrier that provides a runnable action to execute the thread once all the threads reach the barrier.	
+	
+	
+	https://stackoverflow.com/questions/24797578/cyclic-barrier-in-java		
+		A CyclicBarrier is useful when you need N workers to all reach the same 'checkpoint' before proceeding, and the workers themselves are the only ones who care. However, you have an N + 1 user here, the main thread, who wants to know when they're all done, and CyclicBarrier doesn't support that use case.
+		
+	
+BrokenBarrierException:
+-----------------------
+	A barrier breaks when any of the waiting thread leaves the barrier. This happens when one or more waiting thread is interrupted or when the waiting time is completed because the thread called the await() methods with a timeout.
+	
+	
+Constructor:
+------------	
+	1)
+		public CyclicBarrier(int parties);
+		
+		//Creates a new CyclicBarrier that will trip when the given number of parties (threads) are waiting upon it.
+
+	2)
+		public CyclicBarrier(int parties, Runnable barrierAction); 
+	
+		//Creates a new CyclicBarrier that will trip when the given number of parties (threads) are waiting upon it. Once the barrier is tripped, the given barrierAction is executed.
+		
+		
+		
+https://www.javatpoint.com/java-cyclicbarrier		
+
+Methods of the CyclicBarrier Class:
+-----------------------------------
+	await():							It returns the arrival index of the current thread.
+	
+	await(long timeout, TimeUnit unit):	Waits until all parties (threads) have invoked await on this barrier, or the specified waiting 
+										time elapses.	
+	
+	getNumberWaiting():					The method is used to return the number of parties currently waiting at the barrier (blocked in 
+										await() method). The method is widely used for debugging and assertions.
+	
+	getParties():						The method returns an integer value that denotes the number of parties required to trip this 
+										barrier.
+	
+	isBroken():							The method returns a boolean value if one or more parties broke out of this barrier due to 
+										interruption or timeout since construction or the last reset or a barrier action failed due to an exception. Else, returns false.	
+	
+	reset():							The method is used to reset the barrier to its initial state. The method throws 
+										BrokenBarrierException if any parties are 	currently waiting at the barrier.
+										
+										
+https://codepumpkin.com/cyclicbarrier-java-concurrency-utilities/										
+https://medium.com/@sainathbatthala/java-multi-threading-cyclicbarrier-use-case-and-example-6958d5a945a2										
+Code Example:
+-------------										
+Let’s say there is a set of bikers are planning a trip and all of them wanted to assemble at a specific point before continuing their further journey. 
+	Let’s try to implement this scenario using CyclicBarrier:
+
+		import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+
+public class CyclicBarrierExample {
+
+    static class Biker implements Runnable {
+
+        String name;
+        CyclicBarrier cyclicBarrier;
+        int travelTime;
+
+        public Biker(String name, CyclicBarrier cyclicBarrier, int travelTime) {
+            this.name = name;
+            this.cyclicBarrier = cyclicBarrier;
+            this.travelTime = travelTime;
+        }
+
+        @Override
+        public void run() {
+            System.out.println(name + " started from his place");
+
+            try {
+                Thread.sleep(travelTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            System.out.println(name + " reached common point and waiting for others to join");
+
+            try {
+                cyclicBarrier.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (BrokenBarrierException e) {
+                e.printStackTrace();
+            }
+
+            System.out.println(name + " continues his journey");
+        }
+    }
+
+    public static void main(String[] args) {
+
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(3, new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("All bikers reached common point");
+            }
+        });
+
+        Thread thread1 = new Thread(new Biker("Biker1", cyclicBarrier, 1000));
+        Thread thread2 = new Thread(new Biker("Biker2", cyclicBarrier, 2000));
+        Thread thread3 = new Thread(new Biker("Biker3", cyclicBarrier, 3000));
+
+        thread1.start();
+        thread2.start();
+        thread3.start();
+
+    }
+}
+
+
+	Output of above program looks like:
+	-----------------------------------
+		Biker1 started from his place
+		Biker3 started from his place
+		Biker2 started from his place
+		Biker1 reached common point and waiting for others to join
+		Biker2 reached common point and waiting for others to join
+		Biker3 reached common point and waiting for others to join
+		All bikers reached common point
+		Biker3 continues his journey
+		Biker1 continues his journey
+		Biker2 continues his journey
+
+		Process finished with exit code 0
+		
+		
+		
+		
+->SEMAPHORE:
+------------
+	A semaphore is a concurrency utility that controls access to a shared resource using permits, allowing you to limit the number of threads that can access it concurrently. 
+	It's part of the java.util.concurrent package and is used for managing concurrent access to resources. 		
+	
+
+	Purpose:
+		Semaphores are synchronization aids that help manage concurrent access to shared resources, preventing race conditions and ensuring thread safety. 
+	
+	Permits:
+		A semaphore maintains a set of permits, and threads acquire or release these permits to enter or exit a critical section. 
+
+	java.util.concurrent.Semaphore:
+		The Semaphore class is part of the java.util.concurrent package, which provides high-level concurrency constructs introduced in Java 5. 
+
+	Initialization:
+		A semaphore is initialized with a number of permits, which determines the maximum number of threads that can access the shared resource concurrently. 
+
+	acquire():
+		The acquire() method waits for a permit to become available and then acquires it, allowing the thread to proceed. 
+
+	release():
+		The release() method releases a permit, potentially allowing a waiting thread to acquire it. 	
+	
+	Code Ex:
+	--------
+		    import java.util.concurrent.Semaphore;
+
+    public class SemaphoreExample {
+
+        private static final int PERMITS = 2; // Allow 2 threads to access the resource concurrently
+        private static final Semaphore semaphore = new Semaphore(PERMITS);
+
+        public static void main(String[] args) {
+            for (int i = 0; i < 5; i++) {
+                new Thread(() -> {
+                    try {
+                        semaphore.acquire(); // Acquire a permit
+                        System.out.println("Thread " + Thread.currentThread().getId() + " acquired a permit");
+                        // Simulate some work
+                        Thread.sleep((long) (Math.random() * 2000));
+                        System.out.println("Thread " + Thread.currentThread().getId() + " finished work");
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        semaphore.release(); // Release the permit
+                        System.out.println("Thread " + Thread.currentThread().getId() + " released a permit");
+                    }
+                }).start();
+            }
+        }
+    }
+	
+	
+	Note:
+		SEMAPHORE also used in circuit breaker as a execution strategy.
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------------------------------------		
+
+	
+https://medium.com/@greekykhs/countdownlatch-vs-cyclicbarrier-26d9cb214319
+
+Let’s take a hypothetical example of a meditation room, where people come to relax. Here a person is a thread, a meditation room is a resource:
+
+->	Below are few concurrency utilities that controls access to a shared resource using permits, allowing you to limit the number of threads that can access it concurrently. and also preventing race conditions and ensuring thread safety. 
+	
+
+	MUTEX:
+		If only one person is allowed to come inside the meditation room it will be called MUTEX.
+	
+	SEMAPHORE:
+		Assume N numbers of people are allowed to come inside the meditation room. If anybody leaves the room then another person can be allowed to come inside and relax. This will be called SEMAPHORE.
+		
+		The Semaphore class is part of the java.util.concurrent package, which provides high-level concurrency constructs introduced in Java 5. 	
+	
+	COUNTDOWNLATCH:
+		No one is allowed to enter the meditation room until x number of people arrives, where each person has free will to leave the meditation room. This will be called COUNTDOWNLATCH.
+	
+	CYCLICBARRIER:
+		Assume no one is allowed to start the meditation unless (they can come inside the meditation room) until X number of people comes inside the meditation room. Let’s say we have an instructor, who will not start the meditation class until all the persons enter and grab the seat. Once the meditation class is finished the same barrier will be applied for the next class. This is called CYCLICBARRIER.
+
+
+CyclicBarrier:
+	Use when you want multiple threads to wait for each other to reach a common barrier point before proceeding further.
+	The CyclicBarrier allows you to specify the number of threads required to reach the barrier.
+	When the specified number of threads arrive at the barrier, they all resume execution.
+	Once the barrier is tripped, it can be reused for subsequent synchronization points.
+
+CountDownLatch:
+	Use when one or more threads need to wait for a certain number of events to occur before proceeding.
+	The CountDownLatch is initialized with a count, and each time the countDown() method is called, the count is decremented.
+	Threads can use the await() method to wait until the count reaches zero.
+	Unlike CyclicBarrier, once the latch reaches zero, it cannot be reset and cannot be reused for subsequent synchronization points.
+
+	
+4.  CountDownLatch vs CyclicBarrier:
+------------------------------------
+	awaits() Method:	Blocks thread until the count is zero	|	Blocks thread until a specific number of threads reach a barrier	
+	
+	if we need to perform some action after all tasks reach a barrier point - like merging the results, publishing notifications - barrier actions can create a big difference. CountDownLatch doesn't provide this sort of action out of the box.
+	
+	*The main difference between CountDownLatch and CyclicBarrier is the way they handle exceptions. 
+	CountDownLatch does not provide any mechanism to handle exceptions thrown by the threads that are waiting on the latch. If an exception is thrown by one of the threads, the latch will not be decremented, and the other threads will continue to wait indefinitely.
+
+	CyclicBarrier, on the other hand, provides a way to handle exceptions thrown by the threads. It has a broken state that is set when a thread throws an exception while waiting on the barrier. Once the barrier is broken, all threads that are currently waiting on the barrier will be released and any subsequent threads that try to wait on the barrier will be thrown a BrokenBarrierException.
+	
+		If the current thread is interrupted, CountDownLatch will throw InterruptedException. It will not impact other threads.	
+		If one thread is interrupted while waiting, then all other waiting threads will throw BrokenBarrierException
+	
+	A CyclicBarrier can be used multiple times. A CountDownLatch, on the other hand, is single-use only.
+	
+	Always remember we can not reuse CountDownLatch once the count is reached zero, this is the main difference between CountDownLatch and CyclicBarrier.
+	
+	CyclicBarrier needs only one type of thread, whereas CountDownLatch requires two types of thread. 
+		In other words, to make use of CyclicBarrier, there must be some threads invoking await(). 
+		
+		To use CountDownLatch, on the other hand, there must be some threads invoking await() and also others invoking countDown(). In this regard, CountDownLatch waits for events via countDown() whereas CyclicBarrier waits for threads via await().
+	
+	CyclicBarrier allows a number of threads to wait on each other, whereas CountDownLatch allows one or more threads to wait for a number of tasks to complete. 
+	We can say CyclicBarrier maintains a count of threads whereas CountDownLatch maintains a count of tasks.
+
+	
+==================================
+CountDownLatch:
+--------------
+	Consider a scenario where we have requirement where we have three threads "A", "B" and "C" and we want to start thread "C" only when "A" and "B" threads completes or partially completes their task.	
+	
+		It can be applied to real world IT scenario:
+		-------------------------------------------
+			Consider a scenario where manager divided modules between development teams (A and B) and he wants to assign it to QA team for testing only when both the teams completes their task.
+	
+	
+		 	
+		CountDownLatch latch = new CountDownLatch(4);	:create a task that is going to wait for four threads before it starts
+			CountDownLatch.await()   					:Main Thread waits on Latch by calling
+			......
+			CountDownLatch.countDown() 				:While The other thread calls inform that they have completed their task.
+	
+
+CyclicBarrier:
+--------------
+	Let’s say there is a set of bikers are planning a trip and all of them wanted to assemble at a specific point before continuing their further journey.
+
+SEMAPHORE:
+---------
+	Used in Circuit Breaker pattern as an execution strategy.
+	Controls access to a shared resource using permits, allowing you to limit the number of threads that can access it concurrently. 
+
+		private static final int PERMITS = 2; 							 :Allow 2 threads to access the resource concurrently
+        private static final Semaphore semaphore = new Semaphore(PERMITS);
+			semaphore.acquire(); // Acquire a permit
+			semaphore.release(); // Release the permit
+
+
+	
+	

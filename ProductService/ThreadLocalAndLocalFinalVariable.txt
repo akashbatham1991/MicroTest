@@ -1,0 +1,99 @@
+
+https://stackoverflow.com/questions/29225745/where-is-the-local-final-variable-in-method-stored-stack-heap	
+
+Local Final Variable (synthetic field) (hidden field):
+------------------------------------------------------
+	final variable also stored in "stack" BUT the copy of the variable which a inner class have stored in "heap".
+	
+	class Employee {
+
+		public void getAddress(){
+		
+		"final" int location = 13; 
+				int notFinalVar = 13;   
+		
+		class Address {
+			System.out.println (location); 
+			System.out.println (notFinalVar); // compiler error
+		}
+	}
+
+	Inner Class Concept:
+	--------------------
+	Where is the local final variable in method stored (Stack/Heap)?
+		The answer is stack. 
+		All local variable (final or not) stored into the stack and go out of scope when the method execution is over.
+		
+		But about final variable JVM take these as a constant as they will not change after initiated . And when a inner class try to access them compiler create a copy of that variable (not that variable it self) into the heap and create a synthetic field inside the inner class so even when the method execution is over, it is accessible because the inner class has it's own copy.
+
+	Synchronization Concept:
+	-----------------------		
+		Do not synchronize on "non final field" on "synchronized block" in Java. because reference of non final field may change any time and then different thread might synchronizing on different objects i.e. no synchronization at all.		
+		
+		
+		
+		
+ Thread Local Fields:
+---------------------
+	In Object-Oriented Programming (OOP), objects actually need to maintain state through fields and implement behavior through one or more methods.
+
+	If we actually need to maintain state, we can create thread-safe classes that don’t share state between threads by making their fields thread-local.
+
+	*We can easily create classes whose fields are thread-local by simply defining "private" fields in Thread classes.
+	
+	For example:
+	------------
+		public class ThreadA extends Thread {
+    
+			private final List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6);
+    
+			@Override
+			public void run() {
+				numbers.forEach(System.out::println);
+			}
+		}
+		
+		
+		public class ThreadB extends Thread {
+    
+			private final List<String> letters = Arrays.asList("a", "b", "c", "d", "e", "f");
+    
+			@Override
+			public void run() {
+				letters.forEach(System.out::println);
+			}
+		}
+		
+		In both implementations, the classes have their own state, but it’s not shared with other threads. 
+		So, the classes are thread-safe.
+		
+		
+	Another way:
+	------------
+	Similarly, we can create thread-local fields by assigning ThreadLocal instances to a field.
+	Let’s consider the following StateHolder class:	
+	
+		public class StateHolder {
+			private final String state;
+
+			// standard constructors / getter
+		}
+		
+		We can easily make it a thread-local variable:
+
+		public class ThreadState {
+    
+			public static final ThreadLocal<StateHolder> statePerThread = new ThreadLocal<StateHolder>() {
+				@Override
+				protected StateHolder initialValue() {
+					return new StateHolder("active");  
+				}
+			};
+
+			public static StateHolder getState() {
+				return statePerThread.get();
+			}
+		}
+	
+	Thread-local fields are pretty much like normal class fields, except that each thread that accesses them via a setter/getter gets an independently initialized copy of the field so that each thread has its own state.
+

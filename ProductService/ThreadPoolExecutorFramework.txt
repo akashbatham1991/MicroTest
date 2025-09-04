@@ -1,0 +1,572 @@
+https://medium.com/codex/executorservice-internal-working-in-java-7b286882f54e#:~:text=ThreadPool%20Executor%20has%20the%20CorePoolSize,the%20Queue%20to%20execute%20them.
+**https://www.baeldung.com/thread-pool-java-and-guava
+
+https://www.baeldung.com/java-executor-service-tutorial
+https://howtodoinjava.com/java/multi-threading/java-thread-pool-executor-example/
+https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ThreadPoolExecutor.html
+https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/Executors.html
+https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/concurrent/Executors.html
+
+https://github.com/openjdk-mirror/jdk7u-jdk/blob/master/src/share/classes/java/util/concurrent/Executors.java#L133
+
+https://medium.com/swlh/futures-in-java-completablefuture-69acc14fa71d
+https://www.baeldung.com/java-completablefuture
+https://stackoverflow.com/questions/52303472/executorservice-vs-completablefuture
+https://www.baeldung.com/java-completablefuture-threadpool
+
+
+Why we need ExecutorService Framework:
+--------------------------------------
+	To enable "parallelism", you can leverage the Threading Model where you have say 10 Threads, and each thread can receive an Input, and make the Backend call to process them. With this, your system can support 10 times the load it does earlier. As you would have 10 Threads, waiting to receive Input and processing them, at any given time you would be able to process 10 inputs.
+	But again, this comes with a price.
+
+	You need to worry about: 
+		the inter-thread communications, 
+		Spawning up new Threads at high load and 
+		terminating the idle threads at low peaks, 
+		ensuring locking, 
+		Race conditions, 
+		deadlocks between the threads, 
+		maintaining states of various threads, etc. 
+		
+	So to ease out these things, so that a developer can just focus on the core things he is interested in, eg. here just making backend calls, there is ExecutorService Framework in Java JDK.
+	
+	ThreadPoolExecutor is just the implementation of the ExecutorService interface.
+	There are several implementations to choose from in the java.util.concurrent package, or you can create your own.
+	
+	
+Executor Service Framework:
+---------------------------
+	It would be the most favourite and easy-to-use concept to "execute the work in parallel", without complexities that come along with multi-threading. 
+	Developers can spawn up an Executor Service and submit tasks to it, for it to run in a parallel manner.
+	
+	*The pattern allows us to control the number of threads the application creates and their life cycle.
+	
+	The main pieces are: 
+	--------------------
+		Executor interface, 
+			its sub-interface ExecutorService and 
+					the ThreadPoolExecutor class that implements both interfaces.
+	
+
+ThreadPoolExecutor:
+-------------------
+	ThreadPool Executors need some defined parameters, which it uses to control the number of threads it will create to handle the tasks submitted to it. 
+	ThreadPoolExecutor is just the implementation of the ExecutorService interface.
+	
+	With ThreadPoolExecutor, we only have to implement the Runnable objects and send them to the executor. 
+	Now ThreadPoolExecutor is responsible for executing, instantiating, and running the tasks with necessary threads.
+		
+	ThreadPoolExecutor(int corePoolSize, 	// number of threads to keep in pool even if idle
+                 int maximumPoolSize, 		// max number of threads to allow in the pool
+                 long keepAliveTime, 		// max time for idle thread to wait for new task before terminating
+                 TimeUnit unit, 			// related to keepAliveTime
+                 BlockingQueue<Runnable> workQueue) {
+
+	
+	
+Thread Pool:
+------------
+	A thread pool is a collection of "pre-initialized" threads.
+	When we use a thread pool, we write our concurrent code in the form of parallel tasks and submit them for execution to an instance of a thread pool.
+	
+https://www.linkedin.com/advice/1/what-best-performance-tuning-techniques-optimizing-qy4he	
+
+		
+	
+Jargons in Thread Pool Executors:
+---------------------------------
+	Queues:
+	-------
+		So if no Thread is free, we can push all tasks to the Queue, and tasks will eventually be read by the Threads for executions once they are freed from their current work.
+		
+	CorePoolSize:
+	-------------
+		CorePoolSize is the number of threads that must be run in parallel.
+		If say CorePoolSize = 10 and only 5 tasks have been submitted so far, then we would have 5 Threads running/active yet. 
+		When the 6th Task will be submitted, instead of putting the new task into the Queue, the 6th Thread will be created and this task will be submitted to it immediately.
+		So if fewer than the CorePoolSize threads are running, a new thread will always be created to handle the new Task.
+		
+	MaximumPoolSize:
+	----------------
+		If a request cannot be queued, a new thread is created unless this would exceed maximumPoolSize, in which case, the task will be rejected.
+		
+		So when we have CorePoolSize number of threads created, and new task arrives, they would be put to the Queue. Now once the queue also gets full, then new Threads will be created if MaximumPoolSize > CorePoolSize.
+		So say CorePoolSize was 10 and MaximumPoolSize=15, and we have a Queue of size 10. If we have 20 requests that came in at a high frequency, such that all 10 Threads were created and started running their tasks, and extra 10 tasks were put to the Queue. Now when the 21st Task will arrive, and since MaximumPoolSize > CorePoolSize, a new Thread will be created which can start reading from the Queue to make a vacancy for the 21st Task in the Queue.
+		
+	KeepAliveTime:
+	--------------
+		Max time for idle thread to wait for new task before terminating
+		
+		
+	workQueue:
+	----------
+		The queue is used to hold the submitted tasks. 
+		
+		There can be 3 types of Queue that can be used:
+		-----------------------------------------------
+			Bounded Queue(like ArrayBlockingQueue):					(fixed size)
+			Unbounded Queue(like LinkedBlockingQueue):				(do not have any size)
+			Direct handoffs(like Synchronous Queue):				(very high number)	
+			
+			
+			Bounded Queue( like ArrayBlockingQueue): 
+				Such queues have "fixed size", so when requests > CorePoolSize, a new Request will be added to the Queue. Once this queue is also full, new threads(if MaximumPoolSize > CorePoolSize) will be created.
+			
+			Unbounded Queue(like LinkedBlockingQueue): 
+				Such Queues "do not have any size set", thus called unbounded. Since such queues will never get full, the en-queue will never fail, and more threads than the CorePoolSize will never be created, and hence in such queues, MaximumPoolSize property is *not honored. 
+				
+			Direct handoffs(like Synchronous Queue): 
+				It won't hold any task and whenever a request comes to add to the Queue, it hands-off to the Thread. In case no thread is available, then the en-queue operation will fail. 
+				Usually, MaximumPoolSize is set to a very high number if such a queue is to be used so that we can handle all the incoming requests with new Threads, instead of holding them to the Queue. 
+				It finds its usage where more real-time operations are to be performed without storing them and executing them later.
+	
+	
+	ThreadFactory:
+	--------------
+		Since new Threads are created with new requests coming in, we need a Factory that can create a new Thread. 
+		
+		By default, all the threads created are of the same Priority, of the same Thread-group, non-daemon status, etc. Of course, such things can be changed by providing your own ThreadFactory.
+		
+	RejectedExecutionHandler:
+	------------------------
+		When the Executor has been shut down, and if both Queue is full and MaximumPoolSize threads are created, new requests can not be handled, so in these scenarios, the incoming request will be rejected. 
+		You can provide your own RejectionHandler to handle such rejections. 
+		
+		In either case, the execute method invokes the RejectedExecutionHandler.rejectedExecution(Runnable, ThreadPoolExecutor) method:
+		
+		By default there are 4 such Handlers provided:
+		-----------------------------------------------
+			AbortPolicy: 			An RejectedExecutionException is thrown if this handler is used.
+			CallerRunsPolicy: 		With this handler, the Client itself runs the task, meaning run that task synchronously 
+									rather than asynchronously.	
+			DiscardPolicy: 			With this handler, the rejected Request is simply dropped/ignored.
+			DiscardOldestPolicy: 	With this handler, the task oldest in the Queue is dropped, and then this Task is retried.
+		
+		
+https://stackoverflow.com/questions/46064786/rejectedexecutionhandler-callerrunspolicy-vs-abortpolicy
+RejectedExecutionHandler - CallerRunsPolicy vs AbortPolicy		(both are handlers for rejected task)
+----------------------------------------------------------
+	In ThreadPoolExecutor.CallerRunsPolicy, 
+		A handler for rejected tasks that runs the rejected task directly in the calling thread of the execute method.
+		Meaning the thread that invokes execute, itself runs the task. Meaning, instead of running that particular rejected task in parallel, run it synchronously by calling service directly.
+		
+		It will impact overall performance of your application. If your application can afford this delay. you can use this policy. 
+		If you can't afford delay and fine with discarding that task, you can go for ThreadPoolExecutor.DiscardPolicy
+
+	ThreadPoolExecutor  tpool= new ThreadPoolExecutor(2,3,500, TimeUnit.MILLISECONDS,
+	new LinkedBlockingQueue<Runnable>(), new ThreadPoolExecutor.CallerRunsPolicy()); 
+	
+		
+Is using unbounded queue means no utility for RejectedExecutionHandler?
+----------------------------------------------------------------------
+	Yes. Unbounded queue means no utility for RejectedExecutionHandler. 
+	
+	When you are using unbounded queue, make sure that your application throughput is under control with respect to Memory and CPU utilization. If you are submitting short duration tasks with less memory footprint of data in that task, you can use unbounded queue.
+		
+		
+Note that ThreadPool has 5 states:
+----------------------------------
+	Running: 	ThreadPool can receive new tasks.
+	
+	Shutdown. 	Do not accept new tasks, but can process the tasks which are already added in the Queue.
+	
+	Stop: 		Do not accept new tasks, and do not process tasks present in the queue, and also interrupt the currently 
+				executing tasks.
+	
+	Tidying: 	All tasks have been terminated, WorkerCount is zero. The threads will then be in the Tidying state and will 
+				run the Terminated() hook method soon.
+	
+	Terminated: Perform Terminated() method. It's a hook method provided so that we can do some handling at the termination of 
+				ThreadPool.
+		
+		
+		
+-Creating the ThreadPoolExecutor:
+---------------------------------	
+	ExecutorService threadPoolExecutor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+	
+	By Specifying the corePoolSize, MaximumPoolSize, keepAliveTime, etc, we can modify how we want the ThreadPoolExecutor to look.
+	But if we do not want to worry
+	so much about all these, then we can also leverage some inbuilt methods present:
+	
+	1. Fixed thread pool executor:
+	-----------------------------
+		Creates a thread pool that reuses a fixed number of threads to execute any number of tasks. If additional tasks are submitted when all threads are active, they will wait in the queue until a thread is available.
+		
+		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+
+		
+	2. Cached thread pool executor:
+	------------------------------
+		 Creates a thread pool that creates new threads as needed, and reuses previously constructed threads when they are available. 
+		 Since this creates threads as and when needed, "this must NOT be used if tasks are long-running". It can bring down the system if the number of threads goes beyond what the system can handle. 
+		 *If you can think how is this working- it's simple, it has maximumPoolSize set to be Infinite.
+		 
+		 ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+
+		 
+	3. Scheduled thread pool executor:
+	----------------------------------
+		Creates a thread pool that can schedule commands to run after a given delay, or to execute periodically.
+
+		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newScheduledThreadPool(10);
+		
+		
+	4. Single thread pool executor:
+	-------------------------------
+		Creates single thread to execute all tasks. Since all tasks will be executed by a single thread, all tasks executes sequentially. 
+		As you might have guessed, it has corePoolSize and maximumPoolSize = 1.
+		
+		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newSingleThreadExecutor();
+
+		
+----------				
+Executors:
+----------
+	The Executors helper class contains several methods for the creation of preconfigured thread pool instances. 
+	
+Executor and ExecutorService interfaces:
+----------------------------------------
+	We use the Executor and ExecutorService interfaces to work with different thread pool implementations in Java.
+	Usually, we should keep our code decoupled from the actual implementation of the thread pool and use these interfaces throughout our application.
+	
+-With Executor:
+---------------
+	The Executor interface has a single execute method to submit Runnable instances for execution.
+
+		Executor executor = Executors.newSingleThreadExecutor();
+		executor.execute(() -> System.out.println("Hello World"));		//*use execute (accepts only runnable instance)
+	
+	
+-With ExecutorService:
+----------------------	
+	We can assign tasks to the ExecutorService using several methods including execute(), which is inherited from the Executor interface, and also submit(), invokeAny() and invokeAll().
+	
+	Create an ExecutorService, submit a task and then use the returned Future‘s get method to wait until the submitted task finishes and the value is returned:
+	
+		ExecutorService executorService = Executors.newFixedThreadPool(10);
+		Future<String> future = executorService.submit(() -> "Hello World");		//*use submit (accepts both runnable and callable instance)
+		// some operations
+		String result = future.get();
+	
+	Here, we overload the "submit: method to take either Runnable or Callable. Both of these are functional interfaces, and we can pass them as lambdas.
+
+	Note:
+		Runnable interface does not throw an exception and does not return a value. 
+		Callable interface allows us to throw an exception and return a value.	
+	
+		Finally, to let the compiler infer the Callable type, simply return a value from the lambda.
+	
+	
+	-Executors.newFixedThreadPool:
+	------------------------------
+		creates a ThreadPoolExecutor with "equal" corePoolSize and maximumPoolSize parameter values and a "0" keepAliveTime.
+		
+		ThreadPoolExecutor executor =  (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+		executor.submit(() -> {
+				Thread.sleep(1000);
+				return null;
+			});
+	
+		
+	-Executors.newCachedThreadPool():
+	---------------------------------
+		corePoolSize to "0" and set the maximumPoolSize to "Integer.MAX_VALUE" and the keepAliveTime is "60 seconds":
+		
+		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+			executor.submit(() -> {
+					Thread.sleep(1000);
+					return null;
+				});
+				
+				
+	-Executors.newSingleThreadExecutor():
+	-------------------------------------
+		ThreadPoolExecutor containing a single thread. 
+		The single thread executor is ideal for creating an event loop. 
+		The corePoolSize and maximumPoolSize parameters are equal to "1", and the keepAliveTime is "0".
+		
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+				executor.submit(() -> {
+				counter.set(1);
+			});
+		
+		**This ThreadPoolExecutor is decorated with an immutable wrapper, so it can’t be reconfigured after creation. 
+		Note that this is also the reason we can’t cast it to a ThreadPoolExecutor.
+		
+		
+	-ScheduledThreadPoolExecutor:
+	----------------------------
+		create a ScheduledThreadPoolExecutor with a given corePoolSize, unbounded maximumPoolSize and "0" keepAliveTime.
+		
+		ScheduledExecutorService executor = Executors.newScheduledThreadPool(5);
+				executor.schedule(() -> {
+					System.out.println("Hello World");
+					}, 
+					500, 
+					TimeUnit.MILLISECONDS);
+					
+			run a task after 500 milliseconds delay and then repeat it every 100 milliseconds.
+			
+->Configuration:			
+------------------					CorePoolSize		MaximumPoolSize			KeepAliveTime(sec)
+	newFixedThreadPool				same 				same					0	
+	newSingleThreadExecutor			1					1						0
+	newCachedThreadPool				0					Integer.MAX_VALUE		60
+	newScheduledThreadPool			same				Integer.MAX_VALUE		0
+	
+			
+			
+-Shutting Down an ExecutorService:
+---------------------------------
+	ExecutorService will not be automatically destroyed.
+	To properly shut down an ExecutorService, we have the shutdown() and shutdownNow() APIs.
+	The shutdown() method doesn’t cause immediate destruction of the ExecutorService. It will make the ExecutorService stop accepting new tasks and shut down after all running threads finish their current work:
+	
+		List<Runnable> notExecutedTasks = executorService.shutDownNow();
+		
+		This method returns a list of tasks that are waiting to be processed. It is up to the developer to decide what to do with these tasks.
+
+					
+					
+Notes:
+-----
+	Although we can create ThreadPoolExecutor directly using one of its constructors, it’s recommended to use the Executors class.
+	
+	One critical aspect of the ThreadPoolExecutor class, and of the executors in general, is that you have to end it explicitly. If you don’t do this, the executor will continue its execution, and the program won’t end.
+	
+	The ThreadPoolExecutor class provides a lot of methods to obtain information about its status: 
+		getPoolSize(), 
+		getLargestPoolSize() 
+		getActiveCount(),
+		getCompletedTaskCount()
+		
+	
+		
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		
+			This ThreadPoolExecutor is decorated with an immutable wrapper, so it can’t be reconfigured after creation. 
+			Note that this is also the reason we can’t cast it to a ThreadPoolExecutor.
+	
+	
+===============================================================================
+
+ExecutorService vs CompletableFuture
+------------------------------------
+
+	I have been trying to implement an asynchronous process, where the parent method calls a child method which would in-turn call three different methods. I want all of this process to be done asynchronously i.e. after these three calls in the child method are made in parallel the "control should go back to the parent method" and continue with the rest of its execution.
+
+	I have this code which when tested works fine.
+	
+	public ReturnSomething parent(){
+		child();
+		...//rest to UI
+	}
+
+	private void child(){
+		ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+		Runnable service1 = () -> {
+			MyFileService.service1();
+		};
+
+		Runnable service2 = () -> {
+			MyFileService.service2();
+		};
+
+		Runnable service3 = () -> {
+			MyFileService.service3();
+		};
+
+	executorService.submit(service1);
+	executorService.submit(service2);
+	executorService.submit(service3);
+	}
+
+
+	Now, my lead is asking me to use this rather.
+
+	public ReturnSomething parent(){
+		child();
+		...//rest to UI
+	}
+
+	private void child(){
+		CompletableFuture.supplyAsync(() ->  MyFileService.service1();
+		CompletableFuture.supplyAsync(() ->  MyFileService.service2();
+		CompletableFuture.supplyAsync(() ->  MyFileService.service3();
+	}
+
+
+	I understand that that CompletableFuture is new from Java 8, but how is the 2nd code better than the 1st? 
+	Since, for ExecutorService, I am not calling the "get()" method I would not be waiting for the aysnc response. So, can some one please explain what is the difference?
+
+
+	ANS:
+	---
+	Functionally, the two approaches are more or less the same:
+		you submit your tasks for execution;
+		you don't wait for the result.
+
+	Technically both are same, however, there are some subtle differences:
+		In the second approach, you didn't specify an executor, so it will use the common ForkJoinPool. You would have to pass an executor as second argument of supplyAsync() if you don't want that;
+		
+		The CompletableFuture API allows to easily chain more calls with thenApply(), thenCompose() etc. It is thus more flexible than the simple Future returned by ExecutorService.submit();
+
+		Using CompletableFuture allows to easily return a future from your child() method using return CompletableFuture.allOf(the previously created futures).
+
+
+	Concerning readability, it's a matter of preference, but if you want equivalent code the CompletableFuture approach might be considered a bit less readable once you have formatted it similarly. Compare:
+	
+		executorService.submit(MyFileService::service1);
+		executorService.submit(MyFileService::service2);
+		executorService.submit(MyFileService::service3);
+		
+			with
+
+		CompletableFuture.supplyAsync(MyFileService::service1, executorService);
+		CompletableFuture.supplyAsync(MyFileService::service2, executorService);
+		CompletableFuture.supplyAsync(MyFileService::service3, executorService);
+		
+		
+	The advantage of the second approach is simply less boilerplate. That's what runAsync() and supplyAsync() are good for.
+	But if you don't actually return any value, you should use runAsync().
+	What second approach also provides, is the ability to wait for all futures with CompletableFuture.allOf(). Which is also doesn't exist in the first scenario.
+	
+	In 1st scenario, you created a new instance of ExecutorService every time the parent() makes a call to child().
+	Otherwise as well, the CompletableFuture.supplyAsync returns a much convenient way to get a reference to a common shared pool which will ease your life.
+
+	If you are using executorservice, don't forget to call shutdown() on the executor. Also you can as well make use of runAsync() instead of supplyAsync().
+	
+	
+https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html	
+->CompletableFuture :
+---------------------
+	Java 8’s Concurrent API introduced CompletableFuture, a valuable tool for simplifying asynchronous and non-blocking programming.
+	Methods are available in two variants: non-async and async.
+	
+	When utilizing thenApply(), we pass a function as a parameter that takes the previous value of the CompletableFuture as input, performs an operation, and returns a new value. Consequently, a fresh CompletableFuture is created to encapsulate the resulting value.
+	
+	if we use the async methods without explicitly providing an Executor, the functions will be executed using ForkJoinPool.commonPool().
+		CompletableFuture<String> name = CompletableFuture.supplyAsync(() -> "Baeldung");
+
+	
+	We can notice that all the async methods are overloaded, providing an alternative that accepts the code to execute as well as an Executor. We can use this in order to use an explicit thread pool for the async operations.
+	
+		Executor testExecutor = Executors.newFixedThreadPool(5);
+		CompletableFuture<String> name = CompletableFuture.supplyAsync(() -> {"Baeldung"}, testExecutor );
+
+			
+
+Diff ways:
+------------
+1)
+	Executor executor = Executors.newFixedThreadPool(10);
+	executor.execute(() -> System.out.println("Hello World"));
+
+2)		
+	ExecutorService executorService = Executors.newFixedThreadPool(10);
+	Future<String> future = executorService.submit(() -> "Hello World");
+	
+3)	
+	ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+	executor.execute(() -> System.out.println("Hello World"));				
+	Future<String> future = executor.submit(() -> "Hello World");	//or
+	
+		
+4)		
+	CompletableFuture<String> name = CompletableFuture.supplyAsync(() -> "Hellow World");
+
+5)
+	Executor testExecutor = Executors.newFixedThreadPool(5);
+	CompletableFuture<String> name = CompletableFuture.supplyAsync(() -> {"Hellow World"}, testExecutor );
+	
+	
+Extra:
+------	
+	ExecutorService exec = Executors.newFixedThreadPool(5);
+	List<Future<String>> results = exec.invokeAll(objects);
+	
+	finally {
+			exec.shutdown();
+			}
+	
+	
+Methods:
+--------	
+->	
+void execute(Runnable task)
+
+<T> Future<T> submit(Callable<T> task)
+	
+static CompletableFuture<Void>	runAsync(Runnable runnable)						//return no value, similar to execute
+	Returns a new CompletableFuture that is asynchronously completed by a task running in the ForkJoinPool.commonPool() after it runs the given action.
+	
+static CompletableFuture<Void>	runAsync(Runnable runnable, Executor executor)
+	Returns a new CompletableFuture that is asynchronously completed by a task running in the given executor after it runs the given action.
+	
+static <U> CompletableFuture<U>	supplyAsync(Supplier<U> supplier)			//return value, similar to submit
+	Returns a new CompletableFuture that is asynchronously completed by a task running in the ForkJoinPool.commonPool() with the value obtained by calling the given Supplier.
+	
+static <U> CompletableFuture<U>	supplyAsync(Supplier<U> supplier, Executor executor)
+	Returns a new CompletableFuture that is asynchronously completed by a task running in the given executor after it runs the given action.
+	Returns a new CompletableFuture that is asynchronously completed by a task running in the given executor with the value obtained by calling the given Supplier.
+	
+<U> CompletableFuture<U>	thenApply(Function<? super T,? extends U> fn)
+	
+	
+	
+->Real Life Use cases:
+---------------------
+1)
+	Creating {} tenants in parallel mode.:
+	-------------------------------------
+		ExecutorService pool = Executors.newFixedThreadPool(10);
+		for (TenantModel model : listOfTenants) {
+			Future<TenantRetrofitResponse> futureResponse =
+             pool.submit(() -> tenantManagementService.create(defaultTenantConfig, model));
+        }
+		
+		
+2)Bring out cache invalidation logic from person update flow.		
+=====================================================
+https://engconf.int.kronos.com/pages/viewpage.action?spaceKey=PEOP&title=Bring+out+CacheInvalidation+Logic+in+different+boundary
+
+
+
+
+-----
+-Java BlockingQueue:
+-------------------
+ It allows any operation to wait until it can be successfully performed.
+
+	For example, 
+		if we want to delete an element from an empty queue, then the blocking queue allows the delete operation to wait until the queue contains some elements to be deleted.
+
+Since BlockingQueue is an interface,classes that implement it:
+	ArrayBlockingQueue
+	LinkedBlockingQueue
+
+-We must import the java.util.concurrent.BlockingQueue package in order to use BlockingQueue.
+
+-Why BlockingQueue?
+-------------------
+	In Java, BlockingQueue is considered as the thread-safe collection. It is because it can be helpful in multi-threading operations.
+	Suppose one thread is inserting elements to the queue and another thread is removing elements from the queue.
+	Now, if the first thread runs slower, then the blocking queue can make the second thread wait until the first thread completes its operation.
+
+
+-Java ArrayBlockingQueue:
+------------------------
+Why use ArrayBlockingQueue?
+--------------------------
+	The ArrayBlockingQueue uses arrays as its internal storage.
+	It is considered as a thread-safe collection. Hence, it is generally used in multi-threading applications.
+
+
+-Java LinkedBlockingQueue:
+-------------------------
+Why use LinkedBlockingQueue?
+	The LinkedBlockingQueue uses linked lists as its internal storage.
+	It is considered as a thread-safe collection. Hence, it is generally used in multi-threading applications.

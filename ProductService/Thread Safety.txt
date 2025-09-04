@@ -1,0 +1,475 @@
+https://www.baeldung.com/java-thread-safety
+https://javarevisited.blogspot.com/2018/07/java-multi-threading-interview-questions-answers-from-investment-banks.html#axzz8Twp3hMY5
+
+What Is Thread-Safety:
+----------------------
+	Java supports multithreading out of the box. 
+	
+	This means that different threads can access the same resources without exposing erroneous behavior or producing unpredictable results. This programming methodology is known as “thread-safety.”
+	
+	In multithreaded environments, we need to write implementations in a thread-safe way. 
+	
+	
+	
+How to achieve it:
+------------------
+There are multiple ways to achieve thread safety in java as below:
+	
+	Synchronized Methods
+	Synchronized Statements/Blocks
+	Synchronized Collections
+	Concurrent Collections
+	Immutable Implementations
+	Stateless Implementations
+	Volatile Fields
+	Thread-Local Fields
+	Atomic Objects
+	Other Objects as a Lock
+	Reentrant Locks
+	Read/Write Locks
+	sync method
+	
+-----------------------------------------------------START------------------------------------------------------------------	
+	
+	
+1) Stateless Implementations:
+------------------------------
+	In most cases, errors in multithreaded applications are the result of incorrectly sharing state between several threads.
+	Stateless implementations are the simplest way to achieve thread-safety.
+	
+	So, the first approach that we’ll look at is to achieve thread-safety using stateless implementations.
+	
+	Let's consider a simple utility method:
+	
+	->Stateless:
+	-----------
+	// The state is derived by what is passed into the function
+
+	function int addOne(int number)
+	{
+		return number + 1;
+	}
+
+	
+	All threads can safely call the addOne() method and will get the expected result without interfering with each other and without altering the output that the method generates for other threads.
+
+	Therefore, stateless implementations are the simplest way to achieve thread-safety.
+	
+	The factorial() method is a stateless deterministic function. Given a specific input, it always produces the same output.
+	
+	The method neither relies on external state nor maintains state at all. So, it’s considered to be thread-safe and can be safely called by multiple threads at the same time.
+
+	
+	Extra: Stateful:
+	----------------
+	// The state is maintained by the function
+
+	private int number = 0; 		//initially zero
+
+	function int addOne()
+	{
+		number++;					//is a combination of three operations: obtaining the value, incrementing, and writing the 
+		return number;				// updated value back.		
+	}
+	
+	
+
+2) Immutable Implementations:
+-----------------------------
+	If we need to share state between different threads, we can create thread-safe classes by making them immutable.
+	a class instance is immutable when its internal state can’t be modified after it has been constructed.
+	
+	The easiest way to create an immutable class in Java is by declaring all the fields private and final and not providing setters:
+	
+	public "final" class Person {
+
+		"private final" String name;
+
+		public Person(String name) {
+			this.name = name;
+		}
+
+		public String getName() { 
+			return this.name;
+		}
+	}
+	
+	Immutability is just another way to achieve thread-safety.
+	
+	
+3) Thread-Local Fields:
+-----------------------
+	In Object-Oriented Programming (OOP), objects actually need to maintain state through fields and implement behavior through one or more methods.
+
+	If we actually need to maintain state, we can create thread-safe classes that don’t share state between threads by making their fields thread-local.
+
+	We can easily create classes whose fields are thread-local by simply defining "private" fields in Thread classes.
+	
+	For example:
+	------------
+		public class ThreadA extends Thread {
+    
+			private final List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6);
+    
+			@Override
+			public void run() {
+				numbers.forEach(System.out::println);
+			}
+		}
+		
+		
+		public class ThreadB extends Thread {
+    
+			private final List<String> letters = Arrays.asList("a", "b", "c", "d", "e", "f");
+    
+			@Override
+			public void run() {
+				letters.forEach(System.out::println);
+			}
+		}
+		
+		In both implementations, the classes have their own state, but it’s not shared with other threads. 
+		So, the classes are thread-safe.
+		
+		
+	Another way:
+	------------
+	Similarly, we can create thread-local fields by assigning ThreadLocal instances to a field.
+	Let’s consider the following StateHolder class:	
+	
+		public class StateHolder {
+			private final String state;
+
+			// standard constructors / getter
+		}
+		
+		We can easily make it a thread-local variable:
+
+		public class ThreadState {
+    
+			public static final ThreadLocal<StateHolder> statePerThread = new ThreadLocal<StateHolder>() {
+				@Override
+				protected StateHolder initialValue() {
+					return new StateHolder("active");  
+				}
+			};
+
+			public static StateHolder getState() {
+				return statePerThread.get();
+			}
+		}
+	
+	Thread-local fields are pretty much like normal class fields, except that each thread that accesses them via a setter/getter gets an independently initialized copy of the field so that each thread has its own state.
+	
+	
+4) Synchronized Collections:
+----------------------------
+	We can easily create thread-safe collections by using the set of synchronization wrappers included within the collections framework.
+	
+	For example: 
+	-----------
+
+		Collection<Integer> syncCollection = Collections.synchronizedCollection(new ArrayList<>());
+	
+		Thread thread1 = new Thread(() -> syncCollection.addAll(Arrays.asList(1, 2, 3, 4, 5, 6)));
+		Thread thread2 = new Thread(() -> syncCollection.addAll(Arrays.asList(7, 8, 9, 10, 11, 12)));
+	
+		thread1.start();
+		thread2.start();
+
+	Let’s keep in mind that synchronized collections use intrinsic locking in each method.
+	This means that the methods can be accessed by only one thread at a time, while other threads will be blocked until the method is unlocked by the first thread.
+	
+	
+5) Concurrent Collections:
+--------------------------
+	Alternatively to synchronized collections, we can use concurrent collections to create thread-safe collections.
+
+	Java provides the java.util.concurrent package, which contains several concurrent collections, such as ConcurrentHashMap:
+		
+		Map<String,String> concurrentMap = new ConcurrentHashMap<>();
+			concurrentMap.put("1", "one");
+			concurrentMap.put("2", "two");
+			concurrentMap.put("3", "three");
+			
+			
+	Unlike their synchronized counterparts, concurrent collections achieve thread-safety by dividing their data into segments. 
+	
+	In a ConcurrentHashMap, for example, several threads can acquire locks on different map segments, so multiple threads can access the Map at the same time.
+
+	Concurrent collections are much more performant than synchronized collections, due to the inherent advantages of concurrent thread access.
+
+	*It’s worth mentioning that synchronized and concurrent collections only make the collection itself thread-safe and not the contents.
+	
+	
+6) Atomic Objects:
+------------------
+	It’s also possible to achieve thread-safety using the set of atomic classes that Java provides, including AtomicInteger, AtomicLong, AtomicBoolean and AtomicReference.
+
+	Atomic classes allow us to perform atomic operations, which are thread-safe, without using synchronization.
+	
+	To understand the problem this solves, let’s look at the following Counter class:
+
+	public class Counter {
+		private int counter = 0;
+    
+		public void incrementCounter() {
+			counter += 1;
+		}
+    
+		public int getCounter() {
+			return counter;
+		}
+	}
+	
+	Let’s suppose that in a race condition, two threads access the incrementCounter() method at the same time.
+
+	In theory, the final value of the counter field will be 2. But we just can’t be sure about the result because the threads are executing the same code block at the same time and incrementation is not atomic.
+
+	
+	Let’s create a thread-safe implementation of the Counter class by using an AtomicInteger object:
+	
+		public class AtomicCounter {
+    
+		private final AtomicInteger counter = new AtomicInteger();
+    
+		public void incrementCounter() {
+			counter.incrementAndGet();
+		}
+    
+		public int getCounter() {
+			return counter.get();
+		}
+	}
+
+	This is thread-safe because while incrementation, ++, takes more than one operation, incrementAndGet is atomic.
+	
+	
+7) Synchronized Methods:
+------------------------
+	The earlier approaches are very good for collections and primitives, but we’ll sometimes need greater control than that.
+
+	So, another common approach that we can use for achieving thread-safety is implementing synchronized methods.
+
+	Simply put, only one thread can access a synchronized method at a time, while blocking access to this method from other threads. Other threads will remain blocked until the first thread finishes or the method throws an exception.
+	
+	We can create a thread-safe version of incrementCounter() in another way by making it a synchronized method:
+
+		public synchronized void incrementCounter() {
+			counter += 1;
+		}
+		
+		Synchronized methods rely on the use of “intrinsic locks” or “monitor locks.” An intrinsic lock is an implicit internal entity associated with a particular class instance.
+		
+		When a thread calls a synchronized method, it acquires the intrinsic lock. After the thread finishes executing the method, it releases the lock, which allows other threads to acquire the lock and get access to the method.
+	
+	We can implement synchronization in instance methods, static methods and statements (synchronized statements).
+	
+	
+8) Synchronized Statements:
+---------------------------
+	Sometimes, synchronizing an entire method might be overkill if we just need to make a segment of the method thread-safe.
+	
+	To exemplify this use case, let’s refactor the incrementCounter() method:
+
+		public void incrementCounter() {
+			// additional unsynced operations
+		
+			synchronized(this) {
+				counter += 1; 
+			}
+			
+		}
+		
+	Synchronization is expensive, so with this option, we are able to only synchronize the relevant parts of a method.
+
+
+9) Other Objects as a Lock:
+---------------------------
+	We can slightly improve the thread-safe implementation of the Counter class by exploiting another object as a monitor lock, instead of this.
+	Not only does this provide coordinated access to a shared resource in a multithreaded environment, but it also uses an external entity to enforce exclusive access to the resource:
+		
+		public class ObjectLockCounter {
+
+			private int counter = 0;
+			private final Object lock = new Object();
+    
+			public void incrementCounter() {
+				synchronized(lock) {
+					counter += 1;
+				}
+			}
+    
+			// standard getter
+		}
+		
+	We use a plain Object instance to enforce mutual exclusion. This implementation is slightly better, as it promotes security at the lock level.
+
+	When using "this" for intrinsic locking, an attacker could cause a deadlock by acquiring the intrinsic lock and triggering a denial of service (DoS) condition.
+	On the contrary, when using "other objects", that private entity is not accessible from the outside. This makes it harder for an attacker to acquire the lock and cause a deadlock.	
+
+	
+10) Caveats:
+------------
+	Even though we can use any Java object as an intrinsic lock, we should avoid using Strings for locking purposes:
+	
+		public class Class1 {
+			private static final String LOCK  = "Lock";
+
+			// uses the LOCK as the intrinsic lock
+		}
+
+		public class Class2 {
+			private static final String LOCK  = "Lock";
+
+			// uses the LOCK as the intrinsic lock
+		}
+		
+		
+	At first glance, it seems that these two classes are using two different objects as their lock. However, because of string interning, these two “Lock” values may actually refer to the same object on the string pool. That is, the Class1 and Class2 are sharing the same lock!
+
+	This, in turn, may cause some unexpected behaviors in concurrent contexts.	
+
+	In addition to Strings, we should avoid using any cacheable or reusable objects as intrinsic locks. 
+	For example, 
+		the Integer.valueOf() method caches small numbers. Therefore, calling Integer.valueOf(1) returns the same object even in different classes.	
+	
+	
+11) Volatile Fields:
+--------------------
+	Synchronized methods and blocks are handy for addressing variable visibility problems among threads. Even so, the values of regular class fields might be cached by the CPU. Hence, consequent updates to a particular field, even if they’re synchronized, might not be visible to other threads.
+
+	To prevent this situation, we can use volatile class fields:
+	
+		public class Counter {
+
+			private volatile int counter;
+	
+			// standard constructors / getter
+    
+		}
+		
+		
+	With the volatile keyword, we instruct the JVM and the compiler to store the counter variable in the main memory. That way, we make sure that every time the JVM reads the value of the counter variable, it will actually read it from the main memory, instead of from the CPU cache. Likewise, every time the JVM writes to the counter variable, the value will be written to the main memory.
+	
+	Moreover, the use of a volatile variable ensures that all variables that are visible to a given thread will be read from the main memory as well.
+	
+
+12) Reentrant Locks:
+--------------------
+	Java provides an improved set of Lock implementations whose behavior is slightly more sophisticated than the intrinsic locks(intrinsic locks: This means that the methods can be accessed by only one thread at a time, while other threads will be blocked until the method is unlocked by the first thread.).
+
+	With intrinsic locks, the lock acquisition model is rather rigid: 
+		One thread acquires the lock, 
+		then executes a method or code block, and finally 
+		releases the lock so other threads can acquire it and access the method.
+		
+	There’s no underlying mechanism with intrinsic lock that checks: 
+		the queued threads and 
+		gives priority access to the longest waiting threads.
+
+		
+	ReentrantLock instances allow us to do exactly that,: 
+		"preventing" "queued threads" from "suffering some types of resource starvation":
+	
+		public class ReentrantLockCounter {
+
+		private int counter;
+		private final ReentrantLock reLock = new ReentrantLock(true);
+    
+		public void incrementCounter() {
+				reLock.lock();						//Lock
+				try {
+					counter += 1;
+				} finally {
+					reLock.unlock();				//UnLock	
+				}
+			}
+    
+			// standard constructors / getter
+		}
+
+	The ReentrantLock constructor takes an optional "fairness boolean parameter". 
+	When set to true, and multiple threads are trying to acquire a lock, the JVM will give priority to the longest waiting thread and grant access to the lock.
+	
+	
+13) Read/Write Locks:
+---------------------
+	Another powerful mechanism that we can use for achieving thread-safety is the use of ReadWriteLock implementations.
+
+	A ReadWriteLock lock actually uses a pair of associated locks,: 
+		one for read-only operations and 
+		the other for writing operations.
+
+	As a result, it’s possible to have many threads reading a resource, *as long as there’s no thread writing to it. 
+	Moreover, the thread writing to the resource will prevent other threads from reading it.
+
+	Here’s how we can use a ReadWriteLock lock:
+		public class ReentrantReadWriteLockCounter {
+    
+			private int counter;
+			private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+			private final Lock readLock = rwLock.readLock();
+			private final Lock writeLock = rwLock.writeLock();
+    
+			public void incrementCounter() {
+				writeLock.lock();
+				try {
+				counter += 1;
+				} finally {
+					writeLock.unlock();
+				}
+			}
+    
+			public int getCounter() {
+				readLock.lock();
+				try {
+					return counter;
+				} finally {
+					readLock.unlock();
+				}
+			}
+
+		// standard constructors
+   
+		}
+		
+		
+14)-Synchronized Caching:
+----------------------
+	In a multi-threaded environment, certain operations might be concurrently invoked for the same argument (typically on startup). 
+	By default, the cache abstraction does not lock anything, and the same value may be computed several times, defeating the purpose of caching.
+
+	For those particular cases, you can use the "sync" attribute to instruct the underlying cache provider to lock the cache entry while the value is being computed. As a result, only one thread is busy computing the value, while the others are blocked until the entry is updated in the cache. 
+	
+	The following example shows how to use the sync attribute:
+		
+		@Cacheable(cacheNames="foos", sync=true) 
+		public Foo executeExpensiveOperation(String id) {...}		
+		
+		
+-----------------------------
+
+->Two important features of locks and synchronization:
+------------------------------------------------------
+	Mutual Exclusion: 	only one thread can execute a block of code at a time.
+	Visibility: 		changes made by one thread to shared data are visible to other threads.
+	
+	Java’s "synchronized" keyword guarantees both mutual exclusion and visibility.
+	
+	In some cases, we may only desire visibility and not atomicity. The use of synchronized in such a situation is overkill and may cause scalability problems. Here "volatile" comes to the rescue. 
+	
+	
+->
+Are singleton beans thread-safe?
+	No, the singleton beans are not thread-safe because the concept of thread-safety essentially deals with the execution of the program and the singleton is simply a design pattern meant for the creation of objects. 
+	Thread safety nature of a bean 'depends on the nature of its implementation'.
+
+How can you achieve thread-safety in beans?
+	The thread safety can be achieved by changing the scope of the bean to: 
+		request, 
+		session or 
+		prototype 
+	but at the cost of performance. 
+	This is purely based on the project requirements.	
+	

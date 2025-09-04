@@ -1,0 +1,211 @@
+https://www.callicoder.com/java-executor-service-and-thread-pool-tutorial/
+https://connect2grp.medium.com/understating-java-future-and-callable-features-aec70d2aef6
+
+
+
+Java’s "java.util.concurrent" package provides several useful utility classes for working with concurrency.
+
+Concurrency:
+------------
+	Concurrency is the ability to do more than one thing at the same time.
+	Concurrency doesn’t necessarily involve multiple applications. Running multiple parts of a single application simultaneously is also termed as concurrency. 
+	Softwares that are able to do more than one thing at a time are called concurrent software.
+
+	How can multiple tasks execute at the same time even on a single CPU?
+		The operating system switches between the tasks so frequently that it appears to the users that they are being executed at the same physical instant.
+		Therefore, Concurrency does not mean Parallelism. In fact, Parallelism is impossible on a single processor system.
+
+
+Unit of Concurrency:
+--------------------
+	Concurrency is a very broad term, and it can be used at various levels. For example -
+
+	Multiprocessing - 
+		Multiple Processors/CPUs executing concurrently. The unit of concurrency here is a CPU.
+
+	Multitasking - 
+		Multiple tasks/processes running concurrently on a single CPU. The operating system executes these tasks by switching between them very frequently. The unit of concurrency, in this case, is a Process.
+
+	Multithreading - 
+		Multiple parts of the same program running concurrently. In this case, we go a step further and divide the same program into multiple parts/threads and run those threads concurrently.	
+		
+		
+Common Problems associated with Concurrency:
+--------------------------------------------
+	Race Conditions
+	Memory consistency errors
+	
+	
+synchronized keyword:
+---------------------
+	Java has a synchronized keyword using which you can synchronize access to any shared resource, thereby avoiding both kinds of errors.
+		Synchronized Method
+		Synchronized Block
+		Volatile
+		
+
+Lock:
+----		
+	Java’s synchronized keyword internally uses the intrinsic lock associated with an object to gain exclusive access to the object’s member fields.
+	
+	Instead of using an intrinsic lock via the synchronized keyword, you can also use various Locking classes provided by Java’s Concurrency API to have more fine-grained control over the locking mechanism.
+	
+		ReentrantLock
+		ReentrantReadWriteLock
+		Atomic Variables
+		
+	
+Two ways of creating threads in Java applications:
+--------------------------------------------------
+	By extending Thread class
+	By Implementing the Runnable interface.	
+	
+	
+Runnable or Thread, Which one to use?:
+--------------------------------------
+	The first method, where you create a thread by extending from Thread class is very limited because once you extend your class from Thread, you cannot extend from any other class since Java doesn’t allow multiple inheritance.
+
+	Also, If you follow good design practice, Inheritance is meant for extending the functionality of the parent class, but when you create a thread, you don’t extend the functionality of Thread class, you merely provide the implementation of run() method.
+
+	So, In general, You should always use Runnable object to create a thread. This method is more flexible. It allows your class to extend from any other class. Also, you can use anonymous class syntax and Java 8’s lambda expression with Runnable to make your code more concise.
+	
+	
+Executors Framework:
+--------------------
+	While it is easy to create one or two threads and run them, it becomes a problem when your application requires creating 20 or 30 threads for running tasks concurrently.
+	
+	Executors, A framework for creating and managing threads. 
+	Executors framework helps you with :-
+		Thread Creation
+		Thread Management
+		Task submission and execution
+		
+		
+	Java Concurrency API:
+	---------------------
+		defines the following three executor interfaces that covers everything that is needed for creating and managing threads -
+			Executor 
+			ExecutorService
+			ScheduledExecutorService
+			
+		The API also provides an Executors class that contains factory methods for creating different kinds of executor services.
+
+	The java.util.concurrent package provides several implementations of these interfaces, such as ThreadPoolExecutor and ForkJoinPool.
+	
+		
+Callable:
+---------
+	In the previous tutorials, we used a Runnable object to define the tasks that are executed inside a thread. While defining tasks using Runnable is very convenient, it is limited by the fact that the tasks can not return a result.
+	
+	What if you want to return a result from your tasks?
+		Well, Java provides a Callable interface to define tasks that return a result.
+		
+	A Callable is similar to Runnable except that it can return a result and throw a checked exception.
+	Callable interface has a single method call() which is meant to contain the code that is executed by a thread.	
+	
+	Note that with Callable, you don’t need to surround Thread.sleep() by a try/catch block, because unlike Runnable, a Callable can throw a checked exception.
+	
+
+Executing Callable tasks using ExecutorService and obtaining the result using "Future":
+-------------------------------------------------------------------------------------
+	Just like Runnable, you can submit a Callable to an executor service for execution. 
+	But what about the Callable’s result? How do you access it?
+	
+		The submit() method of executor service submits the task for execution by a thread. However, it doesn’t know when the result of the submitted task will be available. Therefore, it returns a special type of value called a Future which can be used to fetch the result of the task when it is available.
+		
+		The concept of Future is similar to Promise in other languages like Javascript. It represents the result of a computation that will be completed at a later point of time in future.
+		
+		Use future.get() method to retrieve the result of the future.
+		Note that, the get() method blocks until the task is completed. The Future API also provides an isDone() method to check whether the task is completed or not.
+		
+		
+Callable and Future:
+--------------------
+	java.util.concurrent.Future is an interface that represents the result of an asynchronous computation. 
+	It allows you to cancel a task, check if it has completed, and retrieve the result of the computation.
+	
+	java.util.concurrent.Callable is an interface that represents a task that can be executed concurrently and returns a result. 
+	It is similar to the java.lang.Runnable interface, but it can return a value and throw a checked exception.
+	
+	To use Future and Callable, you will typically need an Executor or an ExecutorService, which is responsible for executing tasks concurrently. 
+	
+	To submit a Callable task to an ExecutorService, you can use the submit() method, which returns a Future object that represents the result of the computation.
+	
+	
+	@FunctionalInterface
+	public interface Runnable {
+		public abstract void run();
+	}
+	
+	
+	@FunctionalInterface
+	public interface Callable<V> {
+		V call() throws Exception;
+	}
+	
+	
+	
+Diff b/w Runnable and Callable:
+-------------------------------
+	The main difference between Runnable and Callable is that Runnable cannot return any value back to the caller but Callable can return value. 
+
+	Another difference is that call() method from Callable can also throw a checked exception which was not possible by the run() method of the Runnable interface.
+	
+	Interface	|	Method
+	----------		--------
+	Callable  	| 	call() 			| Can Return restult and Throw exception
+	Runnablle 	| 	run() 			| Cannot
+	
+
+Exception Handling:
+------------------
+	With Runnable
+		Since the method signature does not have the “throws” clause specified, we don’t have a way to propagate further checked exceptions.
+
+	With Callable
+		Callable‘s call() method contains the “throws Exception” clause, so we can easily propagate checked exceptions further:	
+		
+		
+		public class FactorialTask implements Callable<Integer> {
+
+			public Integer call() throws InvalidParamaterException {
+
+				if(number < 0) {
+					throw new InvalidParamaterException("Number should be positive");
+				}
+
+			}
+		}
+		
+		
+Callable and Future Code ex:
+----------------------------	
+		public class CallableImplementation 
+		{
+		   public static void main(String[] args) throws InterruptedException, ExecutionException 
+		   {
+			  ExecutorService service = Executors.newSingleThreadExecutor();
+			  CallableFactorialTask task = new CallableFactorialTask(5);
+			  Future<Integer> f = service.submit(task);
+			  Integer val = f.get();
+			  System.out.println(val);
+			  service.shutdown();
+		   }
+		}
+		class CallableFactorialTask implements Callable<Integer> 
+		{
+		   private int num = 0;
+		   public CallableFactorialTask(int num)
+		   {
+			  this.num = num;
+		   }
+		   @Override
+		   public Integer call() throws Exception 
+		   {
+			  int prod = 1;
+			  for (int i = 2; i <= num; i++)
+				 prod *= i;
+			  return prod;
+		   }
+		}
+		

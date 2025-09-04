@@ -1,0 +1,263 @@
+https://xunhuanfengliuxiang.gitbooks.io/java-concurrency/content/11-java-memory-model.html
+https://stackoverflow.com/questions/17253260/synchronization-while-using-atomicinteger	
+
+Race condition:
+---------------
+	A race condition in Java emerges when two or more threads concurrently access shared data, and the final outcome hinges on the timing or order of their execution. This can result in unpredictable behavior and elusive bugs, posing challenges during reproduction and debugging. 
+	
+	Because the same resource may be accessed by multiple threads at the same time and may change the data. We can say that race condition is a concurrency bug. 
+	
+	Because the thread scheduling algorithm can swap between threads at any time, you don't know the order in which the threads will attempt to access the shared data. Therefore, the result of the change in data is dependent on the thread scheduling algorithm, i.e. both threads are "racing" to access/change the data.
+	
+	Race condition occurs when multiple threads read and write the same variable i.e. they have access to some shared data and they try to change it at the same time.
+	
+	Race conditions can result in data loss.
+	
+	For example, 
+		if thread A is reading data from the linked list and another thread B is trying to delete the same data. This process leads to a race condition that may result in run time error.
+		
+		
+	For Example:
+		Problems often occur when one thread does a "check-then-act" (e.g. "check" if the value is X, then "act" to do something that depends on the value being X) and another thread does something to the value in between the "check" and the "act". E.g:
+
+			if (x == 5) // The "Check"
+			{
+			   y = x * 2; // The "Act"
+
+			   // If another thread changed x in between "if (x == 5)" and "y = x * 2" above,
+			   // y will not be equal to 10.
+			}
+			The point being, y could be 10, or it could be anything, depending on whether another thread changed x in between the check and act. You have no real way of knowing.
+
+			In order to prevent race conditions from occurring, you would typically put a lock around the shared data to ensure only one thread can access the data at a time. This would mean something like this:
+
+			// Obtain lock for x
+			if (x == 5)
+			{
+			   y = x * 2; // Now, nothing can change x until the lock is released. 
+						  // Therefore y = 10
+			}
+			// release lock for x
+
+
+		For Example:
+			A "race condition" exists when multithreaded (or otherwise parallel) code that would access a shared resource could do so in such a way as to cause unexpected results.
+
+				Take this example:
+
+				for ( int i = 0; i < 10000000; i++ )
+				{
+				   x = x + 1; 
+				}
+				If you had 5 threads executing this code at once, the value of x WOULD NOT end up being 50,000,000. It would in fact vary with each run.
+	
+				
+				Race conditions can be avoided by employing some sort of locking mechanism before the code that accesses the shared resource:
+
+					for ( int i = 0; i < 10000000; i++ )
+					{
+					   //lock x
+					   x = x + 1; 
+					   //unlock x
+					}
+					Here, the answer comes out as 50,000,000 every time.
+					
+					
+There are two types of race conditions:
+---------------------------------------					
+	1) Check-Then-Act
+	2) Read-Modify-Write
+	
+	Lazy initialization is yet another example of a check-then-act pattern.
+	
+	1) Check-Then-Act:
+	------------------
+	
+		if (x == 5)					//Check
+			{
+			   y = x * 2;			//Act
+			}
+	
+	2) Read-Modify-Write:
+	---------------------
+		public class Counter {
+
+			protected long count = 0;
+
+			public void add(long value){
+		 
+				this.count = this.count + value;
+				
+				write		  read			modify
+			}
+		}
+
+
+Symptoms for a race condition:
+------------------------------
+	The most common symptom of a race condition is "unpredictable values of variables" that are shared between multiple threads.	
+	
+
+Symptoms for deadlocks:
+-----------------------
+	A common symptom of deadlock is that the "program or group of threads stops responding". This is also known as a hang.
+	
+	
+Causes of Race Conditions:
+--------------------------
+	Incorrect Timing: 
+		Program behavior may vary based on the relative timing of thread execution, leading to race conditions.
+	
+	Shared Resources: 
+		Multiple threads accessing shared resources, like variables or data structures, without proper synchronization can result in unexpected outcomes. Concurrent modifications by one thread while another reads or modifies the same resource can lead to issues.
+	
+	Unprotected Critical Sections: 
+		Critical sections, areas of code meant for exclusive execution by a single thread, must be properly protected. Failure to do so may allow multiple threads to enter simultaneously, causing race conditions.
+	
+	Incorrect Thread Synchronization: 
+		Misuse of synchronization mechanisms, such as locks, can introduce race conditions. Examples include releasing a lock prematurely or failing to acquire a necessary lock, leading to unpredictable behavior.
+	
+	Non-Atomic Operations: 
+		Non-atomic operations, like increment (counter++), are not executed as a single, uninterruptible step. Multiple steps (read, modify, write) can be interleaved by other threads, resulting in race conditions.
+	
+	Unsynchronized Access: 
+		Lack of synchronization mechanisms, such as using the synchronized keyword, can contribute to race conditions.
+		
+		
+Steps to Debug:
+--------------
+	Add debugging logs
+	Apply attention while coding to resources affected by data corruption
+	Add sleep delays to replicate the problem
+		
+		
+Preventing Race Conditions in Java:
+-----------------------------------
+	Synchronization: 
+		Employ synchronization mechanisms, like the synchronized keyword or ReentrantLock, to control access to shared resources, ensuring only one thread enters a critical section at a time.
+	
+	Atomic Operations: 
+		Leverage atomic classes and operations (e.g., AtomicInteger) for simple and compound operations, providing atomic guarantees without explicit synchronization.
+	
+	Volatile Keyword: 
+		Use the volatile keyword for shared variables, ensuring changes made by one thread are visible to others.
+	
+	Thread-Safe Collections: 
+		Utilize thread-safe collections from the java.util.concurrent package (e.g., ConcurrentHashMap, CopyOnWriteArrayList) to prevent race conditions with shared data structures.
+	
+	Immutable Objects: 
+		Design classes to be immutable when possible, eliminating the need for synchronization as immutable objects cannot be modified once created.
+	
+	Thread Confinement: 
+		Assign data to a specific thread, reducing the chances of race conditions by making one thread the sole owner and modifier of that data.
+	
+	Thread Joining: 
+		Use join() to wait for a thread to complete its execution before allowing other threads to access shared data.
+
+	
+https://stackoverflow.com/questions/17253260/synchronization-while-using-atomicinteger	
+AtomicInteger vs synchronized:
+-----------------------------
+	atomic classes don’t fully prevent race conditions. So let’s break it down to understand when to use AtomicInteger over synchronized.
+
+		AtomicInteger variable is an equivalent of a simple variable with synchronized getters and setters.
+		
+		So, when you need to perform simple updates on the variable, AtomicInteger is best. But, if your synchronization scope is bigger than that use synchronized.
+
+		All that an atomic data type is promising you is to give a lock-free but thread-safe access to its value. So, one of the valid reasons you would use an AtomicInteger over synchronized is when you need to only protect your update operation like
+
+			synchronized (lockObj) {
+				myInt++; // slower than AtomicInteger
+			}
+			
+		In this case, AtomicInteger.incrementAndGet() would be faster. But, if your synchronization scope is bigger than that and the increment is just a part of it then using a synchronized block with a non-atomic integer (that's protected within that block) is recommended.
+		
+		
+		
+->
+		public class Counter {
+			private int count;
+
+			public void increment() {
+				count++;
+			}
+
+			public int getCount() {
+				return count;
+			}
+		}
+		
+		In a multi-threaded environment, if two threads try to increment the count at the same time, a race condition can occur, leading to unexpected results.
+
+		To prevent race conditions, you can use the synchronized keyword to make the increment method thread-safe:
+		
+			public class Counter {
+				private int count;
+
+				public synchronized void increment() {
+					count++;
+				}
+
+				public int getCount() {
+					return count;
+				}
+			}
+			
+https://cqr.company/web-vulnerabilities/race-conditions/			
+-General methodology and checklist for Race Conditions:
+-------------------------------------------------------
+	Methodology:
+	------------
+		Code Review: 
+			One of the most effective ways to prevent race conditions is to perform a thorough code review. This can help identify potential race conditions and ensure that the code is properly synchronized.
+
+		Stress Testing: 
+			Stress testing can help identify race conditions by putting the system under heavy load and causing it to execute the same code paths concurrently. This can help identify race conditions that only occur under specific conditions, such as high load or low memory.
+
+		Fuzz Testing: 
+			Fuzz testing can help identify race conditions by generating random inputs and feeding them to the system. This can help identify race conditions that occur due to unexpected inputs or edge cases.
+
+		Model-Based Testing: 
+			Model-based testing involves creating a formal model of the system’s behavior and then testing the model to identify potential race conditions. This can help identify race conditions that occur due to complex interactions between different parts of the system.
+
+		Static Analysis: 
+			Static analysis tools can help identify potential race conditions by analyzing the code for potential synchronization issues. These tools can identify potential race conditions before the code is even executed, making them a useful tool for preventing race conditions in the first place.
+
+		Dynamic Analysis: 
+			Dynamic analysis tools can help identify race conditions by monitoring the system’s behavior at runtime. These tools can help identify potential race conditions that occur due to unexpected interactions between different parts of the system.
+			
+			
+	Checklist:
+	----------
+		Identify shared resources: 
+			Identify any shared resources, such as variables, data structures, and files, that are accessed by multiple threads or processes.
+
+		Identify critical sections: 
+			Identify the sections of code where shared resources are accessed and where race conditions can occur.
+
+		Check for synchronization: 
+			Check if the code properly synchronizes access to shared resources using locks, semaphores, or other synchronization primitives.
+
+		Check for atomic operations: 
+			Check if the code uses atomic operations to update shared resources, ensuring that updates are performed in a single, indivisible step.
+
+		Check for data dependencies: 
+			Check if the code relies on specific data dependencies between threads or processes, as these dependencies can create race conditions.
+
+		Check for deadlocks: 
+			Check if the code can enter into a deadlock state, where multiple threads or processes are waiting for each other to release resources.
+
+		Perform stress testing: 
+			Perform stress testing to simulate high loads and identify potential race conditions that only occur under heavy load.
+
+		Use debugging tools: 
+			Use debugging tools to monitor the execution of the code and identify potential race conditions.
+
+		Use code analysis tools: 
+			Use code analysis tools to scan the code for potential race conditions and synchronization issues.
+
+		Test on different platforms: 
+			Test the code on different platforms and operating systems to identify platform-specific race conditions.
+
+			
+			

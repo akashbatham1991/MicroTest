@@ -1,0 +1,275 @@
+https://medium.com/javarevisited/choosing-the-right-jdbc-connection-pool-c9ef90588d55
+https://www.javacodegeeks.com/2016/11/understanding-connection-pooling.html#google_vignette
+https://www.baeldung.com/java-connection-pooling
+https://tomcat.apache.org/tomcat-9.0-doc/jdbc-pool.html
+
+
+Connection pooling:
+-------------------
+	It creates a pool of reusable connections ahead of time to improve the application performance. 
+	
+	Whenever the application starts, a pool of Connections is created with the database.
+	So, Connection Pooling reduces databse hits and improves application performance significantly. 
+	You must remember that database hit is a very costly operation and as much as possible you must try to avoid it.
+	
+	Database Connections "maintained in cache" can be reused whenever request comes to connect with database. 	
+	
+	The most relevant point to stress here is that once the pool is created, connections are fetched from the pool, so there’s no need to create new ones.
+	
+	Furthermore, when a connection is released, it’s actually returned back to the pool, so other clients can reuse it.
+	There’s no further interaction with the underlying database, such as an explicit call to the Connection’s close() method.
+
+Why:
+----
+	Creating a connection to the database is expensive, can impact the performance of your application. The Connection Pools can help with this by preparing connections ahead of time, a connection is kept alive and can be reused again and again in a connection pool. 
+	
+	
+->sequence of steps involved in a typical database connection life cycle:
+-------------------------------------------------------------------------
+	Opening a connection to the database using the database driver
+	Opening a TCP socket for reading/writing data
+	Reading / writing data over the socket
+	Closing the connection
+	Closing the socket
+		
+		
+
+Connection Pool Frameworks:
+---------------------------	
+	Implementing a connection pool from the ground up is pointless considering the number of “enterprise-ready” connection pooling frameworks already available.
+	Even so, before we learn how to implement a basic connection pool, we’ll first showcase a few popular connection pooling frameworks.
+	
+	There are a number of 'connection pooling frameworks' available for enterprise use like: 
+	-------------------------------------------------------------------------------------- 
+		Tomcat JDBC,
+		Apache DBCP,
+		HikariCP,	
+		BoneCp,		
+		C3P0, 
+		Vibur etc. 
+	
+	However, the most popular choices are Tomcat JDBC & HikariCP.
+
+	
+#Advantages of Connection Pool:
+------------------------------
+	Reduces network calls, 
+	Improving network latency
+	Enhances application performance by reusing connections
+	Eliminates the need to open or close connections individually	
+	
+	
+#Disadvantages of Connection Pool:
+----------------------------------
+	Requires careful configuration to avoid database rejection/closure of connections, 
+	Potential resource "memory leakage issues" as connections are treated as resources	
+	
+
+Parameters of Connection Pool:
+------------------------------	
+	A Total number of connections in Connection Pool:-
+		This parameter specifies the total number of connections to be created at startup.
+
+	Maximum Connections:- 
+		tells maximum connections to be created in the connection pool
+
+	Minimum connections: - 
+		specifies the minimum connection to create a pool
+
+	Connection Increment: - 
+		if the total request is more than the maximum number of connections, the container increment the connection count
+
+	Connection pool Idle timeout:- 
+		if the connection is established and idle for some time, then the container return that connection to the pool, and later another request can be reused. It is basically to free the database connection resource.
+
+
+
+
+->Connection Pool implementation in Tomcat:
+-------------------------------------------
+	Tomcat, the leading application server, is packaged with Commons DBCP Datasource as the default JNDI Datasource, unless we explicitly specify the DataSourceFactory as–
+
+	To use Apache Commons DBCP connection pool –
+	------------------------------------------
+		<Resource name="jdbc/TestDB" auth="Container" type="javax.sql.DataSource"
+			maxActive="100" 
+			maxIdle="30" 
+			maxWait="10000"
+			username="javauser" 
+			password="javadude"
+			url="jdbc:mysql://localhost:3306/javatest"			
+			driverClassName="com.mysql.jdbc.Driver"
+			factory="org.apache.commons.dbcp.BasicDataSourceFactory"/>
+
+	
+	To use Tomcat JDBC Connection pool –
+	-----------------------------------
+		<Resource name="jdbc/TestDB" auth="Container" type="javax.sql.DataSource"
+			maxActive="100" 
+			maxIdle="30" 
+			maxWait="10000"
+			username="javauser" 
+			password="javadude"
+			url="jdbc:mysql://localhost:3306/javatest"			
+			driverClassName="com.mysql.jdbc.Driver"
+			factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"/>	
+
+	
+	The beauty of DBCP is that it can be used with so many applications or frameworks and it works with almost all databases in the market.
+	
+	Tomcat JDBC connection pool mechanism (org.apache.tomcat.jdbc.pool.*) is an alternative upgraded implementation of a database connection pool that competes with Apache Commons DBCP. 
+	
+	In either case, the respective JARs (commons-dbcp.jar or tomcat-jdbc.jar) need to be included into the "build path".
+	
+	
+->Connection Pool in Hibernate:
+------------------------------
+	Hibernate has provided a default connection pooling mechanism but it is not that much scalable to use in production.
+	So most of the applications uses the third party connection pool providers for better performance.
+
+	Hibernate automatically identifies which connection pool provider to use based on the properties configured in the config file.
+	However we can define the connection provider with the < hibernate.connection.provider_class > property as below in the config file
+
+	<property name="hibernate.connection.provider_class">org.hibernate.service.jdbc.connections.internal.C3P0ConnectionProvider</property >
+	
+	The corresponding JAR file needs to be in place in the lib directory, manually or using Maven.
+
+	Note :If we do not configure a connection pool, the default is used.
+	
+	Hibernate uses its magic to identify which connection pool provider to use — based on the properties you configure.
+
+
+https://www.baeldung.com/spring-boot-tomcat-connection-pool	
+->Connection Pool in Spring Boot:
+---------------------------------
+	Spring Boot uses "HikariCP" as the "default connection pool", due to its remarkable performance and enterprise-ready features.
+	If HikariCP is not found on the classpath, then Spring Boot will pick up the Tomcat JDBC Connection Pool, if it’s available.
+	If neither of these options is available, Spring Boot will choose Apache Commons DBCP2, if that is available.
+		
+		spring.datasource.type=org.apache.tomcat.jdbc.pool.DataSource
+		// other spring datasource properties
+	
+Examples:
+---------
+	Connection Pool Framework (Apache Commons DBCP) Example:
+	--------------------------------------------------------
+		
+		public class DBCPDataSource {			//It's a Singleton Class.
+    
+			private static BasicDataSource ds = new BasicDataSource();
+		
+			static {
+				ds.setUrl("jdbc:h2:mem:test");
+				ds.setUsername("user");
+				ds.setPassword("password");
+				ds.setMinIdle(5);
+				ds.setMaxIdle(10);
+				ds.setMaxOpenPreparedStatements(100);
+			}
+    
+			public static Connection getConnection() throws SQLException {
+				return ds.getConnection();
+			}
+    
+			private DBCPDataSource(){ }
+		}
+		
+		
+	->And here’s how to get a pooled connection with the DBCPDataSource class:
+
+			Connection con = DBCPDataSource.getConnection();	
+			
+			
+		
+->Custom Sample Connection Pool Implementation:
+-----------------------------------------------
+	To better understand the underlying logic of connection pooling, let’s create a simple implementation.
+	
+	->	
+	import java.sql.Connection;
+	
+	public interface ConnectionPool {
+		
+		Connection getConnection();
+		
+		boolean releaseConnection(Connection connection);
+	}
+	
+	
+	java.sql.DriverManager
+	java.sql.Connection
+	public class BasicConnectionPool implements ConnectionPool {
+
+		private String url;
+		private String user;
+		private String password;
+		private List<Connection> connectionPool;
+		private List<Connection> usedConnections = new ArrayList<>();
+		private static int INITIAL_POOL_SIZE = 10;
+    
+		public static BasicConnectionPool create( String url, String user, String password) throws SQLException {
+		
+			connectionPool = new ArrayList<>(INITIAL_POOL_SIZE);
+			
+			for (int i = 0; i < INITIAL_POOL_SIZE; i++) {
+				connectionPool.add(createConnection(url, user, password));
+			}
+			
+			return new BasicConnectionPool(url, user, password, connectionPool);
+		}
+    
+		// standard constructors
+		
+		private static Connection createConnection(String url, String user, String password) throws SQLException {
+			return DriverManager.getConnection(url, user, password);
+		}
+    
+		@Override
+		public Connection getConnection() {
+			Connection connection = connectionPool.remove(connectionPool.size() - 1);
+			usedConnections.add(connection);
+			return connection;
+		}
+    
+		@Override
+		public boolean releaseConnection(Connection connection) {
+			connectionPool.add(connection);
+			return usedConnections.remove(connection);
+		}
+      
+		public int getSize() {
+			return connectionPool.size() + usedConnections.size();
+		}
+
+		// standard getters
+	}
+	
+	
+-Further Improvements and Refactoring:
+--------------------------------------
+	For instance, we could refactor the getConnection() method and add support for maximum pool size. If all available connections are taken, and the current pool size is less than the configured maximum, the method will create a new connection.
+
+	We could also verify whether the connection obtained from the pool is still alive before passing it to the client:
+	
+	@Override
+	public Connection getConnection() throws SQLException {
+		if (!connectionPool.isEmpty()) {
+			if (usedConnections.size() < MAX_POOL_SIZE) {
+				connectionPool.add(createConnection(url, user, password));
+			} else {
+				throw new RuntimeException("Maximum pool size reached, no available connections!");
+			}
+		}
+
+		Connection connection = connectionPool.remove(connectionPool.size() - 1);
+
+		if(!connection.isValid(MAX_TIMEOUT)){
+			connection = createConnection(url, user, password);
+		}
+
+		usedConnections.add(connection);
+		
+		return connection;
+	}
+	
+	

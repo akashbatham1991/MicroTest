@@ -1,0 +1,267 @@
+https://java2blog.com/object-level-locking-vs-class-level-locking-java/
+https://howtodoinjava.com/java/multi-threading/object-vs-class-level-locking/
+
+Synchronization:
+----------------
+	Java supports multiple threads to be executed concurrently. This may cause two or more threads to access the same fields or objects at same time.
+	
+	Synchronization in Java guarantees that no two threads can execute a synchronized method, "which requires same lock", simultaneously or concurrently.
+	Synchronization is the process which keeps all concurrent threads in execution to be in sync. 
+	Synchronization avoids memory consistence errors caused due to inconsistent view of shared memory.
+	
+	
+You can achieve Synchronization using two ways:
+----------------------------------------------
+	synchronized method
+	synchronized block
+
+synchronized method:
+--------------------
+	You can make "whole method" synchronized so no two thread can access it parallelly.
+	
+synchronized block:
+------------------
+	You can make use block to synchronize "critical section in method" so no two thread can access block concurrently.
+
+Note: 
+-----
+	we can use synchronized keyword in the class on defined methods or blocks. 
+	synchronized keyword can not be used with variables or attributes in class definition.
+	
+	
+->Two important features of locks and synchronization:
+------------------------------------------------------
+	Mutual Exclusion: 	only one thread can execute a block of code at a time.
+	Visibility: 		changes made by one thread to shared data are visible to other threads.
+	
+	Java’s "synchronized" keyword guarantees both mutual exclusion and visibility.
+	
+	In some cases, we may only desire visibility and not atomicity. The use of synchronized in such a situation is overkill and may cause scalability problems. Here "volatile" comes to the rescue. 
+	
+	
+->Diff b/w volatile and synchronization:
+-----------------------------------------
+	Volatile keyword is a field modifier. BUT Synchronized keyword modifies code blocks and methods.
+	
+	It improves thread performance. BUT Synchronized methods degrade the thread performance.	
+	
+	The thread cannot be blocked for waiting in case of "volatile". BUT 
+	The threads can be blocked for waiting in case of "synchronized".
+
+
+	
+There are two types of locking in java:
+--------------------------------------
+	Object level locking		(make "instance level" data thread safe.)				(make non-staic data thread safe)
+	Class level locking			(make "CLASS level" data thread safe.)					(make staic data thread safe)
+	
+	non-static methods use the current object's lock. (only one thread per object)
+	static methods use the associated Class object. (only one thread per Class object)
+
+	
+Object level locking:		("make instance level data thread safe.")
+--------------------
+	Object level lock is used when we want to synchronize: 
+		non-static 'method' or 
+		non-static 'code block'
+		
+	so that it can be accessed by only one thread at a time for that instance. 
+	
+	It is used if you want to protect non static data.
+	This should always be done to "make instance level data thread safe."
+	
+	You can achieve Object level locking by following:
+	-------------------------------------------------	
+		public class DemoClass
+		{
+			public synchronized void demoMethod(){}		//through synchronized method,  here lock acquired on current object.
+		}
+
+		or
+
+		public class DemoClass
+		{
+			public void demoMethod(){
+				synchronized (this)						//through synchronized block, here lock acquired on current object.
+				{
+					//other thread safe code
+				}
+			}
+		}
+
+		or
+
+		public class DemoClass
+		{
+			private final Object lock = new Object();
+			
+			public void demoMethod(){						//lock on some other object using synchronized block
+				synchronized (lock)
+				{
+					//other thread safe code
+				}
+			}
+		}
+	
+	
+Class level locking:		("make CLASS level data(static data) thread safe.")
+-------------------
+	Class level locking means you want to synchronize: 
+		static method or 
+		static code block 
+		
+	so that it can be accessed by only one thread for whole class.
+	
+	If you have 10 instances of class, only one thread will be able to access that method or block of any one instance at a time and all other instances will be locked for other threads. 
+	
+	Class level locking should always be done to "make static data thread safe." 
+		
+	This can be achieved by following:
+	----------------------------------	
+		public class DemoClass
+		{
+			public synchronized "static" void demoMethod(){	  // through synchronized mehtod
+				...											  // acquired Class level lock to make static data or static method 
+															  // thread safe.	
+			}
+		}
+
+		OR
+
+		public class DemoClass
+		{
+			public void demoMethod()
+			{
+				synchronized(DemoClass.class)			//Acquire lock on .class reference through synchronized block
+				{
+					//other thread safe code		//acquired Class level lock to make static data or static method thread 
+													// safe.		
+				}
+			}
+		}
+
+		OR
+
+		public class DemoClass
+		{
+			private final "static" Object lock = new Object();
+
+			public void demoMethod()
+			{
+				synchronized (lock)						//lock on some other static object
+				{
+					//other thread safe code
+				}
+			}
+		}
+		
+		
+->			
+Can two threads execute static and non static methods concurrently?
+	Yes, Since two threads will acquire lock on different objects, they can be executed concurrently without any issues.
+	
+If one method of class is synchronized and other method of same class is not synchronized? Can they be executed concurrently by two threads?
+	Yes, because one thread will require lock to get into synchronized block but second thread which will execute non synchronized method that won’t require any lock, so it can be executed concurrently.
+
+Is it safe to call a synchronized method from another synchronized method?
+	Yes, it is safe to call a synchronized method from another synchronized method because when you call synchronized method, you will get lock on this object and when you call another synchronized method of "same class", it is safe to execute as it already has lock on this object.
+			
+	
+	
+Class Lock - 
+	If a static method is marked as Synchrnozied and called by a Thread, the "whole Class" will be locked until the method execution completed.
+
+Object Lock - 
+	If a non-static method is marked as Synchronzied and called by a Thread, the "current instance (Object)" will be locked util the method execution completed.
+
+
+Multiple objects of class may exist but there is always one class’s class object lock available.
+Every object may have their own lock.
+			
+non-static methods use the current object's lock. (only one thread per object)
+static methods use the associated Class object. (only one thread per Class object)
+
+
+->Important notes:
+------------------
+	Synchronization in Java guarantees that no two threads can execute a synchronized method, which requires same lock, simultaneously or concurrently.
+	
+	Synchronized keyword can be used only with methods and code blocks. These methods or blocks can be static or non-static both.
+	
+	Whenever a thread enters into Java synchronized method or block it acquires a lock and whenever it leaves synchronized method or block it releases the lock. Lock is released even if thread leaves synchronized method after completion or due to any Error or Exception.
+	
+	Java synchronized keyword is re-entrant in nature it means if a synchronized method calls another synchronized method which requires same lock then current thread which is holding lock can enter into that method without acquiring lock.
+
+	Java synchronization will throw NullPointerException if object used in synchronized block is null. For example, in above code sample if lock is initialized as null, the “synchronized (lock)” will throw NullPointerException.
+
+	Synchronized methods in Java put a performance cost on your application. So use synchronization when it is absolutely required. Also, consider using synchronized code blocks for synchronizing only critical section of your code.
+
+	It’s possible that both static synchronized and non static synchronized method can run simultaneously or concurrently because they lock on different object.
+
+	*According to the Java language specification you can not use synchronized keyword with *constructor. It is illegal and result in compilation error.
+
+	*Do not synchronize on "non final field" on "synchronized block" in Java. because reference of non final field may change any time and then different thread might synchronizing on different objects i.e. no synchronization at all.
+
+	*Do not use "String literals" because they might be referenced else where in the application and can cause deadlock. 
+	
+	*"String objects" created with new keyword can be used safely. But as a best practice, create a new private scoped Object instance OR lock on the shared variable itself which we want to protect.
+	
+	*A Java synchronized block doesn't allow more than one JVM, to provide access control to a shared resource. Meaning, at a time only one jvm has access to shared resource.
+	
+	Can two threads execute static and non static methods concurrently?
+		Yes, Since two threads will acquire lock on different objects, they can be executed concurrently without any issues.
+	
+	If one method of class is synchronized and other method of same class is not synchronized? Can they be executed concurrently by two threads?
+		Yes, because one thread will require lock to get into synchronized block but second thread which will execute non synchronized method that won’t require any lock, so it can be executed concurrently.
+
+		
+		
+#Rules for volatile keyword:
+---------------------------
+	Volatile means that the variable changes at runtime and that the compiler should not cache its value for any reason.
+	
+	Volatile variables have the "visibility" features of synchronized but not the "atomicity" features.
+	
+	The values of the volatile variable will never be cached and all writes and reads will be done to and from the main memory. 
+	
+	There is only one copy of them in the main memory. 
+	
+	All reader threads will see the updated value of the volatile variable after completing the write operation. If you are not using the volatile keyword, different reader thread may see different values.
+	
+	It reduces the risk of memory consistency error.
+	
+	The volatile variables are always visible to other threads.
+	
+	The volatile keyword can be used either with "primitive type or objects".
+	
+	The volatile keyword cannot be used with classes or methods. However, it is used with variables.
+	
+	It can be used as an "alternative way of achieving synchronization" in Java.
+	
+	*When a variable is not shared between multiple threads, you do not need to use the volatile keyword with that variable.
+	
+
+#Diff b/w volatile and synchronization:
+-----------------------------------------
+	Volatile keyword is a "field" modifier. BUT Synchronized keyword modifies "code blocks and methods".
+	
+	It improves thread performance. BUT Synchronized methods degrade the thread performance.
+	
+	The thread "cannot be blocked" for waiting in case of volatile. BUT Threads can be "blocked for waiting" in case of synchronized.
+
+
+		
+	
+
+https://stackoverflow.com/questions/17721263/singleton-across-jvm-or-application-instance-or-tomcat-instance
+https://stackoverflow.com/questions/17721263/singleton-across-jvm-or-application-instance-or-tomcat-instance
+->If I deploy and run 2 instances of same application on a single instance of Tomcat:
+
+	The Tomcat creates new ClassLoader for each web application. A singleton is normally tied to a ClassLoader only. 
+	
+	So if your Singleton class is stored in war file, the same war file will have two instances in Tomcat container i.e. it creates two separate Singleton class for each war file.
+	So if you have a singleton based on a .class file in your .war file, and you deploy this web application multiple times, each application gets its own singleton.
+
+	On the other hand, if the .class file of your singleton is in the classpath of tomcat, then you only have one instance. 
+	This .class does not belong to a specific web application (it belongs to the tomcat instance).
+
